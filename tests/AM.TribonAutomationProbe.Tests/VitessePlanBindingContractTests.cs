@@ -107,6 +107,23 @@ public sealed class VitessePlanBindingContractTests
     }
 
     [Fact]
+    public void WorkerContainsPreflightKcsStageTraceBoundaries()
+    {
+        var root = FindRepositoryRoot();
+        var worker = File.ReadAllText(Path.Combine(root, "vitesse", "AddIns", "AMGeometryObjectAutomation", "Start.py"));
+        Assert.Contains("geometry-object-worker-stage-trace.txt", worker, StringComparison.Ordinal);
+        Assert.Contains("open(os.path.join(DIAGNOSTICS, \"geometry-object-worker-stage-trace.txt\"), \"ab\")", worker, StringComparison.Ordinal);
+        Assert.Contains("handle.flush()", worker, StringComparison.Ordinal);
+        foreach (var marker in new[] { "REQUEST_SELECTED", "TEXT_CAPTURE_START", "TEXT_CAPTURE_RETURNED", "TEXT_PROPERTIES_GET_START", "TEXT_PROPERTIES_GET_RETURNED", "ELEMENT_EXTENT_GET_START", "ELEMENT_EXTENT_GET_RETURNED", "DETECTOR_START", "DETECTOR_RETURNED", "PLAN_READ_START", "PLAN_READ_RETURNED", "TARGET_RESOLVE_START", "TARGET_RESOLVE_RETURNED", "LABEL_INDEX_START", "LABEL_INDEX_RETURNED", "PREFLIGHT_EVALUATE_START", "PREFLIGHT_EVALUATE_RETURNED", "PLAN_BINDING_START", "PLAN_BINDING_RETURNED", "RESULT_WRITE_START", "RESULT_WRITE_RETURNED", "REQUEST_ARCHIVE_START", "REQUEST_ARCHIVE_RETURNED", "PROCESS_SUCCESS", "PROCESS_EXCEPTION", "FAILURE_RESULT_WRITE_START", "FAILURE_RESULT_WRITE_RETURNED", "FAILURE_ARCHIVE_START", "FAILURE_ARCHIVE_RETURNED" })
+        {
+            Assert.Contains("\"" + marker + "\"", worker, StringComparison.Ordinal);
+        }
+        Assert.Contains("SetBoundaryInfinite()", worker, StringComparison.Ordinal);
+        Assert.Contains("def _create_label(", worker, StringComparison.Ordinal);
+        Assert.DoesNotContain("SAVEWORK", worker, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void PythonBindingModuleContainsCrossRuntimeVector()
     {
         var root = FindRepositoryRoot();

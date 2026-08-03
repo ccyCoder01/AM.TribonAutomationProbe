@@ -5,6 +5,35 @@ import time
 
 ROOT = r"C:\AM_TribonBridge"
 DIAGNOSTICS = os.path.join(ROOT, "diagnostics")
+_TRACE_REQUEST_NAME = ""
+_TRACE_OPERATION_ID = ""
+
+
+def _trace_safe(value):
+    result = _text(value)
+    return result.replace("\r", " ").replace("\n", " ").replace("|", "/")
+
+
+def _trace_stage(stage, request_name, operation_id, detail):
+    try:
+        if request_name is None or request_name == "":
+            request_name = _TRACE_REQUEST_NAME
+        if operation_id is None or operation_id == "":
+            operation_id = _TRACE_OPERATION_ID
+        if not os.path.exists(DIAGNOSTICS):
+            os.makedirs(DIAGNOSTICS)
+        handle = open(os.path.join(DIAGNOSTICS, "geometry-object-worker-stage-trace.txt"), "ab")
+        try:
+            line = "TIME=%s|STAGE=%s|REQUEST=%s|OPERATION=%s|DETAIL=%s\n" % (
+                time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                _trace_safe(stage), _trace_safe(request_name),
+                _trace_safe(operation_id), _trace_safe(detail))
+            handle.write(line)
+            handle.flush()
+        finally:
+            handle.close()
+    except:
+        pass
 
 
 def _bootstrap_status(status, detail):
@@ -203,6 +232,7 @@ def _sha256_hex(data):
 
 
 def _inline_compute_plan_hash(preflight):
+    _trace_stage("PLAN_HASH_COMPUTE_START", None, None, "")
     parts = []
     _append_field(parts, CONTRACT_VERSION)
     _append_field(parts, preflight.get("status", ""))
@@ -265,10 +295,14 @@ def _inline_compute_plan_hash(preflight):
             item.get("matchHandle", "") or ""
         )
 
-    return _sha256_hex("".join(parts))
+    result = _sha256_hex("".join(parts))
+    _trace_stage("SHA256_BACKEND", None, None, "FALLBACK" if hashlib is None else "HASHLIB")
+    _trace_stage("PLAN_HASH_COMPUTE_RETURNED", None, None, result)
+    return result
 
 
 def _inline_ready_operation_ids(preflight):
+    _trace_stage("READY_IDS_COMPUTE_START", None, None, "")
     result = []
 
     for item in preflight.get("items", []):
@@ -278,6 +312,7 @@ def _inline_ready_operation_ids(preflight):
             )
 
     result.sort(key=_sort_text)
+    _trace_stage("READY_IDS_COMPUTE_RETURNED", None, None, "count=%s" % len(result))
     return result
 
 
@@ -850,10 +885,14 @@ def _capture_contours():
 
 
 def _capture_labels():
+    _trace_stage("TEXT_CAPTURE_START", None, None, "")
     try:
-        return _normalize_capture(
-            kcs_draft.text_capture(_region())
-        )
+        captured = kcs_draft.text_capture(_region())
+        _trace_stage("TEXT_CAPTURE_RETURNED", None, None, "")
+        _trace_stage("TEXT_CAPTURE_NORMALIZE_START", None, None, "")
+        result = _normalize_capture(captured)
+        _trace_stage("TEXT_CAPTURE_NORMALIZE_RETURNED", None, None, "reported=%s,actual=%s" % (result[0], len(result[1])))
+        return result
     except:
         if _text(kcs_draft.error) == "kcs_NotFound":
             return 0, []
@@ -902,15 +941,19 @@ def _point_to_extent_distance(point, extent):
 
 
 def _label_details(handle):
+    _trace_stage("TEXT_PROPERTIES_GET_START", None, None, "handle=" + _text(handle))
     value = KcsText.Text()
     value = kcs_draft.text_properties_get(
         handle,
         value
     )
+    _trace_stage("TEXT_PROPERTIES_GET_RETURNED", None, None, "handle=" + _text(handle))
 
     position = value.GetPosition()
     colour = value.GetColour()
+    _trace_stage("ELEMENT_EXTENT_GET_START", None, None, "handle=" + _text(handle))
     label_extent = _extent(handle)
+    _trace_stage("ELEMENT_EXTENT_GET_RETURNED", None, None, "handle=" + _text(handle))
 
     return {
         "handle": handle,
@@ -926,13 +969,18 @@ def _label_details(handle):
 
 
 def _capture_label_index():
+    _trace_stage("LABEL_INDEX_CAPTURE_START", None, None, "")
     reported, handles = _capture_labels()
+    _trace_stage("LABEL_INDEX_CAPTURE_RETURNED", None, None, "reported=%s,actual=%s" % (reported, len(handles)))
     by_text = {}
     errors = []
 
+    index = 0
     for handle in handles:
+        _trace_stage("LABEL_DETAIL_START", None, None, "index=%s,handle=%s" % (index, _text(handle)))
         try:
             details = _label_details(handle)
+            _trace_stage("LABEL_DETAIL_RETURNED", None, None, "index=%s,handle=%s,text=%s" % (index, _text(handle), _text(details["text"])[:80]))
             text_value = details["text"]
 
             if not by_text.has_key(text_value):
@@ -941,6 +989,7 @@ def _capture_label_index():
             by_text[text_value].append(details)
         except Exception, error:
             errors.append(_text(error))
+        index = index + 1
 
     return {
         "reportedCount": reported,
@@ -1170,12 +1219,16 @@ def _run_extraction():
 
     for script_name in DETECTOR_SCRIPTS:
         sequence = sequence + 1
+        _trace_stage("DETECTOR_START", None, None, "script_name=" + script_name)
         _load_runtime_script(
             script_name,
             sequence
         )
+        _trace_stage("DETECTOR_RETURNED", None, None, "script_name=" + script_name)
 
+    _trace_stage("EXPANSION_PARSE_START", None, None, "")
     result = _parse_expansion()
+    _trace_stage("EXPANSION_PARSE_RETURNED", None, None, "objects=%s,status=%s" % (len(result.get("objects", [])), result.get("sourceStatus", "")))
 
     result["status"] = "succeeded"
 
@@ -1507,18 +1560,28 @@ def _preflight(plan_items, label_index):
 
 
 def _execute_preflight():
+    _trace_stage("EXTRACTION_START", None, None, "")
     extraction = _run_extraction()
+    _trace_stage("EXTRACTION_RETURNED", None, None, "")
+    _trace_stage("PLAN_READ_START", None, None, "")
     plan_items = _read_plan_items()
+    _trace_stage("PLAN_READ_RETURNED", None, None, "planItemCount=%s" % len(plan_items))
+    _trace_stage("TARGET_RESOLVE_START", None, None, "")
     missing_targets = _resolve_current_targets(
         plan_items,
         extraction["objects"]
     )
+    _trace_stage("TARGET_RESOLVE_RETURNED", None, None, "missingTargetCount=%s" % len(missing_targets))
 
+    _trace_stage("LABEL_INDEX_START", None, None, "")
     label_index = _capture_label_index()
+    _trace_stage("LABEL_INDEX_RETURNED", None, None, "reported=%s,actual=%s,errors=%s" % (label_index["reportedCount"], label_index["actualCount"], len(label_index["errors"])))
+    _trace_stage("PREFLIGHT_EVALUATE_START", None, None, "")
     result = _preflight(
         plan_items,
         label_index
     )
+    _trace_stage("PREFLIGHT_EVALUATE_RETURNED", None, None, "status=%s,items=%s" % (result.get("status", ""), len(result.get("items", []))))
 
     if (
         extraction["status"] != "succeeded" or
@@ -1531,7 +1594,10 @@ def _execute_preflight():
 
     result["planItems"] = plan_items
     result["extraction"] = extraction
+    _trace_stage("PLAN_BINDING_START", None, None, "")
     PLAN_BINDING.attach_plan_binding(result)
+    _trace_stage("PLAN_BINDING_RETURNED", None, None, "planHash=%s,ready=%s" % (result.get("planHash", ""), len(result.get("readyOperationIds", []))))
+    _trace_stage("EXECUTE_PREFLIGHT_RETURN", None, None, "")
     return result
 
 
@@ -2141,9 +2207,12 @@ def _highlight_payload(
 
 
 def _preflight_payload(operation_id, started_at):
+    _trace_stage("PREFLIGHT_PAYLOAD_START", None, operation_id, "")
+    _trace_stage("EXECUTE_PREFLIGHT_CALL_START", None, operation_id, "")
     preflight = _execute_preflight()
+    _trace_stage("EXECUTE_PREFLIGHT_CALL_RETURNED", None, operation_id, "")
 
-    return {
+    result = {
         "schemaVersion": "1.0",
         "taskType":
             "geometry.label-preflight",
@@ -2178,6 +2247,8 @@ def _preflight_payload(operation_id, started_at):
         "drawingWritePerformed": False,
         "savePerformed": False
     }
+    _trace_stage("PREFLIGHT_PAYLOAD_RETURN", None, operation_id, "")
+    return result
 
 
 def _payload(
@@ -2299,6 +2370,7 @@ def _write_worker_diagnostic(stage, status, message, request_name, details):
 
 
 def _process(name):
+    _trace_stage("PROCESS_START", name, None, "")
     source = os.path.join(
         PROCESSING,
         name
@@ -2334,6 +2406,9 @@ def _process(name):
         "action",
         ""
     )
+    global _TRACE_OPERATION_ID
+    _TRACE_OPERATION_ID = _field(request_text, "operationId", command_id)
+    _trace_stage("PAYLOAD_CALL_START", name, None, "")
 
     operation_id = _field(
         request_text,
@@ -2375,6 +2450,7 @@ def _process(name):
                 action,
                 request_text
             )
+            _trace_stage("PAYLOAD_CALL_RETURNED", name, operation_id, "")
 
             envelope = _result_envelope(
                 command_id,
@@ -2385,6 +2461,7 @@ def _process(name):
                 None
             )
     except (SystemExit, Exception), error:
+        _trace_stage("PROCESS_EXCEPTION", name, operation_id, _text(error))
         envelope = _result_envelope(
             command_id,
             correlation_id,
@@ -2411,24 +2488,44 @@ def _process(name):
             }
         )
 
+    _trace_stage("RESULT_SERIALIZE_START", name, operation_id, "")
+    serialized = _json(envelope)
+    _trace_stage("RESULT_SERIALIZE_RETURNED", name, operation_id, "")
+    if envelope.get("status") == "succeeded":
+        _trace_stage("RESULT_WRITE_START", name, operation_id, "")
+    else:
+        _trace_stage("FAILURE_RESULT_WRITE_START", name, operation_id, "")
     _atomic(
         os.path.join(
             OUTPUT,
             command_id + ".result.json"
         ),
-        _json(envelope)
+        serialized
     )
+    if envelope.get("status") == "succeeded":
+        _trace_stage("RESULT_WRITE_RETURNED", name, operation_id, "")
+    else:
+        _trace_stage("FAILURE_RESULT_WRITE_RETURNED", name, operation_id, "")
 
     archive_path = os.path.join(
         ARCHIVE,
         name
     )
 
+    if envelope.get("status") == "succeeded":
+        _trace_stage("REQUEST_ARCHIVE_START", name, operation_id, "")
+    else:
+        _trace_stage("FAILURE_ARCHIVE_START", name, operation_id, "")
     if os.path.exists(archive_path):
         os.remove(archive_path)
 
     os.rename(source, archive_path)
     if envelope.get("status") == "succeeded":
+        _trace_stage("REQUEST_ARCHIVE_RETURNED", name, operation_id, "")
+    else:
+        _trace_stage("FAILURE_ARCHIVE_RETURNED", name, operation_id, "")
+    if envelope.get("status") == "succeeded":
+        _trace_stage("PROCESS_SUCCESS", name, operation_id, "")
         _write_worker_diagnostic("PROCESS", "SUCCESS", None, name, "result written")
     else:
         _write_worker_diagnostic("PROCESS", "FAILED", envelope.get("error", {}).get("message", "processing failed"), name, "result written")
@@ -2469,6 +2566,7 @@ def _write_failure_result_for_selected(name, error):
 
 
 def run(*args):
+    global _TRACE_REQUEST_NAME, _TRACE_OPERATION_ID
     _write_worker_diagnostic("DIRECT_ENTRY", "STARTED", None, None, None)
     for directory in (
         INBOX,
@@ -2494,6 +2592,16 @@ def run(*args):
 
     name = names[0]
 
+    trace_path = os.path.join(DIAGNOSTICS, "geometry-object-worker-stage-trace.txt")
+    previous_trace_path = os.path.join(DIAGNOSTICS, "geometry-object-worker-stage-trace.previous.txt")
+    if os.path.exists(previous_trace_path):
+        os.remove(previous_trace_path)
+    if os.path.exists(trace_path):
+        os.rename(trace_path, previous_trace_path)
+    _TRACE_REQUEST_NAME = name
+    _TRACE_OPERATION_ID = ""
+    _trace_stage("REQUEST_SELECTED", name, "", "")
+
     os.rename(
         os.path.join(INBOX, name),
         os.path.join(PROCESSING, name)
@@ -2502,6 +2610,8 @@ def run(*args):
 
     try:
         _process(name)
+        _TRACE_REQUEST_NAME = ""
+        _TRACE_OPERATION_ID = ""
         return "processed " + name
     except SystemExit, error:
         _write_failure_result_for_selected(name, error)
@@ -2510,6 +2620,8 @@ def run(*args):
         source = os.path.join(PROCESSING, name)
         if os.path.exists(source) and not os.path.exists(archive_path):
             os.rename(source, archive_path)
+        _TRACE_REQUEST_NAME = ""
+        _TRACE_OPERATION_ID = ""
         return "worker failure: " + _text(error)
     except Exception, error:
         _write_failure_result_for_selected(name, error)
@@ -2518,6 +2630,8 @@ def run(*args):
         source = os.path.join(PROCESSING, name)
         if os.path.exists(source) and not os.path.exists(archive_path):
             os.rename(source, archive_path)
+        _TRACE_REQUEST_NAME = ""
+        _TRACE_OPERATION_ID = ""
         return (
             "worker failure: " +
             _text(error) +

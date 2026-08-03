@@ -48,6 +48,13 @@ if ($worker -notmatch 'def _valid_addin_root\(' -or
     $worker -notmatch 'def _write_failure_result_for_selected\(') {
     throw "Staging root and selected-request failure contract is incomplete."
 }
+$markers = @('REQUEST_SELECTED','TEXT_CAPTURE_START','TEXT_CAPTURE_RETURNED','TEXT_PROPERTIES_GET_START','TEXT_PROPERTIES_GET_RETURNED','ELEMENT_EXTENT_GET_START','ELEMENT_EXTENT_GET_RETURNED','DETECTOR_START','DETECTOR_RETURNED','PLAN_READ_START','PLAN_READ_RETURNED','TARGET_RESOLVE_START','TARGET_RESOLVE_RETURNED','LABEL_INDEX_START','LABEL_INDEX_RETURNED','PREFLIGHT_EVALUATE_START','PREFLIGHT_EVALUATE_RETURNED','PLAN_BINDING_START','PLAN_BINDING_RETURNED','RESULT_WRITE_START','RESULT_WRITE_RETURNED','REQUEST_ARCHIVE_START','REQUEST_ARCHIVE_RETURNED','PROCESS_SUCCESS','PROCESS_EXCEPTION','FAILURE_RESULT_WRITE_START','FAILURE_RESULT_WRITE_RETURNED','FAILURE_ARCHIVE_START','FAILURE_ARCHIVE_RETURNED')
+foreach ($marker in $markers) {
+    if ($worker -notmatch ('"' + $marker + '"')) { throw "Missing stage marker: $marker" }
+}
+if ($worker -notmatch 'stage-trace\.txt.*"ab"' -and $worker -notmatch 'stage-trace\.txt", "ab"') { throw "Stage trace is not append-only." }
+if ($worker -match 'SAVEWORK') { throw "SAVEWORK is forbidden." }
+if ($worker -notmatch 'SetBoundaryInfinite\(\)') { throw "Capture boundary policy changed." }
 $moduleBeforeRoot = $worker.IndexOf('import kcs_draft', [System.StringComparison]::Ordinal)
 $bootstrapBeforeKcs = $worker.IndexOf('_bootstrap_status("MODULE_STARTED"', [System.StringComparison]::Ordinal)
 if ($bootstrapBeforeKcs -lt 0 -or $bootstrapBeforeKcs -gt $moduleBeforeRoot) {
