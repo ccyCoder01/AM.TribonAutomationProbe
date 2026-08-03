@@ -64,6 +64,21 @@ public sealed class VitessePlanBindingContractTests
     }
 
     [Fact]
+    public void WorkerIsSingleFileAtRuntimeAndContainsDiagnostics()
+    {
+        var root = FindRepositoryRoot();
+        var worker = File.ReadAllText(Path.Combine(root, "vitesse", "AddIns", "AMGeometryObjectAutomation", "Start.py"));
+        Assert.DoesNotContain("geometry_label_plan_binding.py", worker, StringComparison.Ordinal);
+        Assert.DoesNotContain("imp.load_source(\"am_geometry_label_plan_binding", worker, StringComparison.Ordinal);
+        Assert.Contains("BEGIN INLINE GEOMETRY LABEL PLAN BINDING", worker, StringComparison.Ordinal);
+        Assert.Contains("F2B14D4200E1AC239FBF1CFD28D2F994", worker, StringComparison.Ordinal);
+        Assert.Contains("_resolve_addin_root", worker, StringComparison.Ordinal);
+        Assert.Contains("_write_worker_diagnostic(\"DIRECT_ENTRY\", \"STARTED\"", worker, StringComparison.Ordinal);
+        Assert.Contains("_write_worker_diagnostic(\"DIRECT_ENTRY\", \"NO_REQUEST\"", worker, StringComparison.Ordinal);
+        Assert.Contains("_write_worker_diagnostic(\"DIRECT_ENTRY\", \"FAILED\"", worker, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void PythonBindingModuleContainsCrossRuntimeVector()
     {
         var root = FindRepositoryRoot();
