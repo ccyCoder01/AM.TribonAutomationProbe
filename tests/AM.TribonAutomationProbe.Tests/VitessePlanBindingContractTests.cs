@@ -164,6 +164,28 @@ public sealed class VitessePlanBindingContractTests
             StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void StartPyUsesBomFreeAsciiCrLfOnly()
+    {
+        var root = FindRepositoryRoot();
+        var path = Path.Combine(root, "vitesse", "AddIns", "AMGeometryObjectAutomation", "Start.py");
+        var bytes = File.ReadAllBytes(path);
+        Assert.False(bytes.Length >= 3 && bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF);
+        Assert.DoesNotContain((byte)0, bytes);
+        for (var index = 0; index < bytes.Length; index++)
+        {
+            Assert.True(bytes[index] < 0x80, $"Non-ASCII byte at {index}.");
+            if (bytes[index] == 0x0A)
+            {
+                Assert.True(index > 0 && bytes[index - 1] == 0x0D, $"Lone LF at {index}.");
+            }
+            if (bytes[index] == 0x0D)
+            {
+                Assert.True(index + 1 < bytes.Length && bytes[index + 1] == 0x0A, $"Lone CR at {index}.");
+            }
+        }
+    }
+
     private static string FindRepositoryRoot()
     {
         var current = new DirectoryInfo(

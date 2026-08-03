@@ -8,6 +8,29 @@ Set-StrictMode -Version Latest
 $Root = (Resolve-Path -LiteralPath $Root).Path
 
 $workerPath = Join-Path $Root "vitesse\AddIns\AMGeometryObjectAutomation\Start.py"
+$workerBytes = [System.IO.File]::ReadAllBytes($workerPath)
+$crlfCount = 0
+$lfCount = 0
+$loneCrCount = 0
+$nul = $false
+$ascii = $true
+for ($index = 0; $index -lt $workerBytes.Length; $index++) {
+    if ($workerBytes[$index] -eq 0) { $nul = $true }
+    if ($workerBytes[$index] -ge 128) { $ascii = $false }
+    if ($workerBytes[$index] -eq 10) {
+        $lfCount++
+        if ($index -gt 0 -and $workerBytes[$index - 1] -eq 13) { $crlfCount++ }
+    }
+    if ($workerBytes[$index] -eq 13 -and ($index + 1 -ge $workerBytes.Length -or $workerBytes[$index + 1] -ne 10)) { $loneCrCount++ }
+}
+$loneLfCount = $lfCount - $crlfCount
+$bom = $workerBytes.Length -ge 3 -and $workerBytes[0] -eq 239 -and $workerBytes[1] -eq 187 -and $workerBytes[2] -eq 191
+Write-Host "START_PY_CRLF_COUNT=$crlfCount"
+Write-Host "START_PY_LONE_LF_COUNT=$loneLfCount"
+Write-Host "START_PY_LONE_CR_COUNT=$loneCrCount"
+Write-Host "START_PY_BOM=$bom"
+Write-Host "START_PY_NUL=$nul"
+if ($loneLfCount -ne 0 -or $loneCrCount -ne 0 -or $bom -or $nul -or -not $ascii) { throw "Start.py encoding or line ending contract failed." }
 $worker = [System.IO.File]::ReadAllText($workerPath)
 foreach ($forbidden in @(
         'import json',
