@@ -40,6 +40,14 @@ if ($worker -notmatch 'def _string_array_field\(' -or
     $worker -notmatch 'F2B14D4200E1AC239FBF1CFD28D2F99439E631EC2D6FA129ECB6A92A841B75F2') {
     throw "Inline parser/hash fallback contract is incomplete."
 }
+if ($worker -notmatch 'def _valid_addin_root\(' -or
+    $worker -notmatch 'ADDIN_ROOT, ADDIN_ROOT_SOURCE = _resolve_addin_root\(\)' -or
+    $worker -notmatch 'candidates\.append\(\(cwd, "CWD"\)\)' -or
+    $worker -notmatch 'candidates\.append\(\(file_root, "FILE"\)\)' -or
+    $worker -notmatch 'except SystemExit, error' -or
+    $worker -notmatch 'def _write_failure_result_for_selected\(') {
+    throw "Staging root and selected-request failure contract is incomplete."
+}
 $moduleBeforeRoot = $worker.IndexOf('import kcs_draft', [System.StringComparison]::Ordinal)
 $bootstrapBeforeKcs = $worker.IndexOf('_bootstrap_status("MODULE_STARTED"', [System.StringComparison]::Ordinal)
 if ($bootstrapBeforeKcs -lt 0 -or $bootstrapBeforeKcs -gt $moduleBeforeRoot) {

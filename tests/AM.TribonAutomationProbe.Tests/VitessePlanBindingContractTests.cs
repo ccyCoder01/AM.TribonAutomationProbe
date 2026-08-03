@@ -76,6 +76,11 @@ public sealed class VitessePlanBindingContractTests
         Assert.Contains("_write_worker_diagnostic(\"DIRECT_ENTRY\", \"STARTED\"", worker, StringComparison.Ordinal);
         Assert.Contains("_write_worker_diagnostic(\"DIRECT_ENTRY\", \"NO_REQUEST\"", worker, StringComparison.Ordinal);
         Assert.Contains("_write_worker_diagnostic(\"DIRECT_ENTRY\", \"FAILED\"", worker, StringComparison.Ordinal);
+        Assert.Contains("ADDIN_ROOT_SOURCE", worker, StringComparison.Ordinal);
+        Assert.Contains("_valid_addin_root", worker, StringComparison.Ordinal);
+        Assert.Contains("ADDIN_ROOT, ADDIN_ROOT_SOURCE = _resolve_addin_root()", worker, StringComparison.Ordinal);
+        Assert.Contains("except SystemExit, error", worker, StringComparison.Ordinal);
+        Assert.Contains("_write_failure_result_for_selected", worker, StringComparison.Ordinal);
         Assert.DoesNotContain("import json", worker, StringComparison.Ordinal);
         Assert.DoesNotContain("json.loads", worker, StringComparison.Ordinal);
         Assert.DoesNotContain("bytes", worker, StringComparison.Ordinal);
@@ -86,6 +91,19 @@ public sealed class VitessePlanBindingContractTests
         Assert.Contains("SHA256_ABC_EXPECTED", worker, StringComparison.Ordinal);
         Assert.True(worker.IndexOf("STATUS=MODULE_STARTED", StringComparison.Ordinal) < worker.IndexOf("import kcs_draft", StringComparison.Ordinal));
         Assert.True(worker.IndexOf("PLAN_BINDING = _InlinePlanBinding()", StringComparison.Ordinal) < worker.IndexOf("def _resolve_addin_root", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void WorkerPrefersCwdDeploymentBeforeFileStagingFallback()
+    {
+        var root = FindRepositoryRoot();
+        var worker = File.ReadAllText(Path.Combine(root, "vitesse", "AddIns", "AMGeometryObjectAutomation", "Start.py"));
+        var cwd = worker.IndexOf("candidates.append((cwd, \"CWD\"))", StringComparison.Ordinal);
+        var file = worker.IndexOf("candidates.append((file_root, \"FILE\"))", StringComparison.Ordinal);
+        Assert.True(cwd >= 0);
+        Assert.True(file > cwd);
+        Assert.Contains("return candidate, source", worker, StringComparison.Ordinal);
+        Assert.Contains("if _valid_addin_root(candidate):", worker, StringComparison.Ordinal);
     }
 
     [Fact]

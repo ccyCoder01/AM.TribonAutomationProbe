@@ -20,6 +20,9 @@ def _bootstrap_status(status, detail):
             lines.append("NAME=%s" % globals().get("__name__", ""))
             lines.append("FILE=%s" % globals().get("__file__", ""))
             lines.append("CWD=%s" % os.getcwd())
+            lines.append("ADDIN_ROOT_SOURCE=%s" % globals().get("ADDIN_ROOT_SOURCE", ""))
+            lines.append("ADDIN_ROOT=%s" % globals().get("ADDIN_ROOT", ""))
+            lines.append("RUNTIME_ROOT=%s" % globals().get("RUNTIME_ROOT", ""))
             lines.append("TIME=%s" % time.time())
             if detail:
                 lines.append("DETAIL=%s" % detail)
@@ -643,36 +646,44 @@ _bootstrap_status("PLAN_BINDING_DEFINED", "")
 
 def _resolve_addin_root():
     candidates = []
-    try:
-        candidates.append(os.path.dirname(os.path.abspath(__file__)))
-    except:
-        pass
     cwd = os.getcwd()
-    candidates.append(cwd)
-    candidates.append(os.path.join(cwd, "AddIns", "AMGeometryObjectAutomation"))
+    candidates.append((cwd, "CWD"))
+    candidates.append((os.path.join(cwd, "AddIns", "AMGeometryObjectAutomation"), "CWD_ADDINS"))
     current = cwd
     depth = 0
     while depth < 6:
-        candidates.append(os.path.join(current, "AddIns", "AMGeometryObjectAutomation"))
+        candidates.append((os.path.join(current, "AddIns", "AMGeometryObjectAutomation"), "CWD_ANCESTOR"))
         parent = os.path.dirname(current)
         if parent == current:
             break
         current = parent
         depth = depth + 1
+    try:
+        file_root = os.path.dirname(os.path.abspath(__file__))
+        candidates.append((file_root, "FILE"))
+        candidates.append((os.path.join(file_root, "AddIns", "AMGeometryObjectAutomation"), "FILE_ANCESTOR"))
+    except:
+        pass
     checked = []
-    for candidate in candidates:
+    for candidate, source in candidates:
         candidate = os.path.abspath(candidate)
         if candidate in checked:
             continue
         checked.append(candidate)
-        runtime = os.path.join(candidate, "runtime")
-        if (os.path.isfile(os.path.join(runtime, "detect_pipe_flange_candidates.py")) and
-                os.path.isfile(os.path.join(runtime, "expand_detected_objects_by_connectivity.py"))):
-            return candidate
+        if _valid_addin_root(candidate):
+            return candidate, source
     raise Exception("addin root not found cwd=%s file=%s checked=%s" % (_text(cwd), _text(globals().get("__file__", "")), _text(checked)))
 
+
+def _valid_addin_root(candidate):
+    runtime = os.path.join(candidate, "runtime")
+    return (
+        os.path.isfile(os.path.join(runtime, "detect_pipe_flange_candidates.py")) and
+        os.path.isfile(os.path.join(runtime, "expand_detected_objects_by_connectivity.py"))
+    )
+
 try:
-    ADDIN_ROOT = _resolve_addin_root()
+    ADDIN_ROOT, ADDIN_ROOT_SOURCE = _resolve_addin_root()
 except Exception, error:
     _bootstrap_status("FAILED", error)
     raise
@@ -2269,6 +2280,7 @@ def _write_worker_diagnostic(stage, status, message, request_name, details):
             "TIME=" + _now(),
             "CWD=" + _text(os.getcwd()),
             "FILE=" + _text(globals().get("__file__", "")),
+            "ADDIN_ROOT_SOURCE=" + _text(globals().get("ADDIN_ROOT_SOURCE", "")),
             "ADDIN_ROOT=" + _text(globals().get("ADDIN_ROOT", "")),
             "RUNTIME_ROOT=" + _text(globals().get("RUNTIME_ROOT", ""))
         ]
@@ -2372,7 +2384,7 @@ def _process(name):
                 result,
                 None
             )
-    except Exception, error:
+    except (SystemExit, Exception), error:
         envelope = _result_envelope(
             command_id,
             correlation_id,
@@ -2422,6 +2434,40 @@ def _process(name):
         _write_worker_diagnostic("PROCESS", "FAILED", envelope.get("error", {}).get("message", "processing failed"), name, "result written")
 
 
+def _write_failure_result_for_selected(name, error):
+    source = os.path.join(PROCESSING, name)
+    command_id = "failed-" + name
+    correlation_id = ""
+    message_id = ""
+    if os.path.exists(source):
+        handle = open(source, "rb")
+        try:
+            request_text = handle.read()
+        finally:
+            handle.close()
+        command_id = _field(request_text, "commandId", command_id)
+        correlation_id = _field(request_text, "correlationId", "")
+        message_id = _field(request_text, "messageId", "")
+    envelope = _result_envelope(
+        command_id,
+        correlation_id,
+        message_id,
+        "failed",
+        None,
+        {
+            "code": "geometry_execution_failed",
+            "category": "execution",
+            "message": _text(error),
+            "retryable": False,
+            "details": {"traceback": traceback.format_exc()}
+        }
+    )
+    _atomic(os.path.join(OUTPUT, command_id + ".result.json"), _json(envelope))
+    archive_path = os.path.join(ARCHIVE, name)
+    if os.path.exists(source) and not os.path.exists(archive_path):
+        os.rename(source, archive_path)
+
+
 def run(*args):
     _write_worker_diagnostic("DIRECT_ENTRY", "STARTED", None, None, None)
     for directory in (
@@ -2457,8 +2503,21 @@ def run(*args):
     try:
         _process(name)
         return "processed " + name
-    except Exception, error:
+    except SystemExit, error:
+        _write_failure_result_for_selected(name, error)
         _write_worker_diagnostic("DIRECT_ENTRY", "FAILED", error, name, traceback.format_exc())
+        archive_path = os.path.join(ARCHIVE, name)
+        source = os.path.join(PROCESSING, name)
+        if os.path.exists(source) and not os.path.exists(archive_path):
+            os.rename(source, archive_path)
+        return "worker failure: " + _text(error)
+    except Exception, error:
+        _write_failure_result_for_selected(name, error)
+        _write_worker_diagnostic("DIRECT_ENTRY", "FAILED", error, name, traceback.format_exc())
+        archive_path = os.path.join(ARCHIVE, name)
+        source = os.path.join(PROCESSING, name)
+        if os.path.exists(source) and not os.path.exists(archive_path):
+            os.rename(source, archive_path)
         return (
             "worker failure: " +
             _text(error) +
