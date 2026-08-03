@@ -1,0 +1,163 @@
+{
+    "schemaVersion":  "1.0",
+    "sourceSnapshot":  "C:\\AM_TribonBridge\\diagnostics\\geometry-object-snapshot.json",
+    "identityType":  "deterministic_display_id",
+    "policy":  {
+                   "categoryOrder":  [
+                                         "LIFTING_BEAM",
+                                         "LIFTING_LUG",
+                                         "PIPE_FLANGE_FRONT",
+                                         "PIPE_FLANGE_SIDE",
+                                         "STRUCTURAL_FLANGE"
+                                     ],
+                   "withinCategoryOrder":  [
+                                               "centerX ascending",
+                                               "centerY descending",
+                                               "width ascending",
+                                               "height ascending",
+                                               "sourceObjectId ascending"
+                                           ],
+                   "persistentAcrossGeometryChanges":  false
+               },
+    "objectCount":  12,
+    "items":  [
+                  {
+                      "sourceObjectId":  "LIFTING_BEAM-01",
+                      "stableObjectId":  "LB-01",
+                      "category":  "LIFTING_BEAM",
+                      "categoryIndex":  1,
+                      "centerX":  110,
+                      "centerY":  226,
+                      "width":  150,
+                      "height":  34,
+                      "geometryCount":  12
+                  },
+                  {
+                      "sourceObjectId":  "LIFTING_BEAM-02",
+                      "stableObjectId":  "LB-02",
+                      "category":  "LIFTING_BEAM",
+                      "categoryIndex":  2,
+                      "centerX":  110,
+                      "centerY":  189.25,
+                      "width":  116,
+                      "height":  40.5,
+                      "geometryCount":  11
+                  },
+                  {
+                      "sourceObjectId":  "LIFTING_LUG-01",
+                      "stableObjectId":  "LL-01",
+                      "category":  "LIFTING_LUG",
+                      "categoryIndex":  1,
+                      "centerX":  252,
+                      "centerY":  217,
+                      "width":  22,
+                      "height":  38,
+                      "geometryCount":  5
+                  },
+                  {
+                      "sourceObjectId":  "LIFTING_LUG-02",
+                      "stableObjectId":  "LL-02",
+                      "category":  "LIFTING_LUG",
+                      "categoryIndex":  2,
+                      "centerX":  307,
+                      "centerY":  214,
+                      "width":  36,
+                      "height":  44,
+                      "geometryCount":  9
+                  },
+                  {
+                      "sourceObjectId":  "LIFTING_LUG-03",
+                      "stableObjectId":  "LL-03",
+                      "category":  "LIFTING_LUG",
+                      "categoryIndex":  3,
+                      "centerX":  365,
+                      "centerY":  217,
+                      "width":  18,
+                      "height":  34,
+                      "geometryCount":  5
+                  },
+                  {
+                      "sourceObjectId":  "PIPE_FLANGE_FRONT-01",
+                      "stableObjectId":  "PF-01",
+                      "category":  "PIPE_FLANGE_FRONT",
+                      "categoryIndex":  1,
+                      "centerX":  55,
+                      "centerY":  88,
+                      "width":  50,
+                      "height":  50,
+                      "geometryCount":  13
+                  },
+                  {
+                      "sourceObjectId":  "PIPE_FLANGE_FRONT-02",
+                      "stableObjectId":  "PF-02",
+                      "category":  "PIPE_FLANGE_FRONT",
+                      "categoryIndex":  2,
+                      "centerX":  115,
+                      "centerY":  88,
+                      "width":  42,
+                      "height":  42,
+                      "geometryCount":  11
+                  },
+                  {
+                      "sourceObjectId":  "PIPE_FLANGE_FRONT-03",
+                      "stableObjectId":  "PF-03",
+                      "category":  "PIPE_FLANGE_FRONT",
+                      "categoryIndex":  3,
+                      "centerX":  170,
+                      "centerY":  88,
+                      "width":  34,
+                      "height":  34,
+                      "geometryCount":  9
+                  },
+                  {
+                      "sourceObjectId":  "PIPE_FLANGE_SIDE-01",
+                      "stableObjectId":  "PF-SIDE-01",
+                      "category":  "PIPE_FLANGE_SIDE",
+                      "categoryIndex":  1,
+                      "centerX":  56,
+                      "centerY":  45,
+                      "width":  72,
+                      "height":  14,
+                      "geometryCount":  10
+                  },
+                  {
+                      "sourceObjectId":  "STRUCTURAL_FLANGE-01",
+                      "stableObjectId":  "SF-01",
+                      "category":  "STRUCTURAL_FLANGE",
+                      "categoryIndex":  1,
+                      "centerX":  268,
+                      "centerY":  88,
+                      "width":  58,
+                      "height":  68,
+                      "geometryCount":  12
+                  },
+                  {
+                      "sourceObjectId":  "STRUCTURAL_FLANGE-02",
+                      "stableObjectId":  "SF-02",
+                      "category":  "STRUCTURAL_FLANGE",
+                      "categoryIndex":  2,
+                      "centerX":  342,
+                      "centerY":  90,
+                      "width":  56,
+                      "height":  64,
+                      "geometryCount":  8
+                  },
+                  {
+                      "sourceObjectId":  "STRUCTURAL_FLANGE-03",
+                      "stableObjectId":  "SF-03",
+                      "category":  "STRUCTURAL_FLANGE",
+                      "categoryIndex":  3,
+                      "centerX":  381,
+                      "centerY":  83.5,
+                      "width":  18,
+                      "height":  57,
+                      "geometryCount":  8
+                  }
+              ],
+    "diagnostics":  {
+                        "unknownCategoryCount":  0,
+                        "duplicateSourceObjectIdCount":  0,
+                        "duplicateStableObjectIdCount":  0,
+                        "status":  "SUCCESS"
+                    }
+}

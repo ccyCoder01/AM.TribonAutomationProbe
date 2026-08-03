@@ -1,0 +1,132 @@
+{
+    "schemaVersion":  "1.0",
+    "requestId":  "formal-labels-after",
+    "status":  "succeeded",
+    "labels":  [
+                   {
+                       "runtimeHandle":  "handle: 65585",
+                       "text":  "LB-01",
+                       "extent":  {
+                                      "X1":  35,
+                                      "Y1":  243,
+                                      "X2":  50.2000007629,
+                                      "Y2":  246.199996948
+                                  }
+                   },
+                   {
+                       "runtimeHandle":  "handle: 65595",
+                       "text":  "LB-02",
+                       "extent":  {
+                                      "X1":  102.400001526,
+                                      "Y1":  158.800003052,
+                                      "X2":  117.599998474,
+                                      "Y2":  162
+                                  }
+                   },
+                   {
+                       "runtimeHandle":  "handle: 65605",
+                       "text":  "LL-01",
+                       "extent":  {
+                                      "X1":  236,
+                                      "Y1":  191,
+                                      "X2":  250.25,
+                                      "Y2":  194
+                                  }
+                   },
+                   {
+                       "runtimeHandle":  "handle: 65615",
+                       "text":  "LL-02",
+                       "extent":  {
+                                      "X1":  289,
+                                      "Y1":  185,
+                                      "X2":  303.25,
+                                      "Y2":  188
+                                  }
+                   },
+                   {
+                       "runtimeHandle":  "handle: 65621",
+                       "text":  "LL-03",
+                       "extent":  {
+                                      "X1":  351,
+                                      "Y1":  193,
+                                      "X2":  365.25,
+                                      "Y2":  196
+                                  }
+                   },
+                   {
+                       "runtimeHandle":  "handle: 65635",
+                       "text":  "PF-01",
+                       "extent":  {
+                                      "X1":  33,
+                                      "Y1":  59,
+                                      "X2":  47.25,
+                                      "Y2":  62
+                                  }
+                   },
+                   {
+                       "runtimeHandle":  "handle: 65647",
+                       "text":  "PF-02",
+                       "extent":  {
+                                      "X1":  97,
+                                      "Y1":  63,
+                                      "X2":  111.25,
+                                      "Y2":  66
+                                  }
+                   },
+                   {
+                       "runtimeHandle":  "handle: 65657",
+                       "text":  "PF-03",
+                       "extent":  {
+                                      "X1":  156,
+                                      "Y1":  67,
+                                      "X2":  170.25,
+                                      "Y2":  70
+                                  }
+                   },
+                   {
+                       "runtimeHandle":  "handle: 65668",
+                       "text":  "PF-SIDE-01",
+                       "extent":  {
+                                      "X1":  38,
+                                      "Y1":  33,
+                                      "X2":  65.3000030518,
+                                      "Y2":  35.7999992371
+                                  }
+                   },
+                   {
+                       "runtimeHandle":  "handle: 65681",
+                       "text":  "SF-01",
+                       "extent":  {
+                                      "X1":  239,
+                                      "Y1":  47,
+                                      "X2":  253.25,
+                                      "Y2":  50
+                                  }
+                   },
+                   {
+                       "runtimeHandle":  "handle: 65690",
+                       "text":  "SF-02",
+                       "extent":  {
+                                      "X1":  314,
+                                      "Y1":  51,
+                                      "X2":  328.25,
+                                      "Y2":  54
+                                  }
+                   },
+                   {
+                       "runtimeHandle":  "handle: 65699",
+                       "text":  "SF-03",
+                       "extent":  {
+                                      "X1":  365,
+                                      "Y1":  43,
+                                      "X2":  379.25,
+                                      "Y2":  46
+                                  }
+                   }
+               ],
+    "diagnostics":  {
+                        "duplicateTextCount":  0,
+                        "extentReadFailureCount":  0,
+                        "textPropertyFailureCount":  0
+                    }
+}

@@ -1,0 +1,26 @@
+FORMAT	AM_GEOMETRY_OBJECT_EXPANSION_V1
+CAPTURED_CONTOUR_COUNT	135
+OBJECT_COUNT	12
+UNIQUE_SEED_HANDLE_COUNT	92
+OBJECT_KEY	CATEGORY	CANDIDATE_INDEX	SEED_COUNT	EXPANDED_COUNT	X1	Y1	X2	Y2	MISSING_SEED_COUNT	MISSING_SEED_HANDLES	SEED_HANDLES	EXPANDED_HANDLES
+LIFTING_BEAM-01	LIFTING_BEAM	1	6	12	35.0	209.0	185.0	243.0	0		handle: 106,handle: 108,handle: 110,handle: 111,handle: 112,handle: 113	handle: 102,handle: 103,handle: 104,handle: 105,handle: 106,handle: 107,handle: 108,handle: 109,handle: 110,handle: 111,handle: 112,handle: 113
+LIFTING_BEAM-02	LIFTING_BEAM	2	6	11	52.0	169.0	168.0	209.5	0		handle: 100,handle: 101,handle: 94,handle: 96,handle: 98,handle: 99	handle: 100,handle: 101,handle: 91,handle: 92,handle: 93,handle: 94,handle: 95,handle: 96,handle: 97,handle: 98,handle: 99
+LIFTING_LUG-01	LIFTING_LUG	1	5	5	241.0	198.0	263.0	236.0	0		handle: 86,handle: 87,handle: 88,handle: 89,handle: 90	handle: 86,handle: 87,handle: 88,handle: 89,handle: 90
+LIFTING_LUG-02	LIFTING_LUG	2	5	9	289.0	192.0	325.0	236.0	0		handle: 81,handle: 82,handle: 83,handle: 84,handle: 85	handle: 77,handle: 78,handle: 79,handle: 80,handle: 81,handle: 82,handle: 83,handle: 84,handle: 85
+LIFTING_LUG-03	LIFTING_LUG	3	5	5	356.0	200.0	374.0	234.0	0		handle: 72,handle: 73,handle: 74,handle: 75,handle: 76	handle: 72,handle: 73,handle: 74,handle: 75,handle: 76
+PIPE_FLANGE_FRONT-01	PIPE_FLANGE_FRONT	1	11	13	30.0	63.0	80.0	113.0	0		handle: 61,handle: 62,handle: 63,handle: 64,handle: 65,handle: 66,handle: 67,handle: 68,handle: 69,handle: 70,handle: 71	handle: 59,handle: 60,handle: 61,handle: 62,handle: 63,handle: 64,handle: 65,handle: 66,handle: 67,handle: 68,handle: 69,handle: 70,handle: 71
+PIPE_FLANGE_FRONT-02	PIPE_FLANGE_FRONT	2	9	11	94.0	67.0	136.0	109.0	0		handle: 50,handle: 51,handle: 52,handle: 53,handle: 54,handle: 55,handle: 56,handle: 57,handle: 58	handle: 48,handle: 49,handle: 50,handle: 51,handle: 52,handle: 53,handle: 54,handle: 55,handle: 56,handle: 57,handle: 58
+PIPE_FLANGE_FRONT-03	PIPE_FLANGE_FRONT	3	7	9	153.0	71.0	187.0	105.0	0		handle: 41,handle: 42,handle: 43,handle: 44,handle: 45,handle: 46,handle: 47	handle: 39,handle: 40,handle: 41,handle: 42,handle: 43,handle: 44,handle: 45,handle: 46,handle: 47
+PIPE_FLANGE_SIDE-01	PIPE_FLANGE_SIDE	1	10	10	20.0	38.0	92.0	52.0	0		handle: 29,handle: 30,handle: 31,handle: 32,handle: 33,handle: 34,handle: 35,handle: 36,handle: 37,handle: 38	handle: 29,handle: 30,handle: 31,handle: 32,handle: 33,handle: 34,handle: 35,handle: 36,handle: 37,handle: 38
+STRUCTURAL_FLANGE-01	STRUCTURAL_FLANGE	1	12	12	239.0	54.0	297.0	122.0	0		handle: 17,handle: 18,handle: 19,handle: 20,handle: 21,handle: 22,handle: 23,handle: 24,handle: 25,handle: 26,handle: 27,handle: 28	handle: 17,handle: 18,handle: 19,handle: 20,handle: 21,handle: 22,handle: 23,handle: 24,handle: 25,handle: 26,handle: 27,handle: 28
+STRUCTURAL_FLANGE-02	STRUCTURAL_FLANGE	2	8	8	314.0	58.0	370.0	122.0	0		handle: 10,handle: 11,handle: 12,handle: 13,handle: 14,handle: 15,handle: 16,handle: 9	handle: 10,handle: 11,handle: 12,handle: 13,handle: 14,handle: 15,handle: 16,handle: 9
+STRUCTURAL_FLANGE-03	STRUCTURAL_FLANGE	3	8	8	372.0	55.0	390.0	112.0	0		handle: 150,handle: 151,handle: 152,handle: 153,handle: 154,handle: 6,handle: 7,handle: 8	handle: 150,handle: 151,handle: 152,handle: 153,handle: 154,handle: 6,handle: 7,handle: 8
+
+SUMMARY
+ASSIGNED_UNIQUE_CONTOUR_COUNT	113
+UNASSIGNED_CONTOUR_COUNT	22
+CONFLICT_HANDLE_COUNT	0
+MISSING_SEED_HANDLE_COUNT	0
+SOURCE_ERROR_COUNT	0
+EXTENT_FAILURE_COUNT	0
+STATUS	SUCCESS

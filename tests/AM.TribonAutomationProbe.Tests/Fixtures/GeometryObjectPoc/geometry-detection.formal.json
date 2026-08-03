@@ -1,0 +1,454 @@
+{
+    "schemaVersion":  "1.0",
+    "requestId":  "formal-fixture",
+    "status":  "succeeded",
+    "scope":  "current_drawing_contours",
+    "drawingExtent":  {
+                          "X1":  10,
+                          "Y1":  10,
+                          "X2":  410,
+                          "Y2":  287
+                      },
+    "objects":  [
+                    {
+                        "runtimeObjectId":  "LIFTING_BEAM-01",
+                        "category":  "LIFTING_BEAM",
+                        "confidence":  "high",
+                        "extent":  {
+                                       "X1":  35.0,
+                                       "Y1":  209.0,
+                                       "X2":  185.0,
+                                       "Y2":  243.0
+                                   },
+                        "seedHandles":  [
+                                            "handle: 65573",
+                                            "handle: 65574",
+                                            "handle: 65575",
+                                            "handle: 65576",
+                                            "handle: 65577",
+                                            "handle: 65578"
+                                        ],
+                        "geometryHandles":  [
+                                                "handle: 65573",
+                                                "handle: 65574",
+                                                "handle: 65575",
+                                                "handle: 65576",
+                                                "handle: 65577",
+                                                "handle: 65578",
+                                                "handle: 65579",
+                                                "handle: 65580",
+                                                "handle: 65581",
+                                                "handle: 65582",
+                                                "handle: 65583",
+                                                "handle: 65584"
+                                            ],
+                        "geometryCount":  12,
+                        "features":  {
+                                         "geometryCount":  12
+                                     }
+                    },
+                    {
+                        "runtimeObjectId":  "LIFTING_BEAM-02",
+                        "category":  "LIFTING_BEAM",
+                        "confidence":  "high",
+                        "extent":  {
+                                       "X1":  52.0,
+                                       "Y1":  169.0,
+                                       "X2":  168.0,
+                                       "Y2":  209.5
+                                   },
+                        "seedHandles":  [
+                                            "handle: 65587",
+                                            "handle: 65588",
+                                            "handle: 65589",
+                                            "handle: 65590",
+                                            "handle: 65591",
+                                            "handle: 65592"
+                                        ],
+                        "geometryHandles":  [
+                                                "handle: 65587",
+                                                "handle: 65588",
+                                                "handle: 65589",
+                                                "handle: 65590",
+                                                "handle: 65591",
+                                                "handle: 65592",
+                                                "handle: 65593",
+                                                "handle: 65594",
+                                                "handle: 65597",
+                                                "handle: 65598",
+                                                "handle: 65599"
+                                            ],
+                        "geometryCount":  11,
+                        "features":  {
+                                         "geometryCount":  11
+                                     }
+                    },
+                    {
+                        "runtimeObjectId":  "LIFTING_LUG-01",
+                        "category":  "LIFTING_LUG",
+                        "confidence":  "high",
+                        "extent":  {
+                                       "X1":  241.0,
+                                       "Y1":  198.0,
+                                       "X2":  263.0,
+                                       "Y2":  236.0
+                                   },
+                        "seedHandles":  [
+                                            "handle: 65600",
+                                            "handle: 65601",
+                                            "handle: 65602",
+                                            "handle: 65603",
+                                            "handle: 65604"
+                                        ],
+                        "geometryHandles":  [
+                                                "handle: 65600",
+                                                "handle: 65601",
+                                                "handle: 65602",
+                                                "handle: 65603",
+                                                "handle: 65604"
+                                            ],
+                        "geometryCount":  5,
+                        "features":  {
+                                         "geometryCount":  5
+                                     }
+                    },
+                    {
+                        "runtimeObjectId":  "LIFTING_LUG-02",
+                        "category":  "LIFTING_LUG",
+                        "confidence":  "high",
+                        "extent":  {
+                                       "X1":  289.0,
+                                       "Y1":  192.0,
+                                       "X2":  325.0,
+                                       "Y2":  236.0
+                                   },
+                        "seedHandles":  [
+                                            "handle: 65606",
+                                            "handle: 65607",
+                                            "handle: 65608",
+                                            "handle: 65609",
+                                            "handle: 65610"
+                                        ],
+                        "geometryHandles":  [
+                                                "handle: 65606",
+                                                "handle: 65607",
+                                                "handle: 65608",
+                                                "handle: 65609",
+                                                "handle: 65610",
+                                                "handle: 65611",
+                                                "handle: 65612",
+                                                "handle: 65613",
+                                                "handle: 65614"
+                                            ],
+                        "geometryCount":  9,
+                        "features":  {
+                                         "geometryCount":  9
+                                     }
+                    },
+                    {
+                        "runtimeObjectId":  "LIFTING_LUG-03",
+                        "category":  "LIFTING_LUG",
+                        "confidence":  "high",
+                        "extent":  {
+                                       "X1":  356.0,
+                                       "Y1":  200.0,
+                                       "X2":  374.0,
+                                       "Y2":  234.0
+                                   },
+                        "seedHandles":  [
+                                            "handle: 65616",
+                                            "handle: 65617",
+                                            "handle: 65618",
+                                            "handle: 65619",
+                                            "handle: 65620"
+                                        ],
+                        "geometryHandles":  [
+                                                "handle: 65616",
+                                                "handle: 65617",
+                                                "handle: 65618",
+                                                "handle: 65619",
+                                                "handle: 65620"
+                                            ],
+                        "geometryCount":  5,
+                        "features":  {
+                                         "geometryCount":  5
+                                     }
+                    },
+                    {
+                        "runtimeObjectId":  "PIPE_FLANGE_FRONT-01",
+                        "category":  "PIPE_FLANGE_FRONT",
+                        "confidence":  "high",
+                        "extent":  {
+                                       "X1":  30.0,
+                                       "Y1":  63.0,
+                                       "X2":  80.0,
+                                       "Y2":  113.0
+                                   },
+                        "seedHandles":  [
+                                            "handle: 65622",
+                                            "handle: 65623",
+                                            "handle: 65624",
+                                            "handle: 65625",
+                                            "handle: 65626",
+                                            "handle: 65627",
+                                            "handle: 65628",
+                                            "handle: 65629",
+                                            "handle: 65630",
+                                            "handle: 65631",
+                                            "handle: 65632"
+                                        ],
+                        "geometryHandles":  [
+                                                "handle: 65622",
+                                                "handle: 65623",
+                                                "handle: 65624",
+                                                "handle: 65625",
+                                                "handle: 65626",
+                                                "handle: 65627",
+                                                "handle: 65628",
+                                                "handle: 65629",
+                                                "handle: 65630",
+                                                "handle: 65631",
+                                                "handle: 65632",
+                                                "handle: 65633",
+                                                "handle: 65634"
+                                            ],
+                        "geometryCount":  13,
+                        "features":  {
+                                         "geometryCount":  13
+                                     }
+                    },
+                    {
+                        "runtimeObjectId":  "PIPE_FLANGE_FRONT-02",
+                        "category":  "PIPE_FLANGE_FRONT",
+                        "confidence":  "high",
+                        "extent":  {
+                                       "X1":  94.0,
+                                       "Y1":  67.0,
+                                       "X2":  136.0,
+                                       "Y2":  109.0
+                                   },
+                        "seedHandles":  [
+                                            "handle: 65636",
+                                            "handle: 65637",
+                                            "handle: 65638",
+                                            "handle: 65639",
+                                            "handle: 65640",
+                                            "handle: 65641",
+                                            "handle: 65642",
+                                            "handle: 65643",
+                                            "handle: 65644"
+                                        ],
+                        "geometryHandles":  [
+                                                "handle: 65636",
+                                                "handle: 65637",
+                                                "handle: 65638",
+                                                "handle: 65639",
+                                                "handle: 65640",
+                                                "handle: 65641",
+                                                "handle: 65642",
+                                                "handle: 65643",
+                                                "handle: 65644",
+                                                "handle: 65645",
+                                                "handle: 65646"
+                                            ],
+                        "geometryCount":  11,
+                        "features":  {
+                                         "geometryCount":  11
+                                     }
+                    },
+                    {
+                        "runtimeObjectId":  "PIPE_FLANGE_FRONT-03",
+                        "category":  "PIPE_FLANGE_FRONT",
+                        "confidence":  "high",
+                        "extent":  {
+                                       "X1":  153.0,
+                                       "Y1":  71.0,
+                                       "X2":  187.0,
+                                       "Y2":  105.0
+                                   },
+                        "seedHandles":  [
+                                            "handle: 65648",
+                                            "handle: 65649",
+                                            "handle: 65650",
+                                            "handle: 65651",
+                                            "handle: 65652",
+                                            "handle: 65653",
+                                            "handle: 65654"
+                                        ],
+                        "geometryHandles":  [
+                                                "handle: 65648",
+                                                "handle: 65649",
+                                                "handle: 65650",
+                                                "handle: 65651",
+                                                "handle: 65652",
+                                                "handle: 65653",
+                                                "handle: 65654",
+                                                "handle: 65655",
+                                                "handle: 65656"
+                                            ],
+                        "geometryCount":  9,
+                        "features":  {
+                                         "geometryCount":  9
+                                     }
+                    },
+                    {
+                        "runtimeObjectId":  "PIPE_FLANGE_SIDE-01",
+                        "category":  "PIPE_FLANGE_SIDE",
+                        "confidence":  "high",
+                        "extent":  {
+                                       "X1":  20.0,
+                                       "Y1":  38.0,
+                                       "X2":  92.0,
+                                       "Y2":  52.0
+                                   },
+                        "seedHandles":  [
+                                            "handle: 65658",
+                                            "handle: 65659",
+                                            "handle: 65660",
+                                            "handle: 65661",
+                                            "handle: 65662",
+                                            "handle: 65663",
+                                            "handle: 65664",
+                                            "handle: 65665",
+                                            "handle: 65666",
+                                            "handle: 65667"
+                                        ],
+                        "geometryHandles":  [
+                                                "handle: 65658",
+                                                "handle: 65659",
+                                                "handle: 65660",
+                                                "handle: 65661",
+                                                "handle: 65662",
+                                                "handle: 65663",
+                                                "handle: 65664",
+                                                "handle: 65665",
+                                                "handle: 65666",
+                                                "handle: 65667"
+                                            ],
+                        "geometryCount":  10,
+                        "features":  {
+                                         "geometryCount":  10
+                                     }
+                    },
+                    {
+                        "runtimeObjectId":  "STRUCTURAL_FLANGE-01",
+                        "category":  "STRUCTURAL_FLANGE",
+                        "confidence":  "high",
+                        "extent":  {
+                                       "X1":  239.0,
+                                       "Y1":  54.0,
+                                       "X2":  297.0,
+                                       "Y2":  122.0
+                                   },
+                        "seedHandles":  [
+                                            "handle: 65669",
+                                            "handle: 65670",
+                                            "handle: 65671",
+                                            "handle: 65672",
+                                            "handle: 65673",
+                                            "handle: 65674",
+                                            "handle: 65675",
+                                            "handle: 65676",
+                                            "handle: 65677",
+                                            "handle: 65678",
+                                            "handle: 65679",
+                                            "handle: 65680"
+                                        ],
+                        "geometryHandles":  [
+                                                "handle: 65669",
+                                                "handle: 65670",
+                                                "handle: 65671",
+                                                "handle: 65672",
+                                                "handle: 65673",
+                                                "handle: 65674",
+                                                "handle: 65675",
+                                                "handle: 65676",
+                                                "handle: 65677",
+                                                "handle: 65678",
+                                                "handle: 65679",
+                                                "handle: 65680"
+                                            ],
+                        "geometryCount":  12,
+                        "features":  {
+                                         "geometryCount":  12
+                                     }
+                    },
+                    {
+                        "runtimeObjectId":  "STRUCTURAL_FLANGE-02",
+                        "category":  "STRUCTURAL_FLANGE",
+                        "confidence":  "high",
+                        "extent":  {
+                                       "X1":  314.0,
+                                       "Y1":  58.0,
+                                       "X2":  370.0,
+                                       "Y2":  122.0
+                                   },
+                        "seedHandles":  [
+                                            "handle: 65682",
+                                            "handle: 65683",
+                                            "handle: 65684",
+                                            "handle: 65685",
+                                            "handle: 65686",
+                                            "handle: 65687",
+                                            "handle: 65688",
+                                            "handle: 65689"
+                                        ],
+                        "geometryHandles":  [
+                                                "handle: 65682",
+                                                "handle: 65683",
+                                                "handle: 65684",
+                                                "handle: 65685",
+                                                "handle: 65686",
+                                                "handle: 65687",
+                                                "handle: 65688",
+                                                "handle: 65689"
+                                            ],
+                        "geometryCount":  8,
+                        "features":  {
+                                         "geometryCount":  8
+                                     }
+                    },
+                    {
+                        "runtimeObjectId":  "STRUCTURAL_FLANGE-03",
+                        "category":  "STRUCTURAL_FLANGE",
+                        "confidence":  "high",
+                        "extent":  {
+                                       "X1":  372.0,
+                                       "Y1":  55.0,
+                                       "X2":  390.0,
+                                       "Y2":  112.0
+                                   },
+                        "seedHandles":  [
+                                            "handle: 65691",
+                                            "handle: 65692",
+                                            "handle: 65693",
+                                            "handle: 65694",
+                                            "handle: 65695",
+                                            "handle: 65696",
+                                            "handle: 65697",
+                                            "handle: 65698"
+                                        ],
+                        "geometryHandles":  [
+                                                "handle: 65691",
+                                                "handle: 65692",
+                                                "handle: 65693",
+                                                "handle: 65694",
+                                                "handle: 65695",
+                                                "handle: 65696",
+                                                "handle: 65697",
+                                                "handle: 65698"
+                                            ],
+                        "geometryCount":  8,
+                        "features":  {
+                                         "geometryCount":  8
+                                     }
+                    }
+                ],
+    "diagnostics":  {
+                        "capturedContourCount":  136,
+                        "assignedUniqueContourCount":  113,
+                        "unassignedContourCount":  23,
+                        "conflictHandleCount":  0,
+                        "parseFailureCount":  0
+                    }
+}

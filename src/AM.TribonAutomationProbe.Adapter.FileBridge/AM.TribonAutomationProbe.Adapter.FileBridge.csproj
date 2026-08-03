@@ -1,0 +1,1 @@
+<Project Sdk="Microsoft.NET.Sdk"><ItemGroup><ProjectReference Include="../AM.TribonAutomationProbe.Core/AM.TribonAutomationProbe.Core.csproj"/><ProjectReference Include="../AM.TribonAutomationProbe.Protocol/AM.TribonAutomationProbe.Protocol.csproj"/></ItemGroup></Project>

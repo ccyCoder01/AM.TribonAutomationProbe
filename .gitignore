@@ -1,0 +1,161 @@
+# ============================================================
+# AM.TribonAutomationProbe
+# ============================================================
+
+# ------------------------------------------------------------
+# .NET build outputs
+# ------------------------------------------------------------
+**/bin/
+**/obj/
+[Bb]uild/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+
+*.dll
+*.exe
+*.pdb
+*.deps.json
+*.runtimeconfig.dev.json
+
+# NuGet generated packages
+packages/
+*.nupkg
+*.snupkg
+
+# ------------------------------------------------------------
+# Test and coverage outputs
+# ------------------------------------------------------------
+TestResults/
+test-results/
+coverage/
+coverage-results/
+*.trx
+*.coverage
+*.coveragexml
+coverage.json
+coverage.cobertura.xml
+coverage.opencover.xml
+
+# ------------------------------------------------------------
+# Generated release and validation artifacts
+# ------------------------------------------------------------
+/artifacts/*
+
+# Only allow a repository-level explanation of the artifacts directory
+!/artifacts/README.md
+
+# Historical output directories that may be created by older scripts
+/publish/
+/deployment/
+/package/
+/packages-output/
+
+*.zip
+*.7z
+*.rar
+*.tar
+*.tar.gz
+
+# ------------------------------------------------------------
+# FileBridge and Tribon runtime data
+# ------------------------------------------------------------
+/tribon-bridge/
+/diagnostics/
+/logs/
+
+**/inbox/
+**/processing/
+**/output/
+**/failed/
+**/archive/
+**/quarantine/
+
+*.request.json
+*.result.json
+*.receipt.json
+
+# ------------------------------------------------------------
+# Local backup and temporary files
+# ------------------------------------------------------------
+*.bak
+*.backup
+*.orig
+*.rej
+*.tmp
+*.temp
+*.old
+*.swp
+*.swo
+*~
+~$*
+
+# PowerShell/C# patch backups such as:
+# File.cs.before-timeout-fix.20260803-092840.bak
+*.before-*.bak
+
+# ------------------------------------------------------------
+# IDE and editor settings
+# ------------------------------------------------------------
+.vs/
+.vscode/
+.idea/
+_ReSharper*/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.DotSettings.user
+*.code-workspace
+
+# ------------------------------------------------------------
+# Python generated files
+# ------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.venv/
+venv/
+env/
+
+# ------------------------------------------------------------
+# Logs and crash dumps
+# ------------------------------------------------------------
+*.log
+*.dmp
+*.stackdump
+crash-*.txt
+
+# ------------------------------------------------------------
+# Secrets and machine-local configuration
+# ------------------------------------------------------------
+.env
+.env.*
+!.env.example
+
+secrets.json
+*.secrets.json
+appsettings.Local.json
+appsettings.*.Local.json
+appsettings.*.local.json
+
+# Never commit API key exports or local credential files
+*api-key*
+*apikey*
+*access-token*
+*credentials.local*
+
+# ------------------------------------------------------------
+# Operating system files
+# ------------------------------------------------------------
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/

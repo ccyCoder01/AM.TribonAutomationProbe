@@ -1,0 +1,271 @@
+{
+  "schemaVersion": "1.0",
+  "scope": "current_drawing_contours",
+  "sourceFormat": "AM_GEOMETRY_OBJECT_EXPANSION_V1",
+  "generatedAtEpoch": 1785320780.81,
+  "objectCount": 12,
+  "assignedUniqueContourCount": 113,
+  "unassignedContourCount": 22,
+  "objects": [
+    {
+      "objectId": "LIFTING_BEAM-01",
+      "category": "LIFTING_BEAM",
+      "candidateIndex": 1,
+      "seedCount": 6,
+      "geometryCount": 12,
+      "extent": {
+        "minX": 35.0,
+        "minY": 209.0,
+        "maxX": 185.0,
+        "maxY": 243.0,
+        "centerX": 110.0,
+        "centerY": 226.0,
+        "width": 150.0,
+        "height": 34.0
+      },
+      "missingSeedCount": 0,
+      "missingSeedHandles": [],
+      "seedHandles": ["handle: 106", "handle: 108", "handle: 110", "handle: 111", "handle: 112", "handle: 113"],
+      "geometryHandles": ["handle: 102", "handle: 103", "handle: 104", "handle: 105", "handle: 106", "handle: 107", "handle: 108", "handle: 109", "handle: 110", "handle: 111", "handle: 112", "handle: 113"]
+    },
+    {
+      "objectId": "LIFTING_BEAM-02",
+      "category": "LIFTING_BEAM",
+      "candidateIndex": 2,
+      "seedCount": 6,
+      "geometryCount": 11,
+      "extent": {
+        "minX": 52.0,
+        "minY": 169.0,
+        "maxX": 168.0,
+        "maxY": 209.5,
+        "centerX": 110.0,
+        "centerY": 189.25,
+        "width": 116.0,
+        "height": 40.5
+      },
+      "missingSeedCount": 0,
+      "missingSeedHandles": [],
+      "seedHandles": ["handle: 100", "handle: 101", "handle: 94", "handle: 96", "handle: 98", "handle: 99"],
+      "geometryHandles": ["handle: 100", "handle: 101", "handle: 91", "handle: 92", "handle: 93", "handle: 94", "handle: 95", "handle: 96", "handle: 97", "handle: 98", "handle: 99"]
+    },
+    {
+      "objectId": "LIFTING_LUG-01",
+      "category": "LIFTING_LUG",
+      "candidateIndex": 1,
+      "seedCount": 5,
+      "geometryCount": 5,
+      "extent": {
+        "minX": 241.0,
+        "minY": 198.0,
+        "maxX": 263.0,
+        "maxY": 236.0,
+        "centerX": 252.0,
+        "centerY": 217.0,
+        "width": 22.0,
+        "height": 38.0
+      },
+      "missingSeedCount": 0,
+      "missingSeedHandles": [],
+      "seedHandles": ["handle: 86", "handle: 87", "handle: 88", "handle: 89", "handle: 90"],
+      "geometryHandles": ["handle: 86", "handle: 87", "handle: 88", "handle: 89", "handle: 90"]
+    },
+    {
+      "objectId": "LIFTING_LUG-02",
+      "category": "LIFTING_LUG",
+      "candidateIndex": 2,
+      "seedCount": 5,
+      "geometryCount": 9,
+      "extent": {
+        "minX": 289.0,
+        "minY": 192.0,
+        "maxX": 325.0,
+        "maxY": 236.0,
+        "centerX": 307.0,
+        "centerY": 214.0,
+        "width": 36.0,
+        "height": 44.0
+      },
+      "missingSeedCount": 0,
+      "missingSeedHandles": [],
+      "seedHandles": ["handle: 81", "handle: 82", "handle: 83", "handle: 84", "handle: 85"],
+      "geometryHandles": ["handle: 77", "handle: 78", "handle: 79", "handle: 80", "handle: 81", "handle: 82", "handle: 83", "handle: 84", "handle: 85"]
+    },
+    {
+      "objectId": "LIFTING_LUG-03",
+      "category": "LIFTING_LUG",
+      "candidateIndex": 3,
+      "seedCount": 5,
+      "geometryCount": 5,
+      "extent": {
+        "minX": 356.0,
+        "minY": 200.0,
+        "maxX": 374.0,
+        "maxY": 234.0,
+        "centerX": 365.0,
+        "centerY": 217.0,
+        "width": 18.0,
+        "height": 34.0
+      },
+      "missingSeedCount": 0,
+      "missingSeedHandles": [],
+      "seedHandles": ["handle: 72", "handle: 73", "handle: 74", "handle: 75", "handle: 76"],
+      "geometryHandles": ["handle: 72", "handle: 73", "handle: 74", "handle: 75", "handle: 76"]
+    },
+    {
+      "objectId": "PIPE_FLANGE_FRONT-01",
+      "category": "PIPE_FLANGE_FRONT",
+      "candidateIndex": 1,
+      "seedCount": 11,
+      "geometryCount": 13,
+      "extent": {
+        "minX": 30.0,
+        "minY": 63.0,
+        "maxX": 80.0,
+        "maxY": 113.0,
+        "centerX": 55.0,
+        "centerY": 88.0,
+        "width": 50.0,
+        "height": 50.0
+      },
+      "missingSeedCount": 0,
+      "missingSeedHandles": [],
+      "seedHandles": ["handle: 61", "handle: 62", "handle: 63", "handle: 64", "handle: 65", "handle: 66", "handle: 67", "handle: 68", "handle: 69", "handle: 70", "handle: 71"],
+      "geometryHandles": ["handle: 59", "handle: 60", "handle: 61", "handle: 62", "handle: 63", "handle: 64", "handle: 65", "handle: 66", "handle: 67", "handle: 68", "handle: 69", "handle: 70", "handle: 71"]
+    },
+    {
+      "objectId": "PIPE_FLANGE_FRONT-02",
+      "category": "PIPE_FLANGE_FRONT",
+      "candidateIndex": 2,
+      "seedCount": 9,
+      "geometryCount": 11,
+      "extent": {
+        "minX": 94.0,
+        "minY": 67.0,
+        "maxX": 136.0,
+        "maxY": 109.0,
+        "centerX": 115.0,
+        "centerY": 88.0,
+        "width": 42.0,
+        "height": 42.0
+      },
+      "missingSeedCount": 0,
+      "missingSeedHandles": [],
+      "seedHandles": ["handle: 50", "handle: 51", "handle: 52", "handle: 53", "handle: 54", "handle: 55", "handle: 56", "handle: 57", "handle: 58"],
+      "geometryHandles": ["handle: 48", "handle: 49", "handle: 50", "handle: 51", "handle: 52", "handle: 53", "handle: 54", "handle: 55", "handle: 56", "handle: 57", "handle: 58"]
+    },
+    {
+      "objectId": "PIPE_FLANGE_FRONT-03",
+      "category": "PIPE_FLANGE_FRONT",
+      "candidateIndex": 3,
+      "seedCount": 7,
+      "geometryCount": 9,
+      "extent": {
+        "minX": 153.0,
+        "minY": 71.0,
+        "maxX": 187.0,
+        "maxY": 105.0,
+        "centerX": 170.0,
+        "centerY": 88.0,
+        "width": 34.0,
+        "height": 34.0
+      },
+      "missingSeedCount": 0,
+      "missingSeedHandles": [],
+      "seedHandles": ["handle: 41", "handle: 42", "handle: 43", "handle: 44", "handle: 45", "handle: 46", "handle: 47"],
+      "geometryHandles": ["handle: 39", "handle: 40", "handle: 41", "handle: 42", "handle: 43", "handle: 44", "handle: 45", "handle: 46", "handle: 47"]
+    },
+    {
+      "objectId": "PIPE_FLANGE_SIDE-01",
+      "category": "PIPE_FLANGE_SIDE",
+      "candidateIndex": 1,
+      "seedCount": 10,
+      "geometryCount": 10,
+      "extent": {
+        "minX": 20.0,
+        "minY": 38.0,
+        "maxX": 92.0,
+        "maxY": 52.0,
+        "centerX": 56.0,
+        "centerY": 45.0,
+        "width": 72.0,
+        "height": 14.0
+      },
+      "missingSeedCount": 0,
+      "missingSeedHandles": [],
+      "seedHandles": ["handle: 29", "handle: 30", "handle: 31", "handle: 32", "handle: 33", "handle: 34", "handle: 35", "handle: 36", "handle: 37", "handle: 38"],
+      "geometryHandles": ["handle: 29", "handle: 30", "handle: 31", "handle: 32", "handle: 33", "handle: 34", "handle: 35", "handle: 36", "handle: 37", "handle: 38"]
+    },
+    {
+      "objectId": "STRUCTURAL_FLANGE-01",
+      "category": "STRUCTURAL_FLANGE",
+      "candidateIndex": 1,
+      "seedCount": 12,
+      "geometryCount": 12,
+      "extent": {
+        "minX": 239.0,
+        "minY": 54.0,
+        "maxX": 297.0,
+        "maxY": 122.0,
+        "centerX": 268.0,
+        "centerY": 88.0,
+        "width": 58.0,
+        "height": 68.0
+      },
+      "missingSeedCount": 0,
+      "missingSeedHandles": [],
+      "seedHandles": ["handle: 17", "handle: 18", "handle: 19", "handle: 20", "handle: 21", "handle: 22", "handle: 23", "handle: 24", "handle: 25", "handle: 26", "handle: 27", "handle: 28"],
+      "geometryHandles": ["handle: 17", "handle: 18", "handle: 19", "handle: 20", "handle: 21", "handle: 22", "handle: 23", "handle: 24", "handle: 25", "handle: 26", "handle: 27", "handle: 28"]
+    },
+    {
+      "objectId": "STRUCTURAL_FLANGE-02",
+      "category": "STRUCTURAL_FLANGE",
+      "candidateIndex": 2,
+      "seedCount": 8,
+      "geometryCount": 8,
+      "extent": {
+        "minX": 314.0,
+        "minY": 58.0,
+        "maxX": 370.0,
+        "maxY": 122.0,
+        "centerX": 342.0,
+        "centerY": 90.0,
+        "width": 56.0,
+        "height": 64.0
+      },
+      "missingSeedCount": 0,
+      "missingSeedHandles": [],
+      "seedHandles": ["handle: 10", "handle: 11", "handle: 12", "handle: 13", "handle: 14", "handle: 15", "handle: 16", "handle: 9"],
+      "geometryHandles": ["handle: 10", "handle: 11", "handle: 12", "handle: 13", "handle: 14", "handle: 15", "handle: 16", "handle: 9"]
+    },
+    {
+      "objectId": "STRUCTURAL_FLANGE-03",
+      "category": "STRUCTURAL_FLANGE",
+      "candidateIndex": 3,
+      "seedCount": 8,
+      "geometryCount": 8,
+      "extent": {
+        "minX": 372.0,
+        "minY": 55.0,
+        "maxX": 390.0,
+        "maxY": 112.0,
+        "centerX": 381.0,
+        "centerY": 83.5,
+        "width": 18.0,
+        "height": 57.0
+      },
+      "missingSeedCount": 0,
+      "missingSeedHandles": [],
+      "seedHandles": ["handle: 150", "handle: 151", "handle: 152", "handle: 153", "handle: 154", "handle: 6", "handle: 7", "handle: 8"],
+      "geometryHandles": ["handle: 150", "handle: 151", "handle: 152", "handle: 153", "handle: 154", "handle: 6", "handle: 7", "handle: 8"]
+    }
+  ],
+  "diagnostics": {
+    "expansionStatus": "SUCCESS",
+    "pipelineStatus": "SUCCESS",
+    "conflictHandleCount": 0,
+    "missingSeedHandleCount": 0,
+    "sourceErrorCount": 0,
+    "extentFailureCount": 0
+  }
+}

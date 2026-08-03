@@ -1,0 +1,719 @@
+﻿FORMAT	AM_VITESSE_HIGHLIGHT_API_SURVEY_V1
+TIME	2026-07-29T18:22:43+08:00
+ROOTS	C:\Tribon\M3\Vitesse;C:\AM_TribonBridge
+
+===== ROOT: C:\Tribon\M3\Vitesse =====
+C:\Tribon\M3\Vitesse\aadAssDrawing.py	LINE=204	# Function That Highlights the Models in the Model list #
+C:\Tribon\M3\Vitesse\aadAssDrawing.py	LINE=206	def HighlightModel(self):
+C:\Tribon\M3\Vitesse\aadAssMain.py	LINE=309	dwg.HighlightModel()
+C:\Tribon\M3\Vitesse\AddIns\WhereUsed\DwgFindDlg.py	LINE=267	kcs_draft.element_highlight(subview)
+C:\Tribon\M3\Vitesse\AddIns\WhereUsed\DwgFindDlg.py	LINE=400	kcs_draft.highlight_off(0)
+C:\Tribon\M3\Vitesse\AddIns\WhereUsed\DwgFindDlg.py	LINE=606	kcs_draft.highlight_off(0)
+C:\Tribon\M3\Vitesse\AddIns\WhereUsed\DwgFindDlg.py	LINE=609	kcs_draft.element_highlight(self.Subviews[self.Index])
+C:\Tribon\M3\Vitesse\AddIns\WhereUsed\DwgFindDlg.py	LINE=618	kcs_draft.highlight_off(0)
+C:\Tribon\M3\Vitesse\Basic_Design\KcsMenuTBD08Stiffener.py	LINE=75	kcs_ui.init_highlight()
+C:\Tribon\M3\Vitesse\Basic_Design\KcsMenuTBD08Stiffener.py	LINE=198	kcs_ui.terminate_highlight()
+C:\Tribon\M3\Vitesse\Basic_Design\KcsMenuTBD08Stiffener.py	LINE=199	kcs_ui.init_highlight()
+C:\Tribon\M3\Vitesse\Basic_Design\KcsMenuTBD08Stiffener.py	LINE=205	kcs_ui.terminate_highlight()
+C:\Tribon\M3\Vitesse\Context_Menu\CtxContourPropDlg.py	LINE=130	self.HighlightPoints = []
+C:\Tribon\M3\Vitesse\Context_Menu\CtxContourPropDlg.py	LINE=224	#highlight elements
+C:\Tribon\M3\Vitesse\Context_Menu\CtxContourPropDlg.py	LINE=225	self.ElementHighlight(kcs_draft.ContextElement)
+C:\Tribon\M3\Vitesse\Context_Menu\CtxContourPropDlg.py	LINE=226	self.HighlightCurrentVertex(self.GridCtrl.GetGridCursorRow())
+C:\Tribon\M3\Vitesse\Context_Menu\CtxContourPropDlg.py	LINE=289	## update buttons and highlight selected vertex
+C:\Tribon\M3\Vitesse\Context_Menu\CtxContourPropDlg.py	LINE=292	self.HighlightCurrentVertex(selected)
+C:\Tribon\M3\Vitesse\Context_Menu\CtxContourPropDlg.py	LINE=330	self.ElementHighlight()
+C:\Tribon\M3\Vitesse\Context_Menu\CtxContourPropDlg.py	LINE=333	def ElementHighlight(self, *args):
+C:\Tribon\M3\Vitesse\Context_Menu\CtxContourPropDlg.py	LINE=336	kcs_draft.highlight_off(0)
+C:\Tribon\M3\Vitesse\Context_Menu\CtxContourPropDlg.py	LINE=341	kcs_draft.element_highlight(item)
+C:\Tribon\M3\Vitesse\Context_Menu\CtxContourPropDlg.py	LINE=347	self.ElementHighlight()
+C:\Tribon\M3\Vitesse\Context_Menu\CtxContourPropDlg.py	LINE=350	def HighlightCurrentVertex(self, index=None):
+C:\Tribon\M3\Vitesse\Context_Menu\CtxContourPropDlg.py	LINE=351	for item in self.HighlightPoints:
+C:\Tribon\M3\Vitesse\Context_Menu\CtxContourPropDlg.py	LINE=352	kcs_draft.highlight_off(item)
+C:\Tribon\M3\Vitesse\Context_Menu\CtxContourPropDlg.py	LINE=353	self.HighlightPoints = []
+C:\Tribon\M3\Vitesse\Context_Menu\CtxContourPropDlg.py	LINE=359	self.HighlightPoints.append(kcs_draft.point_highlight(KcsPoint2D.Point2D(x, y)))
+C:\Tribon\M3\Vitesse\Context_Menu\CtxContourPropDlg.py	LINE=365	self.ElementHighlight()
+C:\Tribon\M3\Vitesse\Examples\Drafting\kcs_ex_draft13.py	LINE=8	#          This program highlights a point and a contour in the current drawing.
+C:\Tribon\M3\Vitesse\Examples\Drafting\kcs_ex_draft13.py	LINE=9	#          In the end of the program the highlighting is removed.
+C:\Tribon\M3\Vitesse\Examples\Drafting\kcs_ex_draft13.py	LINE=50	highlighted = []
+C:\Tribon\M3\Vitesse\Examples\Drafting\kcs_ex_draft13.py	LINE=54	resp, index = kcs_ui.choice_select('Highlight', 'Select element kind to highlight', actions)
+C:\Tribon\M3\Vitesse\Examples\Drafting\kcs_ex_draft13.py	LINE=56	if index == 1:                                     # highlight point
+C:\Tribon\M3\Vitesse\Examples\Drafting\kcs_ex_draft13.py	LINE=58	resp, point = kcs_ui.point2D_req('Select point which will be highlighted', point)
+C:\Tribon\M3\Vitesse\Examples\Drafting\kcs_ex_draft13.py	LINE=60	highlighted.append(kcs_draft.point_highlight(point))
+C:\Tribon\M3\Vitesse\Examples\Drafting\kcs_ex_draft13.py	LINE=69	highlighted.append(kcs_draft.contour_highlight(contour))
+C:\Tribon\M3\Vitesse\Examples\Drafting\kcs_ex_draft13.py	LINE=75	for handle in highlighted:
+C:\Tribon\M3\Vitesse\Examples\Drafting\kcs_ex_draft13.py	LINE=77	kcs_draft.highlight_off(handle)
+C:\Tribon\M3\Vitesse\Examples\Drafting\kcs_ex_draft20.py	LINE=38	kcs_draft.highlight_off(0)                      # highlight off all highlighted entities
+C:\Tribon\M3\Vitesse\Examples\Drafting\kcs_ex_draft20.py	LINE=42	kcs_draft.element_highlight(handle)             # highlight founded entity
+C:\Tribon\M3\Vitesse\Examples\Drafting\kcs_ex_draft20.py	LINE=157	kcs_draft.highlight_off(0)                      # highlight off all highlighted entities
+C:\Tribon\M3\Vitesse\Examples\Drafting\kcs_ex_draft20.py	LINE=161	kcs_draft.highlight_off(0)                      # highlight off all highlighted entities
+C:\Tribon\M3\Vitesse\Examples\Drafting\kcs_ex_draft21.py	LINE=48	kcs_draft.highlight_off(0)                      # highlight off all highlighted elements
+C:\Tribon\M3\Vitesse\Examples\Drafting\kcs_ex_draft21.py	LINE=52	kcs_draft.element_highlight(handle)             # highlight founded element
+C:\Tribon\M3\Vitesse\Examples\Drafting\kcs_ex_draft21.py	LINE=135	kcs_draft.highlight_off(0)                      # highlight off all highlighted elements
+C:\Tribon\M3\Vitesse\Examples\Drafting\kcs_ex_draft21.py	LINE=139	kcs_draft.highlight_off(0)                      # highlight off all highlighted elements
+C:\Tribon\M3\Vitesse\Examples\Drafting\kcs_ex_draft22.py	LINE=64	kcs_draft.highlight_off(0)                      # highlight off all highlighted entities
+C:\Tribon\M3\Vitesse\Examples\Drafting\kcs_ex_draft22.py	LINE=73	kcs_ui.message_noconfirm('Too many entities to highlight!');
+C:\Tribon\M3\Vitesse\Examples\Drafting\kcs_ex_draft22.py	LINE=77	kcs_draft.element_highlight(nHandle)        # highlight founded entities
+C:\Tribon\M3\Vitesse\Examples\Drafting\kcs_ex_draft22.py	LINE=135	kcs_draft.highlight_off(0)          # highlight off all highlighted entities
+C:\Tribon\M3\Vitesse\Examples\Drafting\kcs_ex_draft22.py	LINE=168	kcs_draft.highlight_off(0)                      # highlight off all highlighted entities
+C:\Tribon\M3\Vitesse\Examples\Drafting\kcs_ex_draft22.py	LINE=172	kcs_draft.highlight_off(0)                      # highlight off all highlighted entities
+C:\Tribon\M3\Vitesse\Examples\Drafting\kcs_ex_draft22.py	LINE=331	kcs_draft.highlight_off(0)                      # highlight off all highlighted entities
+C:\Tribon\M3\Vitesse\Examples\Drafting\kcs_ex_draft22.py	LINE=335	kcs_draft.highlight_off(0)                      # highlight off all highlighted entities
+C:\Tribon\M3\Vitesse\Examples\Drafting\kcs_ex_draft23.py	LINE=139	kcs_draft.element_highlight(handle)
+C:\Tribon\M3\Vitesse\Examples\Drafting\kcs_ex_draft23.py	LINE=145	kcs_draft.element_highlight(handle)
+C:\Tribon\M3\Vitesse\Examples\Drafting\kcs_ex_draft23.py	LINE=151	kcs_draft.element_highlight(handle)
+C:\Tribon\M3\Vitesse\Examples\Drafting\kcs_ex_draft23.py	LINE=158	kcs_draft.highlight_off(0)                      # highlight off all highlighted elements
+C:\Tribon\M3\Vitesse\Examples\Drafting\kcs_ex_draft23.py	LINE=164	kcs_draft.highlight_off(0)                      # highlight off all highlighted element
+C:\Tribon\M3\Vitesse\Examples\Drafting\kcs_ex_draft30.py	LINE=34	kcs_draft.element_highlight(handle)             # highlight founded element
+C:\Tribon\M3\Vitesse\Examples\Drafting\kcs_ex_draft30.py	LINE=36	kcs_draft.highlight_off(0)                      # highlight off all highlighted elements
+C:\Tribon\M3\Vitesse\Examples\Drafting\kcs_ex_draft30.py	LINE=47	kcs_draft.highlight_off(0)
+C:\Tribon\M3\Vitesse\Examples\Drafting\kcs_ex_draft30.py	LINE=49	kcs_draft.element_highlight(handle)
+C:\Tribon\M3\Vitesse\Examples\Drafting\kcs_ex_draft30.py	LINE=51	kcs_draft.highlight_off(0)             # highlight off all highlighted elements
+C:\Tribon\M3\Vitesse\Examples\Drafting\kcs_ex_draft30.py	LINE=58	kcs_draft.highlight_off(0)
+C:\Tribon\M3\Vitesse\Examples\Hull\kcs_ex_hullcurve1.py	LINE=57	kcs_draft.element_highlight(viewhandle)
+C:\Tribon\M3\Vitesse\Examples\Hull\kcs_ex_hullcurve1.py	LINE=102	kcs_draft.highlight_off(0)                      # highlight off all highlighted entities
+C:\Tribon\M3\Vitesse\Examples\Hull\kcs_ex_hullcurve1.py	LINE=105	kcs_draft.highlight_off(0)                      # highlight off all highlighted entities
+C:\Tribon\M3\Vitesse\Examples\Hull\kcs_ex_hullcurve2.py	LINE=58	kcs_draft.element_highlight(viewhandle)
+C:\Tribon\M3\Vitesse\Examples\Hull\kcs_ex_hullcurve2.py	LINE=94	kcs_draft.highlight_off(0)                      # highlight off all highlighted entities
+C:\Tribon\M3\Vitesse\Examples\Hull\kcs_ex_hullcurve2.py	LINE=97	kcs_draft.highlight_off(0)                      # highlight off all highlighted entities
+C:\Tribon\M3\Vitesse\Examples\Misc_Tools\munDefineModelUnit.py	LINE=116	kcs_draft.highlight_off(0)
+C:\Tribon\M3\Vitesse\Examples\Misc_Tools\munDefineModelUnit.py	LINE=151	kcs_draft.element_highlight(obj[1])
+C:\Tribon\M3\Vitesse\Examples\Misc_Tools\munDefineModelUnit.py	LINE=158	kcs_draft.highlight_off(obj)
+C:\Tribon\M3\Vitesse\Examples\Misc_Tools\munHighlightModelUnit.py	LINE=16	#        munHighlightModelUnit.py                                               #
+C:\Tribon\M3\Vitesse\Examples\Misc_Tools\munHighlightModelUnit.py	LINE=18	#        This File Contains functions to Highlight a models
+C:\Tribon\M3\Vitesse\Examples\Misc_Tools\munHighlightModelUnit.py	LINE=106	# Function for highlighting a Model Unit #
+C:\Tribon\M3\Vitesse\Examples\Misc_Tools\munHighlightModelUnit.py	LINE=108	def HighLightModelUnit():
+C:\Tribon\M3\Vitesse\Examples\Misc_Tools\munHighlightModelUnit.py	LINE=134	kcs_draft.element_highlight(svlst[i][1])
+C:\Tribon\M3\Vitesse\Examples\Misc_Tools\munHighlightModelUnit.py	LINE=235	HighLightModelUnit()
+C:\Tribon\M3\Vitesse\Examples\Misc_Tools\munModelUnitMenu.py	LINE=26	#           usr_hl_munit_id -is the id of the user menu item for highlight model unit added
+C:\Tribon\M3\Vitesse\Examples\Misc_Tools\munModelUnitMenu.py	LINE=66	def CreateHighLightModelUnitMenu(self,pos,caption,script):
+C:\Tribon\M3\Vitesse\Examples\Misc_Tools\munModelUnitMenu.py	LINE=86	def CreateUnHighLightModelUnitMenu(self,pos,caption,script):
+C:\Tribon\M3\Vitesse\Examples\Misc_Tools\munModelUnitMenu.py	LINE=90	print "Model Unit Menu :- Create UnHighLight Model Unit Menu Module "
+C:\Tribon\M3\Vitesse\Examples\Misc_Tools\muntrig_draft_init.py	LINE=29	menu.CreateHighLightModelUnitMenu(2,"&High Light","munHighlightModelUnit")
+C:\Tribon\M3\Vitesse\Examples\Misc_Tools\muntrig_draft_init.py	LINE=30	menu.CreateUnHighLightModelUnitMenu(3,"U&nHighLight","munUnHighLightModelUnit")
+C:\Tribon\M3\Vitesse\Examples\Misc_Tools\munUnHighLightModelUnit.py	LINE=10	# This File Serves to Unhighlight Models of the Model Unit                      #
+C:\Tribon\M3\Vitesse\Examples\Misc_Tools\munUnHighLightModelUnit.py	LINE=15	def UnHighLight():
+C:\Tribon\M3\Vitesse\Examples\Misc_Tools\munUnHighLightModelUnit.py	LINE=16	kcs_draft.highlight_off(0)
+C:\Tribon\M3\Vitesse\Examples\Misc_Tools\munUnHighLightModelUnit.py	LINE=23	UnHighLight()
+C:\Tribon\M3\Vitesse\Examples\Util\kcs_ex_ui1.py	LINE=24	from KcsHighlightSet          import HighlightSet
+C:\Tribon\M3\Vitesse\Examples\Util\kcs_ex_ui1.py	LINE=69	def CreatePoint2DReqStatus(defmode, cursortype, helppoint, highlight=None):
+C:\Tribon\M3\Vitesse\Examples\Util\kcs_ex_ui1.py	LINE=83	CurType.SetDragCursor( highlight, startpoint )
+C:\Tribon\M3\Vitesse\Examples\Util\kcs_ex_ui1.py	LINE=109	def ShowDragCursorMenu( highlight ):
+C:\Tribon\M3\Vitesse\Examples\Util\kcs_ex_ui1.py	LINE=121	highlight.Reset()
+C:\Tribon\M3\Vitesse\Examples\Util\kcs_ex_ui1.py	LINE=129	highlight.AddGeometry2D( point1 )
+C:\Tribon\M3\Vitesse\Examples\Util\kcs_ex_ui1.py	LINE=136	highlight.AddGeometry2D( seg )
+C:\Tribon\M3\Vitesse\Examples\Util\kcs_ex_ui1.py	LINE=143	highlight.AddGeometry2D( seg )
+C:\Tribon\M3\Vitesse\Examples\Util\kcs_ex_ui1.py	LINE=152	highlight.AddGeometry2D( contour )
+C:\Tribon\M3\Vitesse\Examples\Util\kcs_ex_ui1.py	LINE=163	highlight.AddGeometry3D( point3d, handle )
+C:\Tribon\M3\Vitesse\Examples\Util\kcs_ex_ui1.py	LINE=179	highlight.AddGeometry3D( polygon, handle )
+C:\Tribon\M3\Vitesse\Examples\Util\kcs_ex_ui1.py	LINE=184	highlight.AddSubpicture( handle )
+C:\Tribon\M3\Vitesse\Examples\Util\kcs_ex_ui1.py	LINE=188	highlight.AddModel( model )
+C:\Tribon\M3\Vitesse\Examples\Util\kcs_ex_ui1.py	LINE=204	highlight   = HighlightSet()
+C:\Tribon\M3\Vitesse\Examples\Util\kcs_ex_ui1.py	LINE=237	ShowDragCursorMenu( highlight )
+C:\Tribon\M3\Vitesse\Examples\Util\kcs_ex_ui1.py	LINE=240	status = CreatePoint2DReqStatus(defmode, cursortype, helppoint, highlight)
+C:\Tribon\M3\Vitesse\Examples\Util\kcs_ex_ui1.py	LINE=249	status = CreatePoint2DReqStatus(defmode, cursortype, helppoint, highlight)
+C:\Tribon\M3\Vitesse\Lib\CommonSample.py	LINE=353	# handle to highlighted help line
+C:\Tribon\M3\Vitesse\Lib\CommonSample.py	LINE=354	nHighlightHnd = None
+C:\Tribon\M3\Vitesse\Lib\CommonSample.py	LINE=358	if nHighlightHnd!=None:
+C:\Tribon\M3\Vitesse\Lib\CommonSample.py	LINE=359	kcs_draft.highlight_off(nHighlightHnd)
+C:\Tribon\M3\Vitesse\Lib\CommonSample.py	LINE=360	nHighlightHnd = None
+C:\Tribon\M3\Vitesse\Lib\CommonSample.py	LINE=370	nHighlightHnd = kcs_draft.line_highlight(Rline2D(Point2D(-Infinity, hlppoint.Y), Point2D(Infinity, hlppoint.Y)))
+C:\Tribon\M3\Vitesse\Lib\CommonSample.py	LINE=372	nHighlightHnd = kcs_draft.line_highlight(Rline2D(Point2D(hlppoint.X, -Infinity), Point2D(hlppoint.X, Infinity)))
+C:\Tribon\M3\Vitesse\Lib\CommonSample.py	LINE=391	# turn off highlights
+C:\Tribon\M3\Vitesse\Lib\CommonSample.py	LINE=392	if nHighlightHnd != None:
+C:\Tribon\M3\Vitesse\Lib\CommonSample.py	LINE=393	kcs_draft.highlight_off(nHighlightHnd)
+C:\Tribon\M3\Vitesse\Lib\CommonSample.py	LINE=394	nHighlightHnd = None
+C:\Tribon\M3\Vitesse\Lib\CommonSample.py	LINE=404	if nHighlightHnd!=None:
+C:\Tribon\M3\Vitesse\Lib\CommonSample.py	LINE=405	kcs_draft.highlight_off(nHighlightHnd)
+C:\Tribon\M3\Vitesse\Lib\cPanel.py	LINE=164	1 - with confirmation, whole model highlighted
+C:\Tribon\M3\Vitesse\Lib\cPanel.py	LINE=165	2 - with confirmation, model part highlighted
+C:\Tribon\M3\Vitesse\Lib\cPanel.py	LINE=197	handle = kcs_draft.element_highlight(res2[level])
+C:\Tribon\M3\Vitesse\Lib\cPanel.py	LINE=199	kcs_draft.highlight_off(handle)
+C:\Tribon\M3\Vitesse\Lib\KcsCursorType.py	LINE=24	import KcsHighlightSet
+C:\Tribon\M3\Vitesse\Lib\KcsCursorType.py	LINE=131	#           highlight          KcsHighlightSet.HighlightSet         Drag cursor data
+C:\Tribon\M3\Vitesse\Lib\KcsCursorType.py	LINE=134	def SetDragCursor(self, highlight, point):
+C:\Tribon\M3\Vitesse\Lib\KcsCursorType.py	LINE=135	if not isinstance(highlight, KcsHighlightSet.HighlightSet):
+C:\Tribon\M3\Vitesse\Lib\KcsCursorType.py	LINE=142	self.__Arguments  = [point, highlight]
+C:\Tribon\M3\Vitesse\Lib\KcsHighlightSet.py	LINE=3	#          KcsHighlightSet.py
+C:\Tribon\M3\Vitesse\Lib\KcsHighlightSet.py	LINE=6	#          The HighlightSet class holds information about elements to highlight
+C:\Tribon\M3\Vitesse\Lib\KcsHighlightSet.py	LINE=13	#           __Elements    list              list of elements to highlight
+C:\Tribon\M3\Vitesse\Lib\KcsHighlightSet.py	LINE=16	#        AddGeometry2D                      Adds 2d graphical element to highlight set
+C:\Tribon\M3\Vitesse\Lib\KcsHighlightSet.py	LINE=17	#        AddGeometry3D                      Adds 3d graphical element to highlight set
+C:\Tribon\M3\Vitesse\Lib\KcsHighlightSet.py	LINE=18	#        AddModel                           Adds Model to highlight element set
+C:\Tribon\M3\Vitesse\Lib\KcsHighlightSet.py	LINE=19	#        AddSubpicture                      Adds Subpicture to highlight set
+C:\Tribon\M3\Vitesse\Lib\KcsHighlightSet.py	LINE=20	#        Reset                              Removes all elements from highlight set
+C:\Tribon\M3\Vitesse\Lib\KcsHighlightSet.py	LINE=33	ErrorMessages = { TypeError : 'not supported argument type, see documentation of HighlightSet class' }
+C:\Tribon\M3\Vitesse\Lib\KcsHighlightSet.py	LINE=36	class HighlightSet:
+C:\Tribon\M3\Vitesse\Lib\KcsHighlightSet.py	LINE=59	#          To add graphical 2D element to highlight set
+C:\Tribon\M3\Vitesse\Lib\KcsHighlightSet.py	LINE=64	#           KcsLinetype.Linetype    Linetype used to highlight point
+C:\Tribon\M3\Vitesse\Lib\KcsHighlightSet.py	LINE=86	#          To add graphical 3D element to highlight set
+C:\Tribon\M3\Vitesse\Lib\KcsHighlightSet.py	LINE=91	#           KcsLinetype.Linetype             Linetype used to highlight point
+C:\Tribon\M3\Vitesse\Lib\KcsHighlightSet.py	LINE=115	#          To add Model to highlight set
+C:\Tribon\M3\Vitesse\Lib\KcsHighlightSet.py	LINE=135	#          To add View, subview or component to highlight set
+C:\Tribon\M3\Vitesse\Lib\KcsHighlightSet.py	LINE=156	#          To remove all elements from highlight set
+C:\Tribon\M3\Vitesse\Lib\KcsHighlightSet.py	LINE=176	return 'HighlightSet: %s' % (self.__Elements)
+C:\Tribon\M3\Vitesse\Lib\_TBhook_CustBracket.py	LINE=47	# Highlight the model item
+C:\Tribon\M3\Vitesse\Lib\_TBhook_CustBracket.py	LINE=48	handle = kcs_draft.element_highlight(res[1])
+C:\Tribon\M3\Vitesse\Lib\_TBhook_CustBracket.py	LINE=52	# Turn the highlight off
+C:\Tribon\M3\Vitesse\Lib\_TBhook_CustBracket.py	LINE=53	kcs_draft.highlight_off(handle)
+
+===== ROOT: C:\AM_TribonBridge =====
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\all-expanded-objects-highlight-result.txt	LINE=4	OBJECT	LIFTING_BEAM-01	LIFTING_BEAM	EXPECTED	12	HIGHLIGHTED	12	MISSING	0	FAILED	0
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\all-expanded-objects-highlight-result.txt	LINE=5	OBJECT	LIFTING_BEAM-02	LIFTING_BEAM	EXPECTED	11	HIGHLIGHTED	11	MISSING	0	FAILED	0
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\all-expanded-objects-highlight-result.txt	LINE=6	OBJECT	LIFTING_LUG-01	LIFTING_LUG	EXPECTED	5	HIGHLIGHTED	5	MISSING	0	FAILED	0
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\all-expanded-objects-highlight-result.txt	LINE=7	OBJECT	LIFTING_LUG-02	LIFTING_LUG	EXPECTED	9	HIGHLIGHTED	9	MISSING	0	FAILED	0
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\all-expanded-objects-highlight-result.txt	LINE=8	OBJECT	LIFTING_LUG-03	LIFTING_LUG	EXPECTED	5	HIGHLIGHTED	5	MISSING	0	FAILED	0
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\all-expanded-objects-highlight-result.txt	LINE=9	OBJECT	PIPE_FLANGE_FRONT-01	PIPE_FLANGE_FRONT	EXPECTED	13	HIGHLIGHTED	13	MISSING	0	FAILED	0
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\all-expanded-objects-highlight-result.txt	LINE=10	OBJECT	PIPE_FLANGE_FRONT-02	PIPE_FLANGE_FRONT	EXPECTED	11	HIGHLIGHTED	11	MISSING	0	FAILED	0
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\all-expanded-objects-highlight-result.txt	LINE=11	OBJECT	PIPE_FLANGE_FRONT-03	PIPE_FLANGE_FRONT	EXPECTED	9	HIGHLIGHTED	9	MISSING	0	FAILED	0
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\all-expanded-objects-highlight-result.txt	LINE=12	OBJECT	PIPE_FLANGE_SIDE-01	PIPE_FLANGE_SIDE	EXPECTED	10	HIGHLIGHTED	10	MISSING	0	FAILED	0
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\all-expanded-objects-highlight-result.txt	LINE=13	OBJECT	STRUCTURAL_FLANGE-01	STRUCTURAL_FLANGE	EXPECTED	12	HIGHLIGHTED	12	MISSING	0	FAILED	0
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\all-expanded-objects-highlight-result.txt	LINE=14	OBJECT	STRUCTURAL_FLANGE-02	STRUCTURAL_FLANGE	EXPECTED	8	HIGHLIGHTED	8	MISSING	0	FAILED	0
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\all-expanded-objects-highlight-result.txt	LINE=15	OBJECT	STRUCTURAL_FLANGE-03	STRUCTURAL_FLANGE	EXPECTED	8	HIGHLIGHTED	8	MISSING	0	FAILED	0
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\all-expanded-objects-highlight-result.txt	LINE=19	HIGHLIGHTED_COUNT	113
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-extraction-pipeline-result.txt	LINE=3	STEP	1	NAME	PIPE_FLANGE_FRONT	STATUS	SUCCESS	COUNT_KEY	CANDIDATE_COUNT	EXPECTED_COUNT	3	ACTUAL_COUNT	3	SOURCE_STATUS	SUCCESS	ERROR
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-extraction-pipeline-result.txt	LINE=5	STEP	3	NAME	LIFTING_LUG	STATUS	SUCCESS	COUNT_KEY	CANDIDATE_COUNT	EXPECTED_COUNT	3	ACTUAL_COUNT	3	SOURCE_STATUS	SUCCESS	ERROR
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-extraction-pipeline-result.txt	LINE=6	STEP	4	NAME	LIFTING_BEAM	STATUS	SUCCESS	COUNT_KEY	CANDIDATE_COUNT	EXPECTED_COUNT	2	ACTUAL_COUNT	2	SOURCE_STATUS	SUCCESS	ERROR
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-extraction-pipeline-result.txt	LINE=7	STEP	5	NAME	STRUCTURAL_FLANGE	STATUS	SUCCESS	COUNT_KEY	CANDIDATE_COUNT	EXPECTED_COUNT	3	ACTUAL_COUNT	3	SOURCE_STATUS	SUCCESS	ERROR
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-id-map-result.txt	LINE=2	SOURCE	C:\AM_TribonBridge\diagnostics\geometry-object-snapshot.json
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-id-map-result.txt	LINE=3	OUTPUT	C:\AM_TribonBridge\diagnostics\geometry-object-id-map.json
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-id-map.json	LINE=3	"sourceSnapshot":  "C:\\AM_TribonBridge\\diagnostics\\geometry-object-snapshot.json",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-id-map.json	LINE=7	"LIFTING_BEAM",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-id-map.json	LINE=8	"LIFTING_LUG",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-id-map.json	LINE=9	"PIPE_FLANGE_FRONT",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-id-map.json	LINE=11	"STRUCTURAL_FLANGE"
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-id-map.json	LINE=25	"sourceObjectId":  "LIFTING_BEAM-01",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-id-map.json	LINE=27	"category":  "LIFTING_BEAM",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-id-map.json	LINE=36	"sourceObjectId":  "LIFTING_BEAM-02",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-id-map.json	LINE=38	"category":  "LIFTING_BEAM",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-id-map.json	LINE=47	"sourceObjectId":  "LIFTING_LUG-01",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-id-map.json	LINE=49	"category":  "LIFTING_LUG",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-id-map.json	LINE=58	"sourceObjectId":  "LIFTING_LUG-02",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-id-map.json	LINE=60	"category":  "LIFTING_LUG",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-id-map.json	LINE=69	"sourceObjectId":  "LIFTING_LUG-03",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-id-map.json	LINE=71	"category":  "LIFTING_LUG",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-id-map.json	LINE=80	"sourceObjectId":  "PIPE_FLANGE_FRONT-01",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-id-map.json	LINE=82	"category":  "PIPE_FLANGE_FRONT",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-id-map.json	LINE=91	"sourceObjectId":  "PIPE_FLANGE_FRONT-02",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-id-map.json	LINE=93	"category":  "PIPE_FLANGE_FRONT",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-id-map.json	LINE=102	"sourceObjectId":  "PIPE_FLANGE_FRONT-03",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-id-map.json	LINE=104	"category":  "PIPE_FLANGE_FRONT",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-id-map.json	LINE=124	"sourceObjectId":  "STRUCTURAL_FLANGE-01",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-id-map.json	LINE=126	"category":  "STRUCTURAL_FLANGE",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-id-map.json	LINE=135	"sourceObjectId":  "STRUCTURAL_FLANGE-02",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-id-map.json	LINE=137	"category":  "STRUCTURAL_FLANGE",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-id-map.json	LINE=146	"sourceObjectId":  "STRUCTURAL_FLANGE-03",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-id-map.json	LINE=148	"category":  "STRUCTURAL_FLANGE",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-label-plan-result.txt	LINE=2	SNAPSHOT	C:\AM_TribonBridge\diagnostics\geometry-object-snapshot.json
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-label-plan-result.txt	LINE=3	ID_MAP	C:\AM_TribonBridge\diagnostics\geometry-object-id-map.json
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-label-plan-result.txt	LINE=4	OUTPUT	C:\AM_TribonBridge\diagnostics\geometry-object-label-plan.json
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-label-plan.json	LINE=5	"sourceSnapshot":  "C:\\AM_TribonBridge\\diagnostics\\geometry-object-snapshot.json",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-label-plan.json	LINE=6	"sourceIdMap":  "C:\\AM_TribonBridge\\diagnostics\\geometry-object-id-map.json",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-label-plan.json	LINE=20	"sourceObjectId":  "LIFTING_BEAM-01",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-label-plan.json	LINE=22	"category":  "LIFTING_BEAM",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-label-plan.json	LINE=66	"sourceObjectId":  "LIFTING_BEAM-02",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-label-plan.json	LINE=68	"category":  "LIFTING_BEAM",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-label-plan.json	LINE=112	"sourceObjectId":  "LIFTING_LUG-01",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-label-plan.json	LINE=114	"category":  "LIFTING_LUG",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-label-plan.json	LINE=158	"sourceObjectId":  "LIFTING_LUG-02",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-label-plan.json	LINE=160	"category":  "LIFTING_LUG",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-label-plan.json	LINE=204	"sourceObjectId":  "LIFTING_LUG-03",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-label-plan.json	LINE=206	"category":  "LIFTING_LUG",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-label-plan.json	LINE=250	"sourceObjectId":  "PIPE_FLANGE_FRONT-01",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-label-plan.json	LINE=252	"category":  "PIPE_FLANGE_FRONT",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-label-plan.json	LINE=296	"sourceObjectId":  "PIPE_FLANGE_FRONT-02",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-label-plan.json	LINE=298	"category":  "PIPE_FLANGE_FRONT",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-label-plan.json	LINE=342	"sourceObjectId":  "PIPE_FLANGE_FRONT-03",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-label-plan.json	LINE=344	"category":  "PIPE_FLANGE_FRONT",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-label-plan.json	LINE=434	"sourceObjectId":  "STRUCTURAL_FLANGE-01",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-label-plan.json	LINE=436	"category":  "STRUCTURAL_FLANGE",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-label-plan.json	LINE=480	"sourceObjectId":  "STRUCTURAL_FLANGE-02",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-label-plan.json	LINE=482	"category":  "STRUCTURAL_FLANGE",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-label-plan.json	LINE=526	"sourceObjectId":  "STRUCTURAL_FLANGE-03",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-label-plan.json	LINE=528	"category":  "STRUCTURAL_FLANGE",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-snapshot-result.txt	LINE=2	SOURCE	C:\AM_TribonBridge\diagnostics\geometry-object-expansion.tsv
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-snapshot-result.txt	LINE=3	OUTPUT	C:\AM_TribonBridge\diagnostics\geometry-object-snapshot.json
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-snapshot.json	LINE=7	"assignedUniqueContourCount": 113,
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-snapshot.json	LINE=11	"objectId": "LIFTING_BEAM-01",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-snapshot.json	LINE=12	"category": "LIFTING_BEAM",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-snapshot.json	LINE=32	"objectId": "LIFTING_BEAM-02",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-snapshot.json	LINE=33	"category": "LIFTING_BEAM",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-snapshot.json	LINE=53	"objectId": "LIFTING_LUG-01",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-snapshot.json	LINE=54	"category": "LIFTING_LUG",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-snapshot.json	LINE=74	"objectId": "LIFTING_LUG-02",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-snapshot.json	LINE=75	"category": "LIFTING_LUG",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-snapshot.json	LINE=95	"objectId": "LIFTING_LUG-03",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-snapshot.json	LINE=96	"category": "LIFTING_LUG",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-snapshot.json	LINE=116	"objectId": "PIPE_FLANGE_FRONT-01",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-snapshot.json	LINE=117	"category": "PIPE_FLANGE_FRONT",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-snapshot.json	LINE=137	"objectId": "PIPE_FLANGE_FRONT-02",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-snapshot.json	LINE=138	"category": "PIPE_FLANGE_FRONT",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-snapshot.json	LINE=158	"objectId": "PIPE_FLANGE_FRONT-03",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-snapshot.json	LINE=159	"category": "PIPE_FLANGE_FRONT",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-snapshot.json	LINE=200	"objectId": "STRUCTURAL_FLANGE-01",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-snapshot.json	LINE=201	"category": "STRUCTURAL_FLANGE",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-snapshot.json	LINE=221	"objectId": "STRUCTURAL_FLANGE-02",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-snapshot.json	LINE=222	"category": "STRUCTURAL_FLANGE",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-snapshot.json	LINE=242	"objectId": "STRUCTURAL_FLANGE-03",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\diagnostics\geometry-object-snapshot.json	LINE=243	"category": "STRUCTURAL_FLANGE",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\apply_geometry_object_label_relayout.py	LINE=10	PLAN = r"C:\AM_TribonBridge\diagnostics\geometry-object-label-relayout-plan.tsv"
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\apply_geometry_object_label_relayout.py	LINE=12	OUTPUT = r"C:\AM_TribonBridge\diagnostics\geometry-object-label-relayout-apply-result.tsv"
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\audit_geometry_object_label_layout.py	LINE=9	PLAN = r"C:\AM_TribonBridge\diagnostics\geometry-object-label-plan.json"
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\audit_geometry_object_label_layout.py	LINE=10	OUTPUT = r"C:\AM_TribonBridge\diagnostics\geometry-object-label-layout-audit.tsv"
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\detect_lifting_beam_candidates.py	LINE=814	"FORMAT\tAM_LIFTING_BEAM_CANDIDATES_V1"
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\detect_lifting_lug_candidates.py	LINE=616	"FORMAT\tAM_LIFTING_LUG_CANDIDATES_V1"
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\detect_structural_flange_candidates.py	LINE=535	"FORMAT\tAM_STRUCTURAL_FLANGE_CANDIDATES_V1"
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\expand_detected_objects_by_connectivity.py	LINE=6	OUTPUT = r"C:\AM_TribonBridge\diagnostics\geometry-object-expansion.tsv"
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\expand_detected_objects_by_connectivity.py	LINE=13	"category": "PIPE_FLANGE_FRONT",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\expand_detected_objects_by_connectivity.py	LINE=23	"category": "LIFTING_LUG",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\expand_detected_objects_by_connectivity.py	LINE=28	"category": "LIFTING_BEAM",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\expand_detected_objects_by_connectivity.py	LINE=33	"category": "STRUCTURAL_FLANGE",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\export_geometry_object_snapshot.py	LINE=5	SOURCE = r"C:\AM_TribonBridge\diagnostics\geometry-object-expansion.tsv"
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\export_geometry_object_snapshot.py	LINE=6	PIPELINE_RESULT = r"C:\AM_TribonBridge\diagnostics\geometry-object-extraction-pipeline-result.txt"
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\export_geometry_object_snapshot.py	LINE=8	OUTPUT = r"C:\AM_TribonBridge\diagnostics\geometry-object-snapshot.json"
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\export_geometry_object_snapshot.py	LINE=9	LOG = r"C:\AM_TribonBridge\diagnostics\geometry-object-snapshot-result.txt"
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\export_geometry_object_snapshot.py	LINE=321	"  \"assignedUniqueContourCount\": %s,\n" %
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\highlight_all_expanded_objects.py	LINE=6	SOURCE = r"C:\AM_TribonBridge\diagnostics\geometry-object-expansion.tsv"
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\highlight_all_expanded_objects.py	LINE=7	OUTPUT = r"C:\AM_TribonBridge\diagnostics\all-expanded-objects-highlight-result.txt"
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\highlight_all_expanded_objects.py	LINE=143	kcs_draft.highlight_off(0)
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\highlight_all_expanded_objects.py	LINE=148	highlighted_count = 0
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\highlight_all_expanded_objects.py	LINE=157	object_highlighted = 0
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\highlight_all_expanded_objects.py	LINE=187	kcs_draft.element_highlight(
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\highlight_all_expanded_objects.py	LINE=191	highlighted_count = (
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\highlight_all_expanded_objects.py	LINE=192	highlighted_count + 1
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\highlight_all_expanded_objects.py	LINE=195	object_highlighted = (
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\highlight_all_expanded_objects.py	LINE=196	object_highlighted + 1
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\highlight_all_expanded_objects.py	LINE=216	"\tHIGHLIGHTED\t%s"
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\highlight_all_expanded_objects.py	LINE=228	str(object_highlighted),
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\highlight_all_expanded_objects.py	LINE=245	"HIGHLIGHTED_COUNT\t%s" %
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\highlight_all_expanded_objects.py	LINE=246	str(highlighted_count)
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\highlight_all_expanded_objects.py	LINE=264	highlighted_count == 113 and
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\plan_geometry_object_label_relayout.py	LINE=9	PLAN = r"C:\AM_TribonBridge\diagnostics\geometry-object-label-plan.json"
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\plan_geometry_object_label_relayout.py	LINE=10	OUTPUT = r"C:\AM_TribonBridge\diagnostics\geometry-object-label-relayout-plan.tsv"
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\plan_geometry_object_label_relayout.py	LINE=16	"LIFTING_BEAM": 7.0,
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\plan_geometry_object_label_relayout.py	LINE=17	"LIFTING_LUG": 6.0,
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\plan_geometry_object_label_relayout.py	LINE=18	"PIPE_FLANGE_FRONT": 6.0,
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\plan_geometry_object_label_relayout.py	LINE=20	"STRUCTURAL_FLANGE": 7.0
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\preflight_geometry_object_labels.py	LINE=8	PLAN = r"C:\AM_TribonBridge\diagnostics\geometry-object-label-plan.json"
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\preflight_geometry_object_labels.py	LINE=9	OUTPUT = r"C:\AM_TribonBridge\diagnostics\geometry-object-label-preflight.tsv"
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\preflight_geometry_object_labels_v2.py	LINE=9	PLAN = r"C:\AM_TribonBridge\diagnostics\geometry-object-label-plan.json"
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\preflight_geometry_object_labels_v2.py	LINE=10	OUTPUT = r"C:\AM_TribonBridge\diagnostics\geometry-object-label-preflight-v2.tsv"
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\run_geometry_object_extraction_pipeline.py	LINE=12	"geometry-object-extraction-pipeline-result.txt"
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\run_geometry_object_extraction_pipeline.py	LINE=17	"name": "PIPE_FLANGE_FRONT",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\run_geometry_object_extraction_pipeline.py	LINE=31	"name": "LIFTING_LUG",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\run_geometry_object_extraction_pipeline.py	LINE=32	"script": "detect_lifting_lug_candidates.py",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\run_geometry_object_extraction_pipeline.py	LINE=38	"name": "LIFTING_BEAM",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\run_geometry_object_extraction_pipeline.py	LINE=39	"script": "detect_lifting_beam_candidates.py",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\run_geometry_object_extraction_pipeline.py	LINE=45	"name": "STRUCTURAL_FLANGE",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\run_geometry_object_extraction_pipeline.py	LINE=46	"script": "detect_structural_flange_candidates.py",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\run_geometry_object_extraction_pipeline.py	LINE=54	"result": "geometry-object-expansion.tsv",
+C:\AM_TribonBridge\artifacts\geometry-object-poc-evidence\tools\run_geometry_object_extraction_pipeline.py	LINE=295	"geometry-object-expansion.tsv"
+C:\AM_TribonBridge\diagnostics\all-expanded-objects-highlight-result.txt	LINE=4	OBJECT	LIFTING_BEAM-01	LIFTING_BEAM	EXPECTED	12	HIGHLIGHTED	12	MISSING	0	FAILED	0
+C:\AM_TribonBridge\diagnostics\all-expanded-objects-highlight-result.txt	LINE=5	OBJECT	LIFTING_BEAM-02	LIFTING_BEAM	EXPECTED	11	HIGHLIGHTED	11	MISSING	0	FAILED	0
+C:\AM_TribonBridge\diagnostics\all-expanded-objects-highlight-result.txt	LINE=6	OBJECT	LIFTING_LUG-01	LIFTING_LUG	EXPECTED	5	HIGHLIGHTED	5	MISSING	0	FAILED	0
+C:\AM_TribonBridge\diagnostics\all-expanded-objects-highlight-result.txt	LINE=7	OBJECT	LIFTING_LUG-02	LIFTING_LUG	EXPECTED	9	HIGHLIGHTED	9	MISSING	0	FAILED	0
+C:\AM_TribonBridge\diagnostics\all-expanded-objects-highlight-result.txt	LINE=8	OBJECT	LIFTING_LUG-03	LIFTING_LUG	EXPECTED	5	HIGHLIGHTED	5	MISSING	0	FAILED	0
+C:\AM_TribonBridge\diagnostics\all-expanded-objects-highlight-result.txt	LINE=9	OBJECT	PIPE_FLANGE_FRONT-01	PIPE_FLANGE_FRONT	EXPECTED	13	HIGHLIGHTED	13	MISSING	0	FAILED	0
+C:\AM_TribonBridge\diagnostics\all-expanded-objects-highlight-result.txt	LINE=10	OBJECT	PIPE_FLANGE_FRONT-02	PIPE_FLANGE_FRONT	EXPECTED	11	HIGHLIGHTED	11	MISSING	0	FAILED	0
+C:\AM_TribonBridge\diagnostics\all-expanded-objects-highlight-result.txt	LINE=11	OBJECT	PIPE_FLANGE_FRONT-03	PIPE_FLANGE_FRONT	EXPECTED	9	HIGHLIGHTED	9	MISSING	0	FAILED	0
+C:\AM_TribonBridge\diagnostics\all-expanded-objects-highlight-result.txt	LINE=12	OBJECT	PIPE_FLANGE_SIDE-01	PIPE_FLANGE_SIDE	EXPECTED	10	HIGHLIGHTED	10	MISSING	0	FAILED	0
+C:\AM_TribonBridge\diagnostics\all-expanded-objects-highlight-result.txt	LINE=13	OBJECT	STRUCTURAL_FLANGE-01	STRUCTURAL_FLANGE	EXPECTED	12	HIGHLIGHTED	12	MISSING	0	FAILED	0
+C:\AM_TribonBridge\diagnostics\all-expanded-objects-highlight-result.txt	LINE=14	OBJECT	STRUCTURAL_FLANGE-02	STRUCTURAL_FLANGE	EXPECTED	8	HIGHLIGHTED	8	MISSING	0	FAILED	0
+C:\AM_TribonBridge\diagnostics\all-expanded-objects-highlight-result.txt	LINE=15	OBJECT	STRUCTURAL_FLANGE-03	STRUCTURAL_FLANGE	EXPECTED	8	HIGHLIGHTED	8	MISSING	0	FAILED	0
+C:\AM_TribonBridge\diagnostics\all-expanded-objects-highlight-result.txt	LINE=19	HIGHLIGHTED_COUNT	113
+C:\AM_TribonBridge\diagnostics\demo-clear-highlight-result.txt	LINE=1	FORMAT	AM_DEMO_CLEAR_HIGHLIGHT_V1
+C:\AM_TribonBridge\diagnostics\demo-clear-highlight-result.txt	LINE=2	HIGHLIGHT_CLEARED	1
+C:\AM_TribonBridge\diagnostics\demo-highlight-all-flanges-launcher-result.txt	LINE=1	FORMAT	AM_DEMO_HIGHLIGHT_ALL_FLANGES_LAUNCHER_V1
+C:\AM_TribonBridge\diagnostics\demo-highlight-all-flanges-launcher-result.txt	LINE=3	TARGET	C:\AM_TribonBridge\tools\highlight_all_flange_objects_for_demo.py
+C:\AM_TribonBridge\diagnostics\demo-highlight-lifting-launcher-v2-result.txt	LINE=1	FORMAT	AM_DEMO_HIGHLIGHT_LIFTING_LAUNCHER_V2
+C:\AM_TribonBridge\diagnostics\demo-highlight-lifting-launcher-v2-result.txt	LINE=3	TARGET	C:\AM_TribonBridge\tools\highlight_lifting_objects_for_demo.py
+C:\AM_TribonBridge\diagnostics\extracted-highlight-summary.txt	LINE=6	LIFTING_BEAM_GEOMETRY_COUNT=23
+C:\AM_TribonBridge\diagnostics\extracted-highlight-summary.txt	LINE=7	LIFTING_LUG_GEOMETRY_COUNT=19
+C:\AM_TribonBridge\diagnostics\extracted-highlight-summary.txt	LINE=9	STRUCTURAL_FLANGE_GEOMETRY_COUNT=28
+C:\AM_TribonBridge\diagnostics\extracted-highlight-summary.txt	LINE=10	TOTAL_HIGHLIGHTED=113
+C:\AM_TribonBridge\diagnostics\geometry-object-extraction-pipeline-result.txt	LINE=3	STEP	1	NAME	PIPE_FLANGE_FRONT	STATUS	SUCCESS	COUNT_KEY	CANDIDATE_COUNT	EXPECTED_COUNT	3	ACTUAL_COUNT	3	SOURCE_STATUS	SUCCESS	ERROR
+C:\AM_TribonBridge\diagnostics\geometry-object-extraction-pipeline-result.txt	LINE=5	STEP	3	NAME	LIFTING_LUG	STATUS	SUCCESS	COUNT_KEY	CANDIDATE_COUNT	EXPECTED_COUNT	3	ACTUAL_COUNT	3	SOURCE_STATUS	SUCCESS	ERROR
+C:\AM_TribonBridge\diagnostics\geometry-object-extraction-pipeline-result.txt	LINE=6	STEP	4	NAME	LIFTING_BEAM	STATUS	SUCCESS	COUNT_KEY	CANDIDATE_COUNT	EXPECTED_COUNT	2	ACTUAL_COUNT	2	SOURCE_STATUS	SUCCESS	ERROR
+C:\AM_TribonBridge\diagnostics\geometry-object-extraction-pipeline-result.txt	LINE=7	STEP	5	NAME	STRUCTURAL_FLANGE	STATUS	SUCCESS	COUNT_KEY	CANDIDATE_COUNT	EXPECTED_COUNT	3	ACTUAL_COUNT	3	SOURCE_STATUS	SUCCESS	ERROR
+C:\AM_TribonBridge\diagnostics\geometry-object-id-map-result.txt	LINE=2	SOURCE_SNAPSHOT	C:\AM_TribonBridge\diagnostics\geometry-object-snapshot.json
+C:\AM_TribonBridge\diagnostics\geometry-object-id-map-result.txt	LINE=3	OUTPUT	C:\AM_TribonBridge\diagnostics\geometry-object-id-map.json
+C:\AM_TribonBridge\diagnostics\geometry-object-id-map.json	LINE=3	"sourceSnapshot":  "C:\\AM_TribonBridge\\diagnostics\\geometry-object-snapshot.json",
+C:\AM_TribonBridge\diagnostics\geometry-object-id-map.json	LINE=7	"LIFTING_BEAM",
+C:\AM_TribonBridge\diagnostics\geometry-object-id-map.json	LINE=8	"LIFTING_LUG",
+C:\AM_TribonBridge\diagnostics\geometry-object-id-map.json	LINE=9	"PIPE_FLANGE_FRONT",
+C:\AM_TribonBridge\diagnostics\geometry-object-id-map.json	LINE=11	"STRUCTURAL_FLANGE"
+C:\AM_TribonBridge\diagnostics\geometry-object-id-map.json	LINE=25	"sourceObjectId":  "LIFTING_BEAM-01",
+C:\AM_TribonBridge\diagnostics\geometry-object-id-map.json	LINE=27	"category":  "LIFTING_BEAM",
+C:\AM_TribonBridge\diagnostics\geometry-object-id-map.json	LINE=36	"sourceObjectId":  "LIFTING_BEAM-02",
+C:\AM_TribonBridge\diagnostics\geometry-object-id-map.json	LINE=38	"category":  "LIFTING_BEAM",
+C:\AM_TribonBridge\diagnostics\geometry-object-id-map.json	LINE=47	"sourceObjectId":  "LIFTING_LUG-01",
+C:\AM_TribonBridge\diagnostics\geometry-object-id-map.json	LINE=49	"category":  "LIFTING_LUG",
+C:\AM_TribonBridge\diagnostics\geometry-object-id-map.json	LINE=58	"sourceObjectId":  "LIFTING_LUG-02",
+C:\AM_TribonBridge\diagnostics\geometry-object-id-map.json	LINE=60	"category":  "LIFTING_LUG",
+C:\AM_TribonBridge\diagnostics\geometry-object-id-map.json	LINE=69	"sourceObjectId":  "LIFTING_LUG-03",
+C:\AM_TribonBridge\diagnostics\geometry-object-id-map.json	LINE=71	"category":  "LIFTING_LUG",
+C:\AM_TribonBridge\diagnostics\geometry-object-id-map.json	LINE=80	"sourceObjectId":  "PIPE_FLANGE_FRONT-01",
+C:\AM_TribonBridge\diagnostics\geometry-object-id-map.json	LINE=82	"category":  "PIPE_FLANGE_FRONT",
+C:\AM_TribonBridge\diagnostics\geometry-object-id-map.json	LINE=91	"sourceObjectId":  "PIPE_FLANGE_FRONT-02",
+C:\AM_TribonBridge\diagnostics\geometry-object-id-map.json	LINE=93	"category":  "PIPE_FLANGE_FRONT",
+C:\AM_TribonBridge\diagnostics\geometry-object-id-map.json	LINE=102	"sourceObjectId":  "PIPE_FLANGE_FRONT-03",
+C:\AM_TribonBridge\diagnostics\geometry-object-id-map.json	LINE=104	"category":  "PIPE_FLANGE_FRONT",
+C:\AM_TribonBridge\diagnostics\geometry-object-id-map.json	LINE=124	"sourceObjectId":  "STRUCTURAL_FLANGE-01",
+C:\AM_TribonBridge\diagnostics\geometry-object-id-map.json	LINE=126	"category":  "STRUCTURAL_FLANGE",
+C:\AM_TribonBridge\diagnostics\geometry-object-id-map.json	LINE=135	"sourceObjectId":  "STRUCTURAL_FLANGE-02",
+C:\AM_TribonBridge\diagnostics\geometry-object-id-map.json	LINE=137	"category":  "STRUCTURAL_FLANGE",
+C:\AM_TribonBridge\diagnostics\geometry-object-id-map.json	LINE=146	"sourceObjectId":  "STRUCTURAL_FLANGE-03",
+C:\AM_TribonBridge\diagnostics\geometry-object-id-map.json	LINE=148	"category":  "STRUCTURAL_FLANGE",
+C:\AM_TribonBridge\diagnostics\geometry-object-label-plan-result.txt	LINE=2	SOURCE_SNAPSHOT	C:\AM_TribonBridge\diagnostics\geometry-object-snapshot.json
+C:\AM_TribonBridge\diagnostics\geometry-object-label-plan-result.txt	LINE=3	SOURCE_ID_MAP	C:\AM_TribonBridge\diagnostics\geometry-object-id-map.json
+C:\AM_TribonBridge\diagnostics\geometry-object-label-plan-result.txt	LINE=4	OUTPUT	C:\AM_TribonBridge\diagnostics\geometry-object-label-plan.json
+C:\AM_TribonBridge\diagnostics\geometry-object-label-plan.json	LINE=5	"sourceSnapshot":  "C:\\AM_TribonBridge\\diagnostics\\geometry-object-snapshot.json",
+C:\AM_TribonBridge\diagnostics\geometry-object-label-plan.json	LINE=6	"sourceIdMap":  "C:\\AM_TribonBridge\\diagnostics\\geometry-object-id-map.json",
+C:\AM_TribonBridge\diagnostics\geometry-object-label-plan.json	LINE=20	"sourceObjectId":  "LIFTING_BEAM-01",
+C:\AM_TribonBridge\diagnostics\geometry-object-label-plan.json	LINE=22	"category":  "LIFTING_BEAM",
+C:\AM_TribonBridge\diagnostics\geometry-object-label-plan.json	LINE=66	"sourceObjectId":  "LIFTING_BEAM-02",
+C:\AM_TribonBridge\diagnostics\geometry-object-label-plan.json	LINE=68	"category":  "LIFTING_BEAM",
+C:\AM_TribonBridge\diagnostics\geometry-object-label-plan.json	LINE=112	"sourceObjectId":  "LIFTING_LUG-01",
+C:\AM_TribonBridge\diagnostics\geometry-object-label-plan.json	LINE=114	"category":  "LIFTING_LUG",
+C:\AM_TribonBridge\diagnostics\geometry-object-label-plan.json	LINE=158	"sourceObjectId":  "LIFTING_LUG-02",
+C:\AM_TribonBridge\diagnostics\geometry-object-label-plan.json	LINE=160	"category":  "LIFTING_LUG",
+C:\AM_TribonBridge\diagnostics\geometry-object-label-plan.json	LINE=204	"sourceObjectId":  "LIFTING_LUG-03",
+C:\AM_TribonBridge\diagnostics\geometry-object-label-plan.json	LINE=206	"category":  "LIFTING_LUG",
+C:\AM_TribonBridge\diagnostics\geometry-object-label-plan.json	LINE=250	"sourceObjectId":  "PIPE_FLANGE_FRONT-01",
+C:\AM_TribonBridge\diagnostics\geometry-object-label-plan.json	LINE=252	"category":  "PIPE_FLANGE_FRONT",
+C:\AM_TribonBridge\diagnostics\geometry-object-label-plan.json	LINE=296	"sourceObjectId":  "PIPE_FLANGE_FRONT-02",
+C:\AM_TribonBridge\diagnostics\geometry-object-label-plan.json	LINE=298	"category":  "PIPE_FLANGE_FRONT",
+C:\AM_TribonBridge\diagnostics\geometry-object-label-plan.json	LINE=342	"sourceObjectId":  "PIPE_FLANGE_FRONT-03",
+C:\AM_TribonBridge\diagnostics\geometry-object-label-plan.json	LINE=344	"category":  "PIPE_FLANGE_FRONT",
+C:\AM_TribonBridge\diagnostics\geometry-object-label-plan.json	LINE=434	"sourceObjectId":  "STRUCTURAL_FLANGE-01",
+C:\AM_TribonBridge\diagnostics\geometry-object-label-plan.json	LINE=436	"category":  "STRUCTURAL_FLANGE",
+C:\AM_TribonBridge\diagnostics\geometry-object-label-plan.json	LINE=480	"sourceObjectId":  "STRUCTURAL_FLANGE-02",
+C:\AM_TribonBridge\diagnostics\geometry-object-label-plan.json	LINE=482	"category":  "STRUCTURAL_FLANGE",
+C:\AM_TribonBridge\diagnostics\geometry-object-label-plan.json	LINE=526	"sourceObjectId":  "STRUCTURAL_FLANGE-03",
+C:\AM_TribonBridge\diagnostics\geometry-object-label-plan.json	LINE=528	"category":  "STRUCTURAL_FLANGE",
+C:\AM_TribonBridge\diagnostics\geometry-object-snapshot-result.txt	LINE=2	SOURCE	C:\AM_TribonBridge\diagnostics\geometry-object-expansion.tsv
+C:\AM_TribonBridge\diagnostics\geometry-object-snapshot-result.txt	LINE=3	OUTPUT	C:\AM_TribonBridge\diagnostics\geometry-object-snapshot.json
+C:\AM_TribonBridge\diagnostics\geometry-object-snapshot.json	LINE=7	"assignedUniqueContourCount": 113,
+C:\AM_TribonBridge\diagnostics\geometry-object-snapshot.json	LINE=11	"objectId": "LIFTING_BEAM-01",
+C:\AM_TribonBridge\diagnostics\geometry-object-snapshot.json	LINE=12	"category": "LIFTING_BEAM",
+C:\AM_TribonBridge\diagnostics\geometry-object-snapshot.json	LINE=32	"objectId": "LIFTING_BEAM-02",
+C:\AM_TribonBridge\diagnostics\geometry-object-snapshot.json	LINE=33	"category": "LIFTING_BEAM",
+C:\AM_TribonBridge\diagnostics\geometry-object-snapshot.json	LINE=53	"objectId": "LIFTING_LUG-01",
+C:\AM_TribonBridge\diagnostics\geometry-object-snapshot.json	LINE=54	"category": "LIFTING_LUG",
+C:\AM_TribonBridge\diagnostics\geometry-object-snapshot.json	LINE=74	"objectId": "LIFTING_LUG-02",
+C:\AM_TribonBridge\diagnostics\geometry-object-snapshot.json	LINE=75	"category": "LIFTING_LUG",
+C:\AM_TribonBridge\diagnostics\geometry-object-snapshot.json	LINE=95	"objectId": "LIFTING_LUG-03",
+C:\AM_TribonBridge\diagnostics\geometry-object-snapshot.json	LINE=96	"category": "LIFTING_LUG",
+C:\AM_TribonBridge\diagnostics\geometry-object-snapshot.json	LINE=116	"objectId": "PIPE_FLANGE_FRONT-01",
+C:\AM_TribonBridge\diagnostics\geometry-object-snapshot.json	LINE=117	"category": "PIPE_FLANGE_FRONT",
+C:\AM_TribonBridge\diagnostics\geometry-object-snapshot.json	LINE=137	"objectId": "PIPE_FLANGE_FRONT-02",
+C:\AM_TribonBridge\diagnostics\geometry-object-snapshot.json	LINE=138	"category": "PIPE_FLANGE_FRONT",
+C:\AM_TribonBridge\diagnostics\geometry-object-snapshot.json	LINE=158	"objectId": "PIPE_FLANGE_FRONT-03",
+C:\AM_TribonBridge\diagnostics\geometry-object-snapshot.json	LINE=159	"category": "PIPE_FLANGE_FRONT",
+C:\AM_TribonBridge\diagnostics\geometry-object-snapshot.json	LINE=200	"objectId": "STRUCTURAL_FLANGE-01",
+C:\AM_TribonBridge\diagnostics\geometry-object-snapshot.json	LINE=201	"category": "STRUCTURAL_FLANGE",
+C:\AM_TribonBridge\diagnostics\geometry-object-snapshot.json	LINE=221	"objectId": "STRUCTURAL_FLANGE-02",
+C:\AM_TribonBridge\diagnostics\geometry-object-snapshot.json	LINE=222	"category": "STRUCTURAL_FLANGE",
+C:\AM_TribonBridge\diagnostics\geometry-object-snapshot.json	LINE=242	"objectId": "STRUCTURAL_FLANGE-03",
+C:\AM_TribonBridge\diagnostics\geometry-object-snapshot.json	LINE=243	"category": "STRUCTURAL_FLANGE",
+C:\AM_TribonBridge\diagnostics\lifting-beam-highlight-result.txt	LINE=3	HIGHLIGHTED	handle: 65573
+C:\AM_TribonBridge\diagnostics\lifting-beam-highlight-result.txt	LINE=4	HIGHLIGHTED	handle: 65574
+C:\AM_TribonBridge\diagnostics\lifting-beam-highlight-result.txt	LINE=5	HIGHLIGHTED	handle: 65575
+C:\AM_TribonBridge\diagnostics\lifting-beam-highlight-result.txt	LINE=6	HIGHLIGHTED	handle: 65576
+C:\AM_TribonBridge\diagnostics\lifting-beam-highlight-result.txt	LINE=7	HIGHLIGHTED	handle: 65577
+C:\AM_TribonBridge\diagnostics\lifting-beam-highlight-result.txt	LINE=8	HIGHLIGHTED	handle: 65578
+C:\AM_TribonBridge\diagnostics\lifting-beam-highlight-result.txt	LINE=9	HIGHLIGHTED	handle: 65587
+C:\AM_TribonBridge\diagnostics\lifting-beam-highlight-result.txt	LINE=10	HIGHLIGHTED	handle: 65588
+C:\AM_TribonBridge\diagnostics\lifting-beam-highlight-result.txt	LINE=11	HIGHLIGHTED	handle: 65589
+C:\AM_TribonBridge\diagnostics\lifting-beam-highlight-result.txt	LINE=12	HIGHLIGHTED	handle: 65590
+C:\AM_TribonBridge\diagnostics\lifting-beam-highlight-result.txt	LINE=13	HIGHLIGHTED	handle: 65591
+C:\AM_TribonBridge\diagnostics\lifting-beam-highlight-result.txt	LINE=14	HIGHLIGHTED	handle: 65592
+C:\AM_TribonBridge\diagnostics\lifting-beam-highlight-result.txt	LINE=18	HIGHLIGHTED_COUNT	12
+C:\AM_TribonBridge\diagnostics\lifting-lug-highlight-result.txt	LINE=3	HIGHLIGHTED	handle: 65600
+C:\AM_TribonBridge\diagnostics\lifting-lug-highlight-result.txt	LINE=4	HIGHLIGHTED	handle: 65601
+C:\AM_TribonBridge\diagnostics\lifting-lug-highlight-result.txt	LINE=5	HIGHLIGHTED	handle: 65602
+C:\AM_TribonBridge\diagnostics\lifting-lug-highlight-result.txt	LINE=6	HIGHLIGHTED	handle: 65603
+C:\AM_TribonBridge\diagnostics\lifting-lug-highlight-result.txt	LINE=7	HIGHLIGHTED	handle: 65604
+C:\AM_TribonBridge\diagnostics\lifting-lug-highlight-result.txt	LINE=8	HIGHLIGHTED	handle: 65606
+C:\AM_TribonBridge\diagnostics\lifting-lug-highlight-result.txt	LINE=9	HIGHLIGHTED	handle: 65607
+C:\AM_TribonBridge\diagnostics\lifting-lug-highlight-result.txt	LINE=10	HIGHLIGHTED	handle: 65608
+C:\AM_TribonBridge\diagnostics\lifting-lug-highlight-result.txt	LINE=11	HIGHLIGHTED	handle: 65609
+C:\AM_TribonBridge\diagnostics\lifting-lug-highlight-result.txt	LINE=12	HIGHLIGHTED	handle: 65610
+C:\AM_TribonBridge\diagnostics\lifting-lug-highlight-result.txt	LINE=13	HIGHLIGHTED	handle: 65616
+C:\AM_TribonBridge\diagnostics\lifting-lug-highlight-result.txt	LINE=14	HIGHLIGHTED	handle: 65617
+C:\AM_TribonBridge\diagnostics\lifting-lug-highlight-result.txt	LINE=15	HIGHLIGHTED	handle: 65618
+C:\AM_TribonBridge\diagnostics\lifting-lug-highlight-result.txt	LINE=16	HIGHLIGHTED	handle: 65619
+C:\AM_TribonBridge\diagnostics\lifting-lug-highlight-result.txt	LINE=17	HIGHLIGHTED	handle: 65620
+C:\AM_TribonBridge\diagnostics\lifting-lug-highlight-result.txt	LINE=21	HIGHLIGHTED_COUNT	15
+C:\AM_TribonBridge\diagnostics\pipe-flange-highlight-result.txt	LINE=3	HIGHLIGHTED	handle: 65622
+C:\AM_TribonBridge\diagnostics\pipe-flange-highlight-result.txt	LINE=4	HIGHLIGHTED	handle: 65623
+C:\AM_TribonBridge\diagnostics\pipe-flange-highlight-result.txt	LINE=5	HIGHLIGHTED	handle: 65624
+C:\AM_TribonBridge\diagnostics\pipe-flange-highlight-result.txt	LINE=6	HIGHLIGHTED	handle: 65625
+C:\AM_TribonBridge\diagnostics\pipe-flange-highlight-result.txt	LINE=7	HIGHLIGHTED	handle: 65626
+C:\AM_TribonBridge\diagnostics\pipe-flange-highlight-result.txt	LINE=8	HIGHLIGHTED	handle: 65627
+C:\AM_TribonBridge\diagnostics\pipe-flange-highlight-result.txt	LINE=9	HIGHLIGHTED	handle: 65628
+C:\AM_TribonBridge\diagnostics\pipe-flange-highlight-result.txt	LINE=10	HIGHLIGHTED	handle: 65629
+C:\AM_TribonBridge\diagnostics\pipe-flange-highlight-result.txt	LINE=11	HIGHLIGHTED	handle: 65630
+C:\AM_TribonBridge\diagnostics\pipe-flange-highlight-result.txt	LINE=12	HIGHLIGHTED	handle: 65631
+C:\AM_TribonBridge\diagnostics\pipe-flange-highlight-result.txt	LINE=13	HIGHLIGHTED	handle: 65632
+C:\AM_TribonBridge\diagnostics\pipe-flange-highlight-result.txt	LINE=14	HIGHLIGHTED	handle: 65636
+C:\AM_TribonBridge\diagnostics\pipe-flange-highlight-result.txt	LINE=15	HIGHLIGHTED	handle: 65637
+C:\AM_TribonBridge\diagnostics\pipe-flange-highlight-result.txt	LINE=16	HIGHLIGHTED	handle: 65638
+C:\AM_TribonBridge\diagnostics\pipe-flange-highlight-result.txt	LINE=17	HIGHLIGHTED	handle: 65639
+C:\AM_TribonBridge\diagnostics\pipe-flange-highlight-result.txt	LINE=18	HIGHLIGHTED	handle: 65640
+C:\AM_TribonBridge\diagnostics\pipe-flange-highlight-result.txt	LINE=19	HIGHLIGHTED	handle: 65641
+C:\AM_TribonBridge\diagnostics\pipe-flange-highlight-result.txt	LINE=20	HIGHLIGHTED	handle: 65642
+C:\AM_TribonBridge\diagnostics\pipe-flange-highlight-result.txt	LINE=21	HIGHLIGHTED	handle: 65643
+C:\AM_TribonBridge\diagnostics\pipe-flange-highlight-result.txt	LINE=22	HIGHLIGHTED	handle: 65644
+C:\AM_TribonBridge\diagnostics\pipe-flange-highlight-result.txt	LINE=23	HIGHLIGHTED	handle: 65648
+C:\AM_TribonBridge\diagnostics\pipe-flange-highlight-result.txt	LINE=24	HIGHLIGHTED	handle: 65649
+C:\AM_TribonBridge\diagnostics\pipe-flange-highlight-result.txt	LINE=25	HIGHLIGHTED	handle: 65650
+C:\AM_TribonBridge\diagnostics\pipe-flange-highlight-result.txt	LINE=26	HIGHLIGHTED	handle: 65651
+C:\AM_TribonBridge\diagnostics\pipe-flange-highlight-result.txt	LINE=27	HIGHLIGHTED	handle: 65652
+C:\AM_TribonBridge\diagnostics\pipe-flange-highlight-result.txt	LINE=28	HIGHLIGHTED	handle: 65653
+C:\AM_TribonBridge\diagnostics\pipe-flange-highlight-result.txt	LINE=29	HIGHLIGHTED	handle: 65654
+C:\AM_TribonBridge\diagnostics\pipe-flange-highlight-result.txt	LINE=33	HIGHLIGHTED_COUNT	27
+C:\AM_TribonBridge\diagnostics\pipe-flange-side-highlight-result.txt	LINE=3	HIGHLIGHTED	handle: 65658
+C:\AM_TribonBridge\diagnostics\pipe-flange-side-highlight-result.txt	LINE=4	HIGHLIGHTED	handle: 65659
+C:\AM_TribonBridge\diagnostics\pipe-flange-side-highlight-result.txt	LINE=5	HIGHLIGHTED	handle: 65660
+C:\AM_TribonBridge\diagnostics\pipe-flange-side-highlight-result.txt	LINE=6	HIGHLIGHTED	handle: 65661
+C:\AM_TribonBridge\diagnostics\pipe-flange-side-highlight-result.txt	LINE=7	HIGHLIGHTED	handle: 65662
+C:\AM_TribonBridge\diagnostics\pipe-flange-side-highlight-result.txt	LINE=8	HIGHLIGHTED	handle: 65663
+C:\AM_TribonBridge\diagnostics\pipe-flange-side-highlight-result.txt	LINE=9	HIGHLIGHTED	handle: 65664
+C:\AM_TribonBridge\diagnostics\pipe-flange-side-highlight-result.txt	LINE=10	HIGHLIGHTED	handle: 65665
+C:\AM_TribonBridge\diagnostics\pipe-flange-side-highlight-result.txt	LINE=11	HIGHLIGHTED	handle: 65666
+C:\AM_TribonBridge\diagnostics\pipe-flange-side-highlight-result.txt	LINE=12	HIGHLIGHTED	handle: 65667
+C:\AM_TribonBridge\diagnostics\pipe-flange-side-highlight-result.txt	LINE=16	HIGHLIGHTED_COUNT	10
+C:\AM_TribonBridge\diagnostics\structural-flange-highlight-result.txt	LINE=3	HIGHLIGHTED	handle: 65669
+C:\AM_TribonBridge\diagnostics\structural-flange-highlight-result.txt	LINE=4	HIGHLIGHTED	handle: 65670
+C:\AM_TribonBridge\diagnostics\structural-flange-highlight-result.txt	LINE=5	HIGHLIGHTED	handle: 65671
+C:\AM_TribonBridge\diagnostics\structural-flange-highlight-result.txt	LINE=6	HIGHLIGHTED	handle: 65672
+C:\AM_TribonBridge\diagnostics\structural-flange-highlight-result.txt	LINE=7	HIGHLIGHTED	handle: 65673
+C:\AM_TribonBridge\diagnostics\structural-flange-highlight-result.txt	LINE=8	HIGHLIGHTED	handle: 65674
+C:\AM_TribonBridge\diagnostics\structural-flange-highlight-result.txt	LINE=9	HIGHLIGHTED	handle: 65675
+C:\AM_TribonBridge\diagnostics\structural-flange-highlight-result.txt	LINE=10	HIGHLIGHTED	handle: 65676
+C:\AM_TribonBridge\diagnostics\structural-flange-highlight-result.txt	LINE=11	HIGHLIGHTED	handle: 65677
+C:\AM_TribonBridge\diagnostics\structural-flange-highlight-result.txt	LINE=12	HIGHLIGHTED	handle: 65678
+C:\AM_TribonBridge\diagnostics\structural-flange-highlight-result.txt	LINE=13	HIGHLIGHTED	handle: 65679
+C:\AM_TribonBridge\diagnostics\structural-flange-highlight-result.txt	LINE=14	HIGHLIGHTED	handle: 65680
+C:\AM_TribonBridge\diagnostics\structural-flange-highlight-result.txt	LINE=15	HIGHLIGHTED	handle: 65682
+C:\AM_TribonBridge\diagnostics\structural-flange-highlight-result.txt	LINE=16	HIGHLIGHTED	handle: 65683
+C:\AM_TribonBridge\diagnostics\structural-flange-highlight-result.txt	LINE=17	HIGHLIGHTED	handle: 65684
+C:\AM_TribonBridge\diagnostics\structural-flange-highlight-result.txt	LINE=18	HIGHLIGHTED	handle: 65685
+C:\AM_TribonBridge\diagnostics\structural-flange-highlight-result.txt	LINE=19	HIGHLIGHTED	handle: 65686
+C:\AM_TribonBridge\diagnostics\structural-flange-highlight-result.txt	LINE=20	HIGHLIGHTED	handle: 65687
+C:\AM_TribonBridge\diagnostics\structural-flange-highlight-result.txt	LINE=21	HIGHLIGHTED	handle: 65688
+C:\AM_TribonBridge\diagnostics\structural-flange-highlight-result.txt	LINE=22	HIGHLIGHTED	handle: 65689
+C:\AM_TribonBridge\diagnostics\structural-flange-highlight-result.txt	LINE=23	HIGHLIGHTED	handle: 65691
+C:\AM_TribonBridge\diagnostics\structural-flange-highlight-result.txt	LINE=24	HIGHLIGHTED	handle: 65692
+C:\AM_TribonBridge\diagnostics\structural-flange-highlight-result.txt	LINE=25	HIGHLIGHTED	handle: 65693
+C:\AM_TribonBridge\diagnostics\structural-flange-highlight-result.txt	LINE=26	HIGHLIGHTED	handle: 65694
+C:\AM_TribonBridge\diagnostics\structural-flange-highlight-result.txt	LINE=27	HIGHLIGHTED	handle: 65695
+C:\AM_TribonBridge\diagnostics\structural-flange-highlight-result.txt	LINE=28	HIGHLIGHTED	handle: 65696
+C:\AM_TribonBridge\diagnostics\structural-flange-highlight-result.txt	LINE=29	HIGHLIGHTED	handle: 65697
+C:\AM_TribonBridge\diagnostics\structural-flange-highlight-result.txt	LINE=30	HIGHLIGHTED	handle: 65698
+C:\AM_TribonBridge\diagnostics\structural-flange-highlight-result.txt	LINE=34	HIGHLIGHTED_COUNT	28
+C:\AM_TribonBridge\tools\apply_geometry_object_label_relayout.py	LINE=10	PLAN = r"C:\AM_TribonBridge\diagnostics\geometry-object-label-relayout-plan.tsv"
+C:\AM_TribonBridge\tools\apply_geometry_object_label_relayout.py	LINE=12	OUTPUT = r"C:\AM_TribonBridge\diagnostics\geometry-object-label-relayout-apply-result.tsv"
+C:\AM_TribonBridge\tools\audit_geometry_object_label_layout.py	LINE=9	PLAN = r"C:\AM_TribonBridge\diagnostics\geometry-object-label-plan.json"
+C:\AM_TribonBridge\tools\audit_geometry_object_label_layout.py	LINE=10	OUTPUT = r"C:\AM_TribonBridge\diagnostics\geometry-object-label-layout-audit.tsv"
+C:\AM_TribonBridge\tools\clear_demo_highlight.py	LINE=7	OUTPUT = r"C:\AM_TribonBridge\diagnostics\demo-clear-highlight-result.txt"
+C:\AM_TribonBridge\tools\clear_demo_highlight.py	LINE=35	kcs_draft.highlight_off(0)
+C:\AM_TribonBridge\tools\clear_demo_highlight.py	LINE=43	"FORMAT\tAM_DEMO_CLEAR_HIGHLIGHT_V1",
+C:\AM_TribonBridge\tools\clear_demo_highlight.py	LINE=44	"HIGHLIGHT_CLEARED\t1",
+C:\AM_TribonBridge\tools\clear_demo_highlight.py	LINE=51	"FORMAT\tAM_DEMO_CLEAR_HIGHLIGHT_V1",
+C:\AM_TribonBridge\tools\create_all_object_labels.py	LINE=19	"Red": "LIFTING_BEAM",
+C:\AM_TribonBridge\tools\create_all_object_labels.py	LINE=20	"Magenta": "LIFTING_LUG",
+C:\AM_TribonBridge\tools\create_all_object_labels.py	LINE=22	"Blue": "STRUCTURAL_FLANGE"
+C:\AM_TribonBridge\tools\create_all_object_labels.py	LINE=26	"LB-": "LIFTING_BEAM",
+C:\AM_TribonBridge\tools\create_all_object_labels.py	LINE=27	"LL-": "LIFTING_LUG",
+C:\AM_TribonBridge\tools\create_all_object_labels.py	LINE=29	"SF-": "STRUCTURAL_FLANGE"
+C:\AM_TribonBridge\tools\create_all_object_labels.py	LINE=33	"LIFTING_BEAM": 2,
+C:\AM_TribonBridge\tools\create_all_object_labels.py	LINE=34	"LIFTING_LUG": 3,
+C:\AM_TribonBridge\tools\create_all_object_labels.py	LINE=36	"STRUCTURAL_FLANGE": 3
+C:\AM_TribonBridge\tools\detect_lifting_beam_candidates.py	LINE=814	"FORMAT\tAM_LIFTING_BEAM_CANDIDATES_V1"
+C:\AM_TribonBridge\tools\detect_lifting_lug_candidates.py	LINE=616	"FORMAT\tAM_LIFTING_LUG_CANDIDATES_V1"
+C:\AM_TribonBridge\tools\detect_structural_flange_candidates.py	LINE=535	"FORMAT\tAM_STRUCTURAL_FLANGE_CANDIDATES_V1"
+C:\AM_TribonBridge\tools\expand_detected_objects_by_connectivity.py	LINE=6	OUTPUT = r"C:\AM_TribonBridge\diagnostics\geometry-object-expansion.tsv"
+C:\AM_TribonBridge\tools\expand_detected_objects_by_connectivity.py	LINE=13	"category": "PIPE_FLANGE_FRONT",
+C:\AM_TribonBridge\tools\expand_detected_objects_by_connectivity.py	LINE=23	"category": "LIFTING_LUG",
+C:\AM_TribonBridge\tools\expand_detected_objects_by_connectivity.py	LINE=28	"category": "LIFTING_BEAM",
+C:\AM_TribonBridge\tools\expand_detected_objects_by_connectivity.py	LINE=33	"category": "STRUCTURAL_FLANGE",
+C:\AM_TribonBridge\tools\export_geometry_object_snapshot.py	LINE=5	SOURCE = r"C:\AM_TribonBridge\diagnostics\geometry-object-expansion.tsv"
+C:\AM_TribonBridge\tools\export_geometry_object_snapshot.py	LINE=6	PIPELINE_RESULT = r"C:\AM_TribonBridge\diagnostics\geometry-object-extraction-pipeline-result.txt"
+C:\AM_TribonBridge\tools\export_geometry_object_snapshot.py	LINE=8	OUTPUT = r"C:\AM_TribonBridge\diagnostics\geometry-object-snapshot.json"
+C:\AM_TribonBridge\tools\export_geometry_object_snapshot.py	LINE=9	LOG = r"C:\AM_TribonBridge\diagnostics\geometry-object-snapshot-result.txt"
+C:\AM_TribonBridge\tools\export_geometry_object_snapshot.py	LINE=321	"  \"assignedUniqueContourCount\": %s,\n" %
+C:\AM_TribonBridge\tools\group_extracted_test_objects.py	LINE=11	"Red": "LIFTING_BEAM",
+C:\AM_TribonBridge\tools\group_extracted_test_objects.py	LINE=12	"Magenta": "LIFTING_LUG",
+C:\AM_TribonBridge\tools\group_extracted_test_objects.py	LINE=14	"Blue": "STRUCTURAL_FLANGE"
+C:\AM_TribonBridge\tools\group_extracted_test_objects.py	LINE=18	"LB-": "LIFTING_BEAM",
+C:\AM_TribonBridge\tools\group_extracted_test_objects.py	LINE=19	"LL-": "LIFTING_LUG",
+C:\AM_TribonBridge\tools\group_extracted_test_objects.py	LINE=21	"SF-": "STRUCTURAL_FLANGE"
+C:\AM_TribonBridge\tools\group_objects_by_connectivity.py	LINE=13	"Red": "LIFTING_BEAM",
+C:\AM_TribonBridge\tools\group_objects_by_connectivity.py	LINE=14	"Magenta": "LIFTING_LUG",
+C:\AM_TribonBridge\tools\group_objects_by_connectivity.py	LINE=16	"Blue": "STRUCTURAL_FLANGE"
+C:\AM_TribonBridge\tools\group_objects_by_connectivity.py	LINE=20	"LB-": "LIFTING_BEAM",
+C:\AM_TribonBridge\tools\group_objects_by_connectivity.py	LINE=21	"LL-": "LIFTING_LUG",
+C:\AM_TribonBridge\tools\group_objects_by_connectivity.py	LINE=23	"SF-": "STRUCTURAL_FLANGE"
+C:\AM_TribonBridge\tools\group_objects_by_connectivity.py	LINE=27	"LIFTING_BEAM": 2,
+C:\AM_TribonBridge\tools\group_objects_by_connectivity.py	LINE=28	"LIFTING_LUG": 3,
+C:\AM_TribonBridge\tools\group_objects_by_connectivity.py	LINE=30	"STRUCTURAL_FLANGE": 3
+C:\AM_TribonBridge\tools\highlight_all_expanded_objects.py	LINE=6	SOURCE = r"C:\AM_TribonBridge\diagnostics\geometry-object-expansion.tsv"
+C:\AM_TribonBridge\tools\highlight_all_expanded_objects.py	LINE=7	OUTPUT = r"C:\AM_TribonBridge\diagnostics\all-expanded-objects-highlight-result.txt"
+C:\AM_TribonBridge\tools\highlight_all_expanded_objects.py	LINE=143	kcs_draft.highlight_off(0)
+C:\AM_TribonBridge\tools\highlight_all_expanded_objects.py	LINE=148	highlighted_count = 0
+C:\AM_TribonBridge\tools\highlight_all_expanded_objects.py	LINE=157	object_highlighted = 0
+C:\AM_TribonBridge\tools\highlight_all_expanded_objects.py	LINE=187	kcs_draft.element_highlight(
+C:\AM_TribonBridge\tools\highlight_all_expanded_objects.py	LINE=191	highlighted_count = (
+C:\AM_TribonBridge\tools\highlight_all_expanded_objects.py	LINE=192	highlighted_count + 1
+C:\AM_TribonBridge\tools\highlight_all_expanded_objects.py	LINE=195	object_highlighted = (
+C:\AM_TribonBridge\tools\highlight_all_expanded_objects.py	LINE=196	object_highlighted + 1
+C:\AM_TribonBridge\tools\highlight_all_expanded_objects.py	LINE=216	"\tHIGHLIGHTED\t%s"
+C:\AM_TribonBridge\tools\highlight_all_expanded_objects.py	LINE=228	str(object_highlighted),
+C:\AM_TribonBridge\tools\highlight_all_expanded_objects.py	LINE=245	"HIGHLIGHTED_COUNT\t%s" %
+C:\AM_TribonBridge\tools\highlight_all_expanded_objects.py	LINE=246	str(highlighted_count)
+C:\AM_TribonBridge\tools\highlight_all_expanded_objects.py	LINE=264	highlighted_count == 113 and
+C:\AM_TribonBridge\tools\highlight_all_flange_objects_for_demo.py	LINE=9	SNAPSHOT = r"C:\AM_TribonBridge\diagnostics\geometry-object-snapshot.json"
+C:\AM_TribonBridge\tools\highlight_all_flange_objects_for_demo.py	LINE=10	OUTPUT = r"C:\AM_TribonBridge\diagnostics\demo-highlight-all-flanges-result.tsv"
+C:\AM_TribonBridge\tools\highlight_all_flange_objects_for_demo.py	LINE=89	if category not in ("PIPE_FLANGE_FRONT", "PIPE_FLANGE_SIDE", "STRUCTURAL_FLANGE"):
+C:\AM_TribonBridge\tools\highlight_all_flange_objects_for_demo.py	LINE=136	"FORMAT\tAM_DEMO_HIGHLIGHT_ALL_FLANGES_V1",
+C:\AM_TribonBridge\tools\highlight_all_flange_objects_for_demo.py	LINE=184	kcs_draft.highlight_off(0)
+C:\AM_TribonBridge\tools\highlight_all_flange_objects_for_demo.py	LINE=188	highlighted_count = 0
+C:\AM_TribonBridge\tools\highlight_all_flange_objects_for_demo.py	LINE=198	kcs_draft.element_highlight(
+C:\AM_TribonBridge\tools\highlight_all_flange_objects_for_demo.py	LINE=201	highlighted_count += 1
+C:\AM_TribonBridge\tools\highlight_all_flange_objects_for_demo.py	LINE=204	"HIGHLIGHT_FAILURE\t%s\t%s" % (
+C:\AM_TribonBridge\tools\highlight_all_flange_objects_for_demo.py	LINE=215	lines.append("TARGET_CATEGORY\tPIPE_FLANGE_FRONT")
+C:\AM_TribonBridge\tools\highlight_all_flange_objects_for_demo.py	LINE=217	lines.append("TARGET_CATEGORY\tSTRUCTURAL_FLANGE")
+C:\AM_TribonBridge\tools\highlight_all_flange_objects_for_demo.py	LINE=236	"HIGHLIGHT_SUCCESS_COUNT\t" +
+C:\AM_TribonBridge\tools\highlight_all_flange_objects_for_demo.py	LINE=237	clean(highlighted_count)
+C:\AM_TribonBridge\tools\highlight_all_flange_objects_for_demo.py	LINE=244	"HIGHLIGHT_FAILURE_COUNT\t" +
+C:\AM_TribonBridge\tools\highlight_all_flange_objects_for_demo.py	LINE=265	highlighted_count == EXPECTED_HANDLE_COUNT
+C:\AM_TribonBridge\tools\highlight_all_flange_objects_for_demo.py	LINE=278	"FORMAT\tAM_DEMO_HIGHLIGHT_ALL_FLANGES_V1",
+C:\AM_TribonBridge\tools\highlight_extracted_test_objects.py	LINE=7	OUTPUT = r"C:\AM_TribonBridge\diagnostics\extracted-highlight-summary.txt"
+C:\AM_TribonBridge\tools\highlight_extracted_test_objects.py	LINE=10	"Red": "LIFTING_BEAM",
+C:\AM_TribonBridge\tools\highlight_extracted_test_objects.py	LINE=11	"Magenta": "LIFTING_LUG",
+C:\AM_TribonBridge\tools\highlight_extracted_test_objects.py	LINE=13	"Blue": "STRUCTURAL_FLANGE"
+C:\AM_TribonBridge\tools\highlight_extracted_test_objects.py	LINE=77	"LIFTING_BEAM": 0,
+C:\AM_TribonBridge\tools\highlight_extracted_test_objects.py	LINE=78	"LIFTING_LUG": 0,
+C:\AM_TribonBridge\tools\highlight_extracted_test_objects.py	LINE=80	"STRUCTURAL_FLANGE": 0
+C:\AM_TribonBridge\tools\highlight_extracted_test_objects.py	LINE=87	# Clear only previous temporary highlights.
+C:\AM_TribonBridge\tools\highlight_extracted_test_objects.py	LINE=88	kcs_draft.highlight_off(0)
+C:\AM_TribonBridge\tools\highlight_extracted_test_objects.py	LINE=112	kcs_draft.element_highlight(handle)
+C:\AM_TribonBridge\tools\highlight_extracted_test_objects.py	LINE=124	"HIGHLIGHT_ERROR=%s | %s\n" % (
+C:\AM_TribonBridge\tools\highlight_extracted_test_objects.py	LINE=156	"LIFTING_BEAM_GEOMETRY_COUNT=%s\n" %
+C:\AM_TribonBridge\tools\highlight_extracted_test_objects.py	LINE=157	str(counts["LIFTING_BEAM"])
+C:\AM_TribonBridge\tools\highlight_extracted_test_objects.py	LINE=161	"LIFTING_LUG_GEOMETRY_COUNT=%s\n" %
+C:\AM_TribonBridge\tools\highlight_extracted_test_objects.py	LINE=162	str(counts["LIFTING_LUG"])
+C:\AM_TribonBridge\tools\highlight_extracted_test_objects.py	LINE=171	"STRUCTURAL_FLANGE_GEOMETRY_COUNT=%s\n" %
+C:\AM_TribonBridge\tools\highlight_extracted_test_objects.py	LINE=172	str(counts["STRUCTURAL_FLANGE"])
+C:\AM_TribonBridge\tools\highlight_extracted_test_objects.py	LINE=176	"TOTAL_HIGHLIGHTED=%s\n" %
+C:\AM_TribonBridge\tools\highlight_lifting_beam_candidates.py	LINE=7	OUTPUT = r"C:\AM_TribonBridge\diagnostics\lifting-beam-highlight-result.txt"
+C:\AM_TribonBridge\tools\highlight_lifting_beam_candidates.py	LINE=117	kcs_draft.highlight_off(0)
+C:\AM_TribonBridge\tools\highlight_lifting_beam_candidates.py	LINE=122	highlighted_count = 0
+C:\AM_TribonBridge\tools\highlight_lifting_beam_candidates.py	LINE=150	kcs_draft.element_highlight(
+C:\AM_TribonBridge\tools\highlight_lifting_beam_candidates.py	LINE=154	highlighted_count = (
+C:\AM_TribonBridge\tools\highlight_lifting_beam_candidates.py	LINE=155	highlighted_count + 1
+C:\AM_TribonBridge\tools\highlight_lifting_beam_candidates.py	LINE=160	"HIGHLIGHTED\t%s" %
+C:\AM_TribonBridge\tools\highlight_lifting_beam_candidates.py	LINE=186	"HIGHLIGHTED_COUNT\t%s" %
+C:\AM_TribonBridge\tools\highlight_lifting_beam_candidates.py	LINE=187	str(highlighted_count)
+C:\AM_TribonBridge\tools\highlight_lifting_beam_candidates.py	LINE=203	highlighted_count > 0 and
+C:\AM_TribonBridge\tools\highlight_lifting_lug_candidates.py	LINE=7	OUTPUT = r"C:\AM_TribonBridge\diagnostics\lifting-lug-highlight-result.txt"
+C:\AM_TribonBridge\tools\highlight_lifting_lug_candidates.py	LINE=112	kcs_draft.highlight_off(0)
+C:\AM_TribonBridge\tools\highlight_lifting_lug_candidates.py	LINE=117	highlighted_count = 0
+C:\AM_TribonBridge\tools\highlight_lifting_lug_candidates.py	LINE=145	kcs_draft.element_highlight(
+C:\AM_TribonBridge\tools\highlight_lifting_lug_candidates.py	LINE=149	highlighted_count = (
+C:\AM_TribonBridge\tools\highlight_lifting_lug_candidates.py	LINE=150	highlighted_count + 1
+C:\AM_TribonBridge\tools\highlight_lifting_lug_candidates.py	LINE=155	"HIGHLIGHTED\t%s" %
+C:\AM_TribonBridge\tools\highlight_lifting_lug_candidates.py	LINE=181	"HIGHLIGHTED_COUNT\t%s" %
+C:\AM_TribonBridge\tools\highlight_lifting_lug_candidates.py	LINE=182	str(highlighted_count)
+C:\AM_TribonBridge\tools\highlight_lifting_lug_candidates.py	LINE=198	highlighted_count > 0 and
+C:\AM_TribonBridge\tools\highlight_lifting_objects_for_demo.py	LINE=9	SNAPSHOT = r"C:\AM_TribonBridge\diagnostics\geometry-object-snapshot.json"
+C:\AM_TribonBridge\tools\highlight_lifting_objects_for_demo.py	LINE=10	OUTPUT = r"C:\AM_TribonBridge\diagnostics\demo-highlight-lifting-objects-result.tsv"
+C:\AM_TribonBridge\tools\highlight_lifting_objects_for_demo.py	LINE=89	if category not in ("LIFTING_BEAM", "LIFTING_LUG"):
+C:\AM_TribonBridge\tools\highlight_lifting_objects_for_demo.py	LINE=136	"FORMAT\tAM_DEMO_HIGHLIGHT_LIFTING_OBJECTS_V2",
+C:\AM_TribonBridge\tools\highlight_lifting_objects_for_demo.py	LINE=184	kcs_draft.highlight_off(0)
+C:\AM_TribonBridge\tools\highlight_lifting_objects_for_demo.py	LINE=188	highlighted_count = 0
+C:\AM_TribonBridge\tools\highlight_lifting_objects_for_demo.py	LINE=198	kcs_draft.element_highlight(
+C:\AM_TribonBridge\tools\highlight_lifting_objects_for_demo.py	LINE=201	highlighted_count += 1
+C:\AM_TribonBridge\tools\highlight_lifting_objects_for_demo.py	LINE=204	"HIGHLIGHT_FAILURE\t%s\t%s" % (
+C:\AM_TribonBridge\tools\highlight_lifting_objects_for_demo.py	LINE=215	lines.append("TARGET_CATEGORY\tLIFTING_BEAM")
+C:\AM_TribonBridge\tools\highlight_lifting_objects_for_demo.py	LINE=216	lines.append("TARGET_CATEGORY\tLIFTING_LUG")
+C:\AM_TribonBridge\tools\highlight_lifting_objects_for_demo.py	LINE=235	"HIGHLIGHT_SUCCESS_COUNT\t" +
+C:\AM_TribonBridge\tools\highlight_lifting_objects_for_demo.py	LINE=236	clean(highlighted_count)
+C:\AM_TribonBridge\tools\highlight_lifting_objects_for_demo.py	LINE=243	"HIGHLIGHT_FAILURE_COUNT\t" +
+C:\AM_TribonBridge\tools\highlight_lifting_objects_for_demo.py	LINE=264	highlighted_count == EXPECTED_HANDLE_COUNT
+C:\AM_TribonBridge\tools\highlight_lifting_objects_for_demo.py	LINE=277	"FORMAT\tAM_DEMO_HIGHLIGHT_LIFTING_OBJECTS_V2",
+C:\AM_TribonBridge\tools\highlight_pipe_flange_candidates.py	LINE=7	OUTPUT = r"C:\AM_TribonBridge\diagnostics\pipe-flange-highlight-result.txt"
+C:\AM_TribonBridge\tools\highlight_pipe_flange_candidates.py	LINE=116	kcs_draft.highlight_off(0)
+C:\AM_TribonBridge\tools\highlight_pipe_flange_candidates.py	LINE=121	highlighted_count = 0
+C:\AM_TribonBridge\tools\highlight_pipe_flange_candidates.py	LINE=148	kcs_draft.element_highlight(
+C:\AM_TribonBridge\tools\highlight_pipe_flange_candidates.py	LINE=152	highlighted_count = (
+C:\AM_TribonBridge\tools\highlight_pipe_flange_candidates.py	LINE=153	highlighted_count + 1
+C:\AM_TribonBridge\tools\highlight_pipe_flange_candidates.py	LINE=158	"HIGHLIGHTED\t%s" %
+C:\AM_TribonBridge\tools\highlight_pipe_flange_candidates.py	LINE=184	"HIGHLIGHTED_COUNT\t%s" %
+C:\AM_TribonBridge\tools\highlight_pipe_flange_candidates.py	LINE=185	str(highlighted_count)
+C:\AM_TribonBridge\tools\highlight_pipe_flange_candidates.py	LINE=201	highlighted_count > 0 and
+C:\AM_TribonBridge\tools\highlight_pipe_flange_side_candidates.py	LINE=7	OUTPUT = r"C:\AM_TribonBridge\diagnostics\pipe-flange-side-highlight-result.txt"
+C:\AM_TribonBridge\tools\highlight_pipe_flange_side_candidates.py	LINE=110	kcs_draft.highlight_off(0)
+C:\AM_TribonBridge\tools\highlight_pipe_flange_side_candidates.py	LINE=115	highlighted_count = 0
+C:\AM_TribonBridge\tools\highlight_pipe_flange_side_candidates.py	LINE=143	kcs_draft.element_highlight(
+C:\AM_TribonBridge\tools\highlight_pipe_flange_side_candidates.py	LINE=147	highlighted_count = (
+C:\AM_TribonBridge\tools\highlight_pipe_flange_side_candidates.py	LINE=148	highlighted_count + 1
+C:\AM_TribonBridge\tools\highlight_pipe_flange_side_candidates.py	LINE=153	"HIGHLIGHTED\t%s" %
+C:\AM_TribonBridge\tools\highlight_pipe_flange_side_candidates.py	LINE=179	"HIGHLIGHTED_COUNT\t%s" %
+C:\AM_TribonBridge\tools\highlight_pipe_flange_side_candidates.py	LINE=180	str(highlighted_count)
+C:\AM_TribonBridge\tools\highlight_pipe_flange_side_candidates.py	LINE=196	highlighted_count > 0 and
+C:\AM_TribonBridge\tools\highlight_structural_flange_candidates.py	LINE=7	OUTPUT = r"C:\AM_TribonBridge\diagnostics\structural-flange-highlight-result.txt"
+C:\AM_TribonBridge\tools\highlight_structural_flange_candidates.py	LINE=110	kcs_draft.highlight_off(0)
+C:\AM_TribonBridge\tools\highlight_structural_flange_candidates.py	LINE=115	highlighted_count = 0
+C:\AM_TribonBridge\tools\highlight_structural_flange_candidates.py	LINE=143	kcs_draft.element_highlight(
+C:\AM_TribonBridge\tools\highlight_structural_flange_candidates.py	LINE=147	highlighted_count = (
+C:\AM_TribonBridge\tools\highlight_structural_flange_candidates.py	LINE=148	highlighted_count + 1
+C:\AM_TribonBridge\tools\highlight_structural_flange_candidates.py	LINE=153	"HIGHLIGHTED\t%s" %
+C:\AM_TribonBridge\tools\highlight_structural_flange_candidates.py	LINE=179	"HIGHLIGHTED_COUNT\t%s" %
+C:\AM_TribonBridge\tools\highlight_structural_flange_candidates.py	LINE=180	str(highlighted_count)
+C:\AM_TribonBridge\tools\highlight_structural_flange_candidates.py	LINE=196	highlighted_count > 0 and
+C:\AM_TribonBridge\tools\plan_geometry_object_label_relayout.py	LINE=9	PLAN = r"C:\AM_TribonBridge\diagnostics\geometry-object-label-plan.json"
+C:\AM_TribonBridge\tools\plan_geometry_object_label_relayout.py	LINE=10	OUTPUT = r"C:\AM_TribonBridge\diagnostics\geometry-object-label-relayout-plan.tsv"
+C:\AM_TribonBridge\tools\plan_geometry_object_label_relayout.py	LINE=16	"LIFTING_BEAM": 7.0,
+C:\AM_TribonBridge\tools\plan_geometry_object_label_relayout.py	LINE=17	"LIFTING_LUG": 6.0,
+C:\AM_TribonBridge\tools\plan_geometry_object_label_relayout.py	LINE=18	"PIPE_FLANGE_FRONT": 6.0,
+C:\AM_TribonBridge\tools\plan_geometry_object_label_relayout.py	LINE=20	"STRUCTURAL_FLANGE": 7.0
+C:\AM_TribonBridge\tools\preflight_geometry_object_labels.py	LINE=8	PLAN = r"C:\AM_TribonBridge\diagnostics\geometry-object-label-plan.json"
+C:\AM_TribonBridge\tools\preflight_geometry_object_labels.py	LINE=9	OUTPUT = r"C:\AM_TribonBridge\diagnostics\geometry-object-label-preflight.tsv"
+C:\AM_TribonBridge\tools\preflight_geometry_object_labels_v2.py	LINE=9	PLAN = r"C:\AM_TribonBridge\diagnostics\geometry-object-label-plan.json"
+C:\AM_TribonBridge\tools\preflight_geometry_object_labels_v2.py	LINE=10	OUTPUT = r"C:\AM_TribonBridge\diagnostics\geometry-object-label-preflight-v2.tsv"
+C:\AM_TribonBridge\tools\run_geometry_object_extraction_pipeline.py	LINE=12	"geometry-object-extraction-pipeline-result.txt"
+C:\AM_TribonBridge\tools\run_geometry_object_extraction_pipeline.py	LINE=17	"name": "PIPE_FLANGE_FRONT",
+C:\AM_TribonBridge\tools\run_geometry_object_extraction_pipeline.py	LINE=31	"name": "LIFTING_LUG",
+C:\AM_TribonBridge\tools\run_geometry_object_extraction_pipeline.py	LINE=32	"script": "detect_lifting_lug_candidates.py",
+C:\AM_TribonBridge\tools\run_geometry_object_extraction_pipeline.py	LINE=38	"name": "LIFTING_BEAM",
+C:\AM_TribonBridge\tools\run_geometry_object_extraction_pipeline.py	LINE=39	"script": "detect_lifting_beam_candidates.py",
+C:\AM_TribonBridge\tools\run_geometry_object_extraction_pipeline.py	LINE=45	"name": "STRUCTURAL_FLANGE",
+C:\AM_TribonBridge\tools\run_geometry_object_extraction_pipeline.py	LINE=46	"script": "detect_structural_flange_candidates.py",
+C:\AM_TribonBridge\tools\run_geometry_object_extraction_pipeline.py	LINE=54	"result": "geometry-object-expansion.tsv",
+C:\AM_TribonBridge\tools\run_geometry_object_extraction_pipeline.py	LINE=295	"geometry-object-expansion.tsv"
+C:\AM_TribonBridge\tools\run_highlight_all_flange_objects_for_demo_v2.py	LINE=6	TARGET = r"C:\AM_TribonBridge\tools\highlight_all_flange_objects_for_demo.py"
+C:\AM_TribonBridge\tools\run_highlight_all_flange_objects_for_demo_v2.py	LINE=7	LOG = r"C:\AM_TribonBridge\diagnostics\demo-highlight-all-flanges-launcher-result.txt"
+C:\AM_TribonBridge\tools\run_highlight_all_flange_objects_for_demo_v2.py	LINE=40	"FORMAT\tAM_DEMO_HIGHLIGHT_ALL_FLANGES_LAUNCHER_V1\n"
+C:\AM_TribonBridge\tools\run_highlight_lifting_objects_for_demo.py	LINE=7	TARGET = r"C:\AM_TribonBridge\tools\highlight_lifting_objects_for_demo.py"
+C:\AM_TribonBridge\tools\run_highlight_lifting_objects_for_demo.py	LINE=8	LOG = r"C:\AM_TribonBridge\diagnostics\demo-highlight-lifting-launcher-result.txt"
+C:\AM_TribonBridge\tools\run_highlight_lifting_objects_for_demo.py	LINE=36	"FORMAT\tAM_DEMO_HIGHLIGHT_LIFTING_LAUNCHER_V1",
+C:\AM_TribonBridge\tools\run_highlight_lifting_objects_for_demo.py	LINE=46	module_name = "am_demo_highlight_lifting_" + clean(int(time.time()))
+C:\AM_TribonBridge\tools\run_highlight_lifting_objects_for_demo_v2.py	LINE=6	TARGET = r"C:\AM_TribonBridge\tools\highlight_lifting_objects_for_demo.py"
+C:\AM_TribonBridge\tools\run_highlight_lifting_objects_for_demo_v2.py	LINE=7	LOG = r"C:\AM_TribonBridge\diagnostics\demo-highlight-lifting-launcher-v2-result.txt"
+C:\AM_TribonBridge\tools\run_highlight_lifting_objects_for_demo_v2.py	LINE=40	"FORMAT\tAM_DEMO_HIGHLIGHT_LIFTING_LAUNCHER_V2\n"
+C:\AM_TribonBridge\tools\run_natural_language_demo.py	LINE=12	r"\run_highlight_lifting_objects_for_demo_v2.py"
+C:\AM_TribonBridge\tools\run_natural_language_demo.py	LINE=17	r"\demo-highlight-lifting-objects-result.tsv"
+C:\AM_TribonBridge\tools\run_natural_language_demo.py	LINE=22	r"\run_highlight_all_flange_objects_for_demo_v2.py"
+C:\AM_TribonBridge\tools\run_natural_language_demo.py	LINE=27	r"\demo-highlight-all-flanges-result.tsv"
+C:\AM_TribonBridge\tools\run_natural_language_demo_hta.py	LINE=26	"run_highlight_lifting_objects_for_demo_v2.py"
+C:\AM_TribonBridge\tools\run_natural_language_demo_hta.py	LINE=30	"demo-highlight-lifting-objects-result.tsv"
+C:\AM_TribonBridge\tools\run_natural_language_demo_hta.py	LINE=35	"run_highlight_all_flange_objects_for_demo_v2.py"
+C:\AM_TribonBridge\tools\run_natural_language_demo_hta.py	LINE=39	"demo-highlight-all-flanges-result.tsv"
+C:\AM_TribonBridge\tools\run_natural_language_demo_v2.py	LINE=56	r"\run_highlight_lifting_objects_for_demo_v2.py"
+C:\AM_TribonBridge\tools\run_natural_language_demo_v2.py	LINE=61	r"\demo-highlight-lifting-objects-result.tsv"
+C:\AM_TribonBridge\tools\run_natural_language_demo_v2.py	LINE=66	r"\run_highlight_all_flange_objects_for_demo_v2.py"
+C:\AM_TribonBridge\tools\run_natural_language_demo_v2.py	LINE=71	r"\demo-highlight-all-flanges-result.tsv"
+
+STATUS	SURVEY_COMPLETE

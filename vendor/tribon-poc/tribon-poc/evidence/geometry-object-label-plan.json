@@ -1,0 +1,576 @@
+{
+    "schemaVersion":  "1.0",
+    "taskType":  "create_geometry_object_labels",
+    "mode":  "dry-run",
+    "sourceSnapshot":  "C:\\AM_TribonBridge\\diagnostics\\geometry-object-snapshot.json",
+    "sourceIdMap":  "C:\\AM_TribonBridge\\diagnostics\\geometry-object-id-map.json",
+    "objectCount":  12,
+    "requiresAllowWrite":  true,
+    "drawingWritePerformed":  false,
+    "placementPolicy":  {
+                            "currentPositionsAreProvisional":  true,
+                            "collisionPlanningRequired":  true,
+                            "preferredSide":  "above",
+                            "finalPositionSource":  "annotation_layout_planner"
+                        },
+    "items":  [
+                  {
+                      "operationId":  "label:LB-01",
+                      "operation":  "create_text_label",
+                      "sourceObjectId":  "LIFTING_BEAM-01",
+                      "stableObjectId":  "LB-01",
+                      "category":  "LIFTING_BEAM",
+                      "text":  "LB-01",
+                      "idempotencyKey":  "AM_OBJECT_LABEL:LB-01",
+                      "expectedExistingText":  "LB-01",
+                      "target":  {
+                                     "geometryCount":  12,
+                                     "extent":  {
+                                                    "minX":  35,
+                                                    "minY":  209,
+                                                    "maxX":  185,
+                                                    "maxY":  243,
+                                                    "centerX":  110,
+                                                    "centerY":  226,
+                                                    "width":  150,
+                                                    "height":  34
+                                                }
+                                 },
+                      "anchor":  {
+                                     "type":  "object_top_center",
+                                     "x":  110,
+                                     "y":  243
+                                 },
+                      "preferredPlacement":  {
+                                                 "side":  "above",
+                                                 "clearance":  7,
+                                                 "provisionalX":  110,
+                                                 "provisionalY":  250,
+                                                 "isFinalPosition":  false
+                                             },
+                      "style":  {
+                                    "annotationKind":  "TEXT_LABEL",
+                                    "textHeight":  3.5,
+                                    "horizontalAlignment":  "CENTER",
+                                    "leaderRequired":  false
+                                },
+                      "safety":  {
+                                     "mode":  "dry-run",
+                                     "requiresAllowWrite":  true,
+                                     "drawingWritePerformed":  false
+                                 }
+                  },
+                  {
+                      "operationId":  "label:LB-02",
+                      "operation":  "create_text_label",
+                      "sourceObjectId":  "LIFTING_BEAM-02",
+                      "stableObjectId":  "LB-02",
+                      "category":  "LIFTING_BEAM",
+                      "text":  "LB-02",
+                      "idempotencyKey":  "AM_OBJECT_LABEL:LB-02",
+                      "expectedExistingText":  "LB-02",
+                      "target":  {
+                                     "geometryCount":  11,
+                                     "extent":  {
+                                                    "minX":  52,
+                                                    "minY":  169,
+                                                    "maxX":  168,
+                                                    "maxY":  209.5,
+                                                    "centerX":  110,
+                                                    "centerY":  189.25,
+                                                    "width":  116,
+                                                    "height":  40.5
+                                                }
+                                 },
+                      "anchor":  {
+                                     "type":  "object_top_center",
+                                     "x":  110,
+                                     "y":  209.5
+                                 },
+                      "preferredPlacement":  {
+                                                 "side":  "above",
+                                                 "clearance":  7,
+                                                 "provisionalX":  110,
+                                                 "provisionalY":  216.5,
+                                                 "isFinalPosition":  false
+                                             },
+                      "style":  {
+                                    "annotationKind":  "TEXT_LABEL",
+                                    "textHeight":  3.5,
+                                    "horizontalAlignment":  "CENTER",
+                                    "leaderRequired":  false
+                                },
+                      "safety":  {
+                                     "mode":  "dry-run",
+                                     "requiresAllowWrite":  true,
+                                     "drawingWritePerformed":  false
+                                 }
+                  },
+                  {
+                      "operationId":  "label:LL-01",
+                      "operation":  "create_text_label",
+                      "sourceObjectId":  "LIFTING_LUG-01",
+                      "stableObjectId":  "LL-01",
+                      "category":  "LIFTING_LUG",
+                      "text":  "LL-01",
+                      "idempotencyKey":  "AM_OBJECT_LABEL:LL-01",
+                      "expectedExistingText":  "LL-01",
+                      "target":  {
+                                     "geometryCount":  5,
+                                     "extent":  {
+                                                    "minX":  241,
+                                                    "minY":  198,
+                                                    "maxX":  263,
+                                                    "maxY":  236,
+                                                    "centerX":  252,
+                                                    "centerY":  217,
+                                                    "width":  22,
+                                                    "height":  38
+                                                }
+                                 },
+                      "anchor":  {
+                                     "type":  "object_top_center",
+                                     "x":  252,
+                                     "y":  236
+                                 },
+                      "preferredPlacement":  {
+                                                 "side":  "above",
+                                                 "clearance":  6,
+                                                 "provisionalX":  252,
+                                                 "provisionalY":  242,
+                                                 "isFinalPosition":  false
+                                             },
+                      "style":  {
+                                    "annotationKind":  "TEXT_LABEL",
+                                    "textHeight":  3.5,
+                                    "horizontalAlignment":  "CENTER",
+                                    "leaderRequired":  false
+                                },
+                      "safety":  {
+                                     "mode":  "dry-run",
+                                     "requiresAllowWrite":  true,
+                                     "drawingWritePerformed":  false
+                                 }
+                  },
+                  {
+                      "operationId":  "label:LL-02",
+                      "operation":  "create_text_label",
+                      "sourceObjectId":  "LIFTING_LUG-02",
+                      "stableObjectId":  "LL-02",
+                      "category":  "LIFTING_LUG",
+                      "text":  "LL-02",
+                      "idempotencyKey":  "AM_OBJECT_LABEL:LL-02",
+                      "expectedExistingText":  "LL-02",
+                      "target":  {
+                                     "geometryCount":  9,
+                                     "extent":  {
+                                                    "minX":  289,
+                                                    "minY":  192,
+                                                    "maxX":  325,
+                                                    "maxY":  236,
+                                                    "centerX":  307,
+                                                    "centerY":  214,
+                                                    "width":  36,
+                                                    "height":  44
+                                                }
+                                 },
+                      "anchor":  {
+                                     "type":  "object_top_center",
+                                     "x":  307,
+                                     "y":  236
+                                 },
+                      "preferredPlacement":  {
+                                                 "side":  "above",
+                                                 "clearance":  6,
+                                                 "provisionalX":  307,
+                                                 "provisionalY":  242,
+                                                 "isFinalPosition":  false
+                                             },
+                      "style":  {
+                                    "annotationKind":  "TEXT_LABEL",
+                                    "textHeight":  3.5,
+                                    "horizontalAlignment":  "CENTER",
+                                    "leaderRequired":  false
+                                },
+                      "safety":  {
+                                     "mode":  "dry-run",
+                                     "requiresAllowWrite":  true,
+                                     "drawingWritePerformed":  false
+                                 }
+                  },
+                  {
+                      "operationId":  "label:LL-03",
+                      "operation":  "create_text_label",
+                      "sourceObjectId":  "LIFTING_LUG-03",
+                      "stableObjectId":  "LL-03",
+                      "category":  "LIFTING_LUG",
+                      "text":  "LL-03",
+                      "idempotencyKey":  "AM_OBJECT_LABEL:LL-03",
+                      "expectedExistingText":  "LL-03",
+                      "target":  {
+                                     "geometryCount":  5,
+                                     "extent":  {
+                                                    "minX":  356,
+                                                    "minY":  200,
+                                                    "maxX":  374,
+                                                    "maxY":  234,
+                                                    "centerX":  365,
+                                                    "centerY":  217,
+                                                    "width":  18,
+                                                    "height":  34
+                                                }
+                                 },
+                      "anchor":  {
+                                     "type":  "object_top_center",
+                                     "x":  365,
+                                     "y":  234
+                                 },
+                      "preferredPlacement":  {
+                                                 "side":  "above",
+                                                 "clearance":  6,
+                                                 "provisionalX":  365,
+                                                 "provisionalY":  240,
+                                                 "isFinalPosition":  false
+                                             },
+                      "style":  {
+                                    "annotationKind":  "TEXT_LABEL",
+                                    "textHeight":  3.5,
+                                    "horizontalAlignment":  "CENTER",
+                                    "leaderRequired":  false
+                                },
+                      "safety":  {
+                                     "mode":  "dry-run",
+                                     "requiresAllowWrite":  true,
+                                     "drawingWritePerformed":  false
+                                 }
+                  },
+                  {
+                      "operationId":  "label:PF-01",
+                      "operation":  "create_text_label",
+                      "sourceObjectId":  "PIPE_FLANGE_FRONT-01",
+                      "stableObjectId":  "PF-01",
+                      "category":  "PIPE_FLANGE_FRONT",
+                      "text":  "PF-01",
+                      "idempotencyKey":  "AM_OBJECT_LABEL:PF-01",
+                      "expectedExistingText":  "PF-01",
+                      "target":  {
+                                     "geometryCount":  13,
+                                     "extent":  {
+                                                    "minX":  30,
+                                                    "minY":  63,
+                                                    "maxX":  80,
+                                                    "maxY":  113,
+                                                    "centerX":  55,
+                                                    "centerY":  88,
+                                                    "width":  50,
+                                                    "height":  50
+                                                }
+                                 },
+                      "anchor":  {
+                                     "type":  "object_top_center",
+                                     "x":  55,
+                                     "y":  113
+                                 },
+                      "preferredPlacement":  {
+                                                 "side":  "above",
+                                                 "clearance":  6,
+                                                 "provisionalX":  55,
+                                                 "provisionalY":  119,
+                                                 "isFinalPosition":  false
+                                             },
+                      "style":  {
+                                    "annotationKind":  "TEXT_LABEL",
+                                    "textHeight":  3.5,
+                                    "horizontalAlignment":  "CENTER",
+                                    "leaderRequired":  false
+                                },
+                      "safety":  {
+                                     "mode":  "dry-run",
+                                     "requiresAllowWrite":  true,
+                                     "drawingWritePerformed":  false
+                                 }
+                  },
+                  {
+                      "operationId":  "label:PF-02",
+                      "operation":  "create_text_label",
+                      "sourceObjectId":  "PIPE_FLANGE_FRONT-02",
+                      "stableObjectId":  "PF-02",
+                      "category":  "PIPE_FLANGE_FRONT",
+                      "text":  "PF-02",
+                      "idempotencyKey":  "AM_OBJECT_LABEL:PF-02",
+                      "expectedExistingText":  "PF-02",
+                      "target":  {
+                                     "geometryCount":  11,
+                                     "extent":  {
+                                                    "minX":  94,
+                                                    "minY":  67,
+                                                    "maxX":  136,
+                                                    "maxY":  109,
+                                                    "centerX":  115,
+                                                    "centerY":  88,
+                                                    "width":  42,
+                                                    "height":  42
+                                                }
+                                 },
+                      "anchor":  {
+                                     "type":  "object_top_center",
+                                     "x":  115,
+                                     "y":  109
+                                 },
+                      "preferredPlacement":  {
+                                                 "side":  "above",
+                                                 "clearance":  6,
+                                                 "provisionalX":  115,
+                                                 "provisionalY":  115,
+                                                 "isFinalPosition":  false
+                                             },
+                      "style":  {
+                                    "annotationKind":  "TEXT_LABEL",
+                                    "textHeight":  3.5,
+                                    "horizontalAlignment":  "CENTER",
+                                    "leaderRequired":  false
+                                },
+                      "safety":  {
+                                     "mode":  "dry-run",
+                                     "requiresAllowWrite":  true,
+                                     "drawingWritePerformed":  false
+                                 }
+                  },
+                  {
+                      "operationId":  "label:PF-03",
+                      "operation":  "create_text_label",
+                      "sourceObjectId":  "PIPE_FLANGE_FRONT-03",
+                      "stableObjectId":  "PF-03",
+                      "category":  "PIPE_FLANGE_FRONT",
+                      "text":  "PF-03",
+                      "idempotencyKey":  "AM_OBJECT_LABEL:PF-03",
+                      "expectedExistingText":  "PF-03",
+                      "target":  {
+                                     "geometryCount":  9,
+                                     "extent":  {
+                                                    "minX":  153,
+                                                    "minY":  71,
+                                                    "maxX":  187,
+                                                    "maxY":  105,
+                                                    "centerX":  170,
+                                                    "centerY":  88,
+                                                    "width":  34,
+                                                    "height":  34
+                                                }
+                                 },
+                      "anchor":  {
+                                     "type":  "object_top_center",
+                                     "x":  170,
+                                     "y":  105
+                                 },
+                      "preferredPlacement":  {
+                                                 "side":  "above",
+                                                 "clearance":  6,
+                                                 "provisionalX":  170,
+                                                 "provisionalY":  111,
+                                                 "isFinalPosition":  false
+                                             },
+                      "style":  {
+                                    "annotationKind":  "TEXT_LABEL",
+                                    "textHeight":  3.5,
+                                    "horizontalAlignment":  "CENTER",
+                                    "leaderRequired":  false
+                                },
+                      "safety":  {
+                                     "mode":  "dry-run",
+                                     "requiresAllowWrite":  true,
+                                     "drawingWritePerformed":  false
+                                 }
+                  },
+                  {
+                      "operationId":  "label:PF-SIDE-01",
+                      "operation":  "create_text_label",
+                      "sourceObjectId":  "PIPE_FLANGE_SIDE-01",
+                      "stableObjectId":  "PF-SIDE-01",
+                      "category":  "PIPE_FLANGE_SIDE",
+                      "text":  "PF-SIDE-01",
+                      "idempotencyKey":  "AM_OBJECT_LABEL:PF-SIDE-01",
+                      "expectedExistingText":  "PF-SIDE-01",
+                      "target":  {
+                                     "geometryCount":  10,
+                                     "extent":  {
+                                                    "minX":  20,
+                                                    "minY":  38,
+                                                    "maxX":  92,
+                                                    "maxY":  52,
+                                                    "centerX":  56,
+                                                    "centerY":  45,
+                                                    "width":  72,
+                                                    "height":  14
+                                                }
+                                 },
+                      "anchor":  {
+                                     "type":  "object_top_center",
+                                     "x":  56,
+                                     "y":  52
+                                 },
+                      "preferredPlacement":  {
+                                                 "side":  "above",
+                                                 "clearance":  6,
+                                                 "provisionalX":  56,
+                                                 "provisionalY":  58,
+                                                 "isFinalPosition":  false
+                                             },
+                      "style":  {
+                                    "annotationKind":  "TEXT_LABEL",
+                                    "textHeight":  3.5,
+                                    "horizontalAlignment":  "CENTER",
+                                    "leaderRequired":  false
+                                },
+                      "safety":  {
+                                     "mode":  "dry-run",
+                                     "requiresAllowWrite":  true,
+                                     "drawingWritePerformed":  false
+                                 }
+                  },
+                  {
+                      "operationId":  "label:SF-01",
+                      "operation":  "create_text_label",
+                      "sourceObjectId":  "STRUCTURAL_FLANGE-01",
+                      "stableObjectId":  "SF-01",
+                      "category":  "STRUCTURAL_FLANGE",
+                      "text":  "SF-01",
+                      "idempotencyKey":  "AM_OBJECT_LABEL:SF-01",
+                      "expectedExistingText":  "SF-01",
+                      "target":  {
+                                     "geometryCount":  12,
+                                     "extent":  {
+                                                    "minX":  239,
+                                                    "minY":  54,
+                                                    "maxX":  297,
+                                                    "maxY":  122,
+                                                    "centerX":  268,
+                                                    "centerY":  88,
+                                                    "width":  58,
+                                                    "height":  68
+                                                }
+                                 },
+                      "anchor":  {
+                                     "type":  "object_top_center",
+                                     "x":  268,
+                                     "y":  122
+                                 },
+                      "preferredPlacement":  {
+                                                 "side":  "above",
+                                                 "clearance":  6,
+                                                 "provisionalX":  268,
+                                                 "provisionalY":  128,
+                                                 "isFinalPosition":  false
+                                             },
+                      "style":  {
+                                    "annotationKind":  "TEXT_LABEL",
+                                    "textHeight":  3.5,
+                                    "horizontalAlignment":  "CENTER",
+                                    "leaderRequired":  false
+                                },
+                      "safety":  {
+                                     "mode":  "dry-run",
+                                     "requiresAllowWrite":  true,
+                                     "drawingWritePerformed":  false
+                                 }
+                  },
+                  {
+                      "operationId":  "label:SF-02",
+                      "operation":  "create_text_label",
+                      "sourceObjectId":  "STRUCTURAL_FLANGE-02",
+                      "stableObjectId":  "SF-02",
+                      "category":  "STRUCTURAL_FLANGE",
+                      "text":  "SF-02",
+                      "idempotencyKey":  "AM_OBJECT_LABEL:SF-02",
+                      "expectedExistingText":  "SF-02",
+                      "target":  {
+                                     "geometryCount":  8,
+                                     "extent":  {
+                                                    "minX":  314,
+                                                    "minY":  58,
+                                                    "maxX":  370,
+                                                    "maxY":  122,
+                                                    "centerX":  342,
+                                                    "centerY":  90,
+                                                    "width":  56,
+                                                    "height":  64
+                                                }
+                                 },
+                      "anchor":  {
+                                     "type":  "object_top_center",
+                                     "x":  342,
+                                     "y":  122
+                                 },
+                      "preferredPlacement":  {
+                                                 "side":  "above",
+                                                 "clearance":  6,
+                                                 "provisionalX":  342,
+                                                 "provisionalY":  128,
+                                                 "isFinalPosition":  false
+                                             },
+                      "style":  {
+                                    "annotationKind":  "TEXT_LABEL",
+                                    "textHeight":  3.5,
+                                    "horizontalAlignment":  "CENTER",
+                                    "leaderRequired":  false
+                                },
+                      "safety":  {
+                                     "mode":  "dry-run",
+                                     "requiresAllowWrite":  true,
+                                     "drawingWritePerformed":  false
+                                 }
+                  },
+                  {
+                      "operationId":  "label:SF-03",
+                      "operation":  "create_text_label",
+                      "sourceObjectId":  "STRUCTURAL_FLANGE-03",
+                      "stableObjectId":  "SF-03",
+                      "category":  "STRUCTURAL_FLANGE",
+                      "text":  "SF-03",
+                      "idempotencyKey":  "AM_OBJECT_LABEL:SF-03",
+                      "expectedExistingText":  "SF-03",
+                      "target":  {
+                                     "geometryCount":  8,
+                                     "extent":  {
+                                                    "minX":  372,
+                                                    "minY":  55,
+                                                    "maxX":  390,
+                                                    "maxY":  112,
+                                                    "centerX":  381,
+                                                    "centerY":  83.5,
+                                                    "width":  18,
+                                                    "height":  57
+                                                }
+                                 },
+                      "anchor":  {
+                                     "type":  "object_top_center",
+                                     "x":  381,
+                                     "y":  112
+                                 },
+                      "preferredPlacement":  {
+                                                 "side":  "above",
+                                                 "clearance":  6,
+                                                 "provisionalX":  381,
+                                                 "provisionalY":  118,
+                                                 "isFinalPosition":  false
+                                             },
+                      "style":  {
+                                    "annotationKind":  "TEXT_LABEL",
+                                    "textHeight":  3.5,
+                                    "horizontalAlignment":  "CENTER",
+                                    "leaderRequired":  false
+                                },
+                      "safety":  {
+                                     "mode":  "dry-run",
+                                     "requiresAllowWrite":  true,
+                                     "drawingWritePerformed":  false
+                                 }
+                  }
+              ],
+    "diagnostics":  {
+                        "itemCount":  12,
+                        "duplicateOperationIdCount":  0,
+                        "duplicateIdempotencyKeyCount":  0,
+                        "status":  "SUCCESS"
+                    }
+}

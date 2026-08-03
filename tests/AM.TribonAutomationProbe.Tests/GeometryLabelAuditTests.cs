@@ -1,0 +1,11 @@
+using AM.TribonAutomationProbe.Core;
+using Xunit;
+
+namespace AM.TribonAutomationProbe.Tests;
+public sealed class GeometryLabelAuditTests
+{
+    private static (DetectedGeometryObject, ExistingGeometryLabel) Pair(GeometryLabelDirection d) { var o = new DetectedGeometryObject("O", GeometryObjectCategory.LIFTING_BEAM, "high", new(10,10,20,20), new[]{"s"},new[]{"g"},1,new(1)); var e = d==GeometryLabelDirection.Above ? new ExistingGeometryLabel("h","LB-01",new(12,25,16,27)) : d==GeometryLabelDirection.Below ? new ExistingGeometryLabel("h","LB-01",new(12,3,16,5)) : d==GeometryLabelDirection.Right ? new ExistingGeometryLabel("h","LB-01",new(25,12,27,16)) : new ExistingGeometryLabel("h","LB-01",new(3,12,5,16)); return (o,e); }
+    [Fact] public void FourDirectionsAndClearanceAreBoundaryBased() { foreach (var d in new[]{GeometryLabelDirection.Above,GeometryLabelDirection.Below,GeometryLabelDirection.Right,GeometryLabelDirection.Left}) { var p=Pair(d); var ids=new GeometryObjectDisplayIdMap(new[]{new GeometryObjectDisplayIdentity("O",GeometryObjectCategory.LIFTING_BEAM,"LB-01")}); var m=GeometryObjectLabelMatcher.MatchResult(new[]{p.Item1},ids,new[]{p.Item2}); var a=GeometryObjectLabelAuditService.Audit(m,new[]{p.Item1}); Assert.Equal(d,a.Items[0].Direction); Assert.True(a.Items[0].OwnObjectClearance > 0); } }
+    [Fact] public void InvalidLayoutOptionsAndBoundaryTouchAreHandled() { var p=Pair(GeometryLabelDirection.Above); var ids=new GeometryObjectDisplayIdMap(new[]{new GeometryObjectDisplayIdentity("O",GeometryObjectCategory.LIFTING_BEAM,"LB-01")}); var m=GeometryObjectLabelMatcher.MatchResult(new[]{p.Item1},ids,new[]{p.Item2}); Assert.Throws<ProbeException>(()=>GeometryObjectLabelAuditService.Audit(m,new[]{p.Item1},new(-1,0.1))); }
+    [Fact] public void NonMatchedStatesAreBlockedWithStableTextConflictName() { var o=Pair(GeometryLabelDirection.Above).Item1; var ids=new GeometryObjectDisplayIdMap(new[]{new GeometryObjectDisplayIdentity("O",GeometryObjectCategory.LIFTING_BEAM,"LB-01")}); var duplicate=new[]{new ExistingGeometryLabel("1","LB-01",new(0,30,1,31)),new ExistingGeometryLabel("2","LB-01",new(2,30,3,31))}; var a=GeometryObjectLabelAuditService.Audit(GeometryObjectLabelMatcher.MatchResult(new[]{o},ids,duplicate),new[]{o}); Assert.Equal("blocked",a.Status); Assert.Equal("blocked_duplicate",a.Items[0].Decision); }
+}
