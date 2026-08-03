@@ -55,6 +55,7 @@ foreach ($marker in $markers) {
 if ($worker -notmatch 'stage-trace\.txt.*"ab"' -and $worker -notmatch 'stage-trace\.txt", "ab"') { throw "Stage trace is not append-only." }
 if ($worker -match 'SAVEWORK') { throw "SAVEWORK is forbidden." }
 if ($worker -notmatch 'SetBoundaryInfinite\(\)') { throw "Capture boundary policy changed." }
+if ($worker -match '(?m)^\s*(?:return\s+)?[^#\r\n:]+?\s+if\s+[^:\r\n]+?\s+else\s+[^#\r\n]+$') { throw "Python conditional expression found." }
 $moduleBeforeRoot = $worker.IndexOf('import kcs_draft', [System.StringComparison]::Ordinal)
 $bootstrapBeforeKcs = $worker.IndexOf('_bootstrap_status("MODULE_STARTED"', [System.StringComparison]::Ordinal)
 if ($bootstrapBeforeKcs -lt 0 -or $bootstrapBeforeKcs -gt $moduleBeforeRoot) {

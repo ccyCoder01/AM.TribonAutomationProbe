@@ -121,6 +121,9 @@ public sealed class VitessePlanBindingContractTests
         Assert.Contains("SetBoundaryInfinite()", worker, StringComparison.Ordinal);
         Assert.Contains("def _create_label(", worker, StringComparison.Ordinal);
         Assert.DoesNotContain("SAVEWORK", worker, StringComparison.Ordinal);
+        Assert.DoesNotMatch(
+            @"(?m)^\s*(?:return\s+)?[^#\r\n:]+?\s+if\s+[^:\r\n]+?\s+else\s+[^#\r\n]+$",
+            worker);
     }
 
     [Fact]

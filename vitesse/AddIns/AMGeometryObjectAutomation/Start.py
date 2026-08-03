@@ -296,7 +296,16 @@ def _inline_compute_plan_hash(preflight):
         )
 
     result = _sha256_hex("".join(parts))
-    _trace_stage("SHA256_BACKEND", None, None, "FALLBACK" if hashlib is None else "HASHLIB")
+    if hashlib is None:
+        backend_name = "FALLBACK"
+    else:
+        backend_name = "HASHLIB"
+    _trace_stage(
+        "SHA256_BACKEND",
+        None,
+        None,
+        backend_name
+    )
     _trace_stage("PLAN_HASH_COMPUTE_RETURNED", None, None, result)
     return result
 
