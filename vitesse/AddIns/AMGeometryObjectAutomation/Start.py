@@ -28,6 +28,13 @@ except:
     ADDIN_ROOT = os.getcwd()
 
 RUNTIME_ROOT = os.path.join(ADDIN_ROOT, "runtime")
+PLAN_BINDING = imp.load_source(
+    "am_geometry_label_plan_binding",
+    os.path.join(
+        ADDIN_ROOT,
+        "geometry_label_plan_binding.py"
+    )
+)
 
 DETECTOR_SCRIPTS = [
     "detect_pipe_flange_candidates.py",
@@ -877,6 +884,7 @@ def _execute_preflight():
 
     result["planItems"] = plan_items
     result["extraction"] = extraction
+    PLAN_BINDING.attach_plan_binding(result)
     return result
 
 
@@ -979,9 +987,22 @@ def _existing_drift_fields(plan_item, observed):
     return result
 
 
-def _apply_missing(operation_id):
+def _apply_missing(
+    operation_id,
+    request_text
+):
     started_at = _now()
+    binding = PLAN_BINDING.parse_request_binding(
+        request_text
+    )
+    PLAN_BINDING.validate_authorization(
+        binding
+    )
     preflight = _execute_preflight()
+    PLAN_BINDING.validate_against_preflight(
+        binding,
+        preflight
+    )
     plan_items = preflight["planItems"]
 
     base = {
@@ -1504,6 +1525,9 @@ def _preflight_payload(operation_id, started_at):
                 "preTextConflictCount"
             ],
         "items": preflight["items"],
+        "planHash": preflight["planHash"],
+        "readyOperationIds":
+            preflight["readyOperationIds"],
         "drawingWritePerformed": False,
         "savePerformed": False
     }
@@ -1567,7 +1591,10 @@ def _payload(
         )
 
     if action == "geometry.label-apply-missing":
-        return _apply_missing(operation_id)
+        return _apply_missing(
+            operation_id,
+            request_text
+        )
 
     raise Exception(
         "unsupported action: " + action
@@ -1692,9 +1719,16 @@ def _process(name):
             "failed",
             None,
             {
-                "code":
-                    "geometry_execution_failed",
-                "category": "execution",
+                "code": getattr(
+                    error,
+                    "code",
+                    "geometry_execution_failed"
+                ),
+                "category": getattr(
+                    error,
+                    "category",
+                    "execution"
+                ),
                 "message": _text(error),
                 "retryable": False,
                 "details": {

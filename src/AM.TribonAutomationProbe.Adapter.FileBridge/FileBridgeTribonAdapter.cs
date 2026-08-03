@@ -146,18 +146,63 @@ public sealed class FileBridgeGeometryAutomationAdapter(FileBridgeTransport tran
         return GeometryLabelPlanBinding.Attach(result);
     }
 
-    public Task<GeometryLabelApplyMissingResult> ApplyMissingLabelsAsync(GeometryLabelApplyMissingRequest request, CancellationToken cancellationToken)
+    public async Task<GeometryLabelApplyMissingResult> ApplyMissingLabelsAsync(
+        GeometryLabelApplyMissingRequest request,
+        CancellationToken cancellationToken)
     {
-        cancellationToken.ThrowIfCancellationRequested();
         GeometryLabelPlanBinding.ValidateAuthorization(request);
 
-        return Task.FromException<GeometryLabelApplyMissingResult>(
-            new ProbeException(
-                "GEOMETRY_LABEL_PLAN_BINDING_NOT_ENFORCED",
-                "Real Tribon label writes remain disabled until the Vitesse worker validates the confirmed preflight binding.",
-                "safety"));
-    }
+        var value = Read<GeometryLabelApplyMissingResult>(
+            await SendAsync(
+                "geometry.label-apply-missing",
+                request,
+                cancellationToken),
+            "geometry.label-apply-missing",
+            request.OperationId);
 
+        if (value.SavePerformed)
+        {
+            throw new ProbeException(
+                ProbeErrorCodes.SaveFailed,
+                "geometry.label-apply-missing unexpectedly performed SAVEWORK.",
+                "safety");
+        }
+
+        var confirmed = request.ConfirmedOperationIds!
+            .ToHashSet(StringComparer.Ordinal);
+        var created = value.CreatedOperationIds ??
+                      Array.Empty<string>();
+        var failed = value.FailedOperationIds ??
+                     Array.Empty<string>();
+        var completed = created
+            .Concat(failed)
+            .ToArray();
+
+        if (created.Distinct(StringComparer.Ordinal).Count() !=
+                created.Count ||
+            failed.Distinct(StringComparer.Ordinal).Count() !=
+                failed.Count ||
+            created.Intersect(
+                    failed,
+                    StringComparer.Ordinal)
+                .Any() ||
+            completed.Any(x => !confirmed.Contains(x)) ||
+            completed.Distinct(StringComparer.Ordinal).Count() !=
+                confirmed.Count ||
+            value.CreatedCount != created.Count ||
+            value.CreateFailedCount != failed.Count ||
+            value.CreatedRuntimeHandles.Count != created.Count ||
+            value.DrawingWriteCount != created.Count ||
+            value.DrawingWritePerformed != (created.Count > 0))
+        {
+            throw new ProbeException(
+                ProbeErrorCodes.VerificationFailed,
+                "geometry.label-apply-missing returned an invalid or unconfirmed write receipt.",
+                "safety");
+        }
+
+        return value;
+    }
     private async Task<BridgeResult> SendAsync(string action, object payload, CancellationToken cancellationToken)
     {
         var command = new BridgeCommand { MessageId = Guid.NewGuid().ToString("N"), CommandId = "CMD-" + Guid.NewGuid().ToString("N"), CorrelationId = "PROBE-" + Guid.NewGuid().ToString("N"), Action = action, Payload = JsonSerializer.SerializeToElement(payload, JsonDefaults.Options), Execution = new BridgeExecutionOptions(0) };

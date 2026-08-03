@@ -1,5 +1,6 @@
 using AM.TribonAutomationProbe.Adapter.FileBridge;
 using AM.TribonAutomationProbe.Core;
+using System.Text.Json;
 using Xunit;
 
 namespace AM.TribonAutomationProbe.Tests;
@@ -39,6 +40,9 @@ public sealed class GeometryLabelPlanBindingTests
         Assert.Equal(
             new[] { "label:LB-01", "label:PF-02" },
             attachedFirst.ReadyOperationIds);
+        Assert.Equal(
+            "F2B14D4200E1AC239FBF1CFD28D2F99439E631EC2D6FA129ECB6A92A841B75F2",
+            attachedFirst.PlanHash);
     }
 
     [Fact]
@@ -128,11 +132,11 @@ public sealed class GeometryLabelPlanBindingTests
     }
 
     [Fact]
-    public async Task FileBridgeApplyFailsClosedBeforeCreatingRequest()
+    public async Task FileBridgeApplyCreatesBoundRequest()
     {
         var root = Path.Combine(
             Path.GetTempPath(),
-            "round43a1-" + Guid.NewGuid().ToString("N"));
+            "round43a2-" + Guid.NewGuid().ToString("N"));
 
         try
         {
@@ -141,7 +145,7 @@ public sealed class GeometryLabelPlanBindingTests
                     new FileBridgeOptions(
                         root,
                         PollIntervalMs: 10,
-                        DefaultTimeoutMs: 100)));
+                        DefaultTimeoutMs: 5000)));
 
             var request = new GeometryLabelApplyMissingRequest(
                 OperationId: "APPLY-1",
@@ -155,25 +159,55 @@ public sealed class GeometryLabelPlanBindingTests
                     "label:LB-01"
                 ]);
 
-            var error = await Assert.ThrowsAsync<ProbeException>(
-                () => adapter.ApplyMissingLabelsAsync(
-                    request,
-                    CancellationToken.None));
+            using var cancellation =
+                new CancellationTokenSource();
+
+            var task = adapter.ApplyMissingLabelsAsync(
+                request,
+                cancellation.Token);
+
+            var requestPath = await WaitForRequestAsync(
+                root);
+
+            using var document = JsonDocument.Parse(
+                await File.ReadAllTextAsync(requestPath));
+
+            var command = document.RootElement;
 
             Assert.Equal(
-                "GEOMETRY_LABEL_PLAN_BINDING_NOT_ENFORCED",
-                error.Code);
+                "geometry.label-apply-missing",
+                command.GetProperty("action").GetString());
+
+            var payload = command.GetProperty("payload");
+
+            Assert.True(
+                payload.GetProperty("allowWrite").GetBoolean());
+            Assert.True(
+                payload.GetProperty("writeConfirmed").GetBoolean());
             Assert.Equal(
-                "safety",
-                error.Category);
+                "PREFLIGHT-1",
+                payload
+                    .GetProperty(
+                        "confirmedPreflightOperationId")
+                    .GetString());
+            Assert.Equal(
+                request.ConfirmedPlanHash,
+                payload
+                    .GetProperty("confirmedPlanHash")
+                    .GetString());
+            Assert.Equal(
+                "label:LB-01",
+                payload
+                    .GetProperty("confirmedOperationIds")
+                    .EnumerateArray()
+                    .Single()
+                    .GetString());
 
-            var inbox = Path.Combine(root, "inbox");
+            cancellation.Cancel();
 
-            Assert.False(
-                Directory.Exists(inbox) &&
-                Directory.EnumerateFiles(
-                    inbox,
-                    "*.request.json").Any());
+            await Assert.ThrowsAnyAsync<
+                OperationCanceledException>(
+                async () => await task);
         }
         finally
         {
@@ -185,7 +219,6 @@ public sealed class GeometryLabelPlanBindingTests
             }
         }
     }
-
     [Fact]
     public void ValidationAcceptsExactConfirmedPreflight()
     {
@@ -216,6 +249,34 @@ public sealed class GeometryLabelPlanBindingTests
             current);
     }
 
+    private static async Task<string> WaitForRequestAsync(
+        string root)
+    {
+        var inbox = Path.Combine(root, "inbox");
+        var deadline = DateTimeOffset.UtcNow.AddSeconds(2);
+
+        while (DateTimeOffset.UtcNow < deadline)
+        {
+            if (Directory.Exists(inbox))
+            {
+                var path = Directory
+                    .EnumerateFiles(
+                        inbox,
+                        "*.request.json")
+                    .SingleOrDefault();
+
+                if (path is not null)
+                {
+                    return path;
+                }
+            }
+
+            await Task.Delay(10);
+        }
+
+        throw new TimeoutException(
+            "Bridge request was not created.");
+    }
     private static GeometryLabelPreflightResult Preflight(
         IReadOnlyList<GeometryLabelPreflightItem> items,
         int alreadyPresent = 0,
