@@ -79,6 +79,10 @@ if ($worker -notmatch 'stage-trace\.txt.*"ab"' -and $worker -notmatch 'stage-tra
 if ($worker -match 'SAVEWORK') { throw "SAVEWORK is forbidden." }
 if ($worker -notmatch 'SetBoundaryInfinite\(\)') { throw "Capture boundary policy changed." }
 if ($worker -match '(?m)^\s*(?:return\s+)?[^#\r\n:]+?\s+if\s+[^:\r\n]+?\s+else\s+[^#\r\n]+$') { throw "Python conditional expression found." }
+if ($worker -match '\.sort\(key=' -or $worker -match '\.sort\(reverse=' -or $worker -match '\bsorted\(') { throw "Python 2.3-incompatible sort syntax found." }
+foreach ($marker in @('PLAN_HASH_SORT_START','PLAN_HASH_SORT_RETURNED','READY_IDS_SORT_START','READY_IDS_SORT_RETURNED','CONFIRMED_IDS_SORT_START','CONFIRMED_IDS_SORT_RETURNED','CURRENT_IDS_SORT_START','CURRENT_IDS_SORT_RETURNED','FAILURE_RESULT_BUILD_START','FAILURE_RESULT_BUILD_RETURNED','FAILURE_RESULT_WRITE_FAILED','FAILURE_ARCHIVE_FAILED','PROCESS_FAILED')) {
+    if ($worker -notmatch ('"' + $marker + '"')) { throw "Missing failure/sort marker: $marker" }
+}
 $moduleBeforeRoot = $worker.IndexOf('import kcs_draft', [System.StringComparison]::Ordinal)
 $bootstrapBeforeKcs = $worker.IndexOf('_bootstrap_status("MODULE_STARTED"', [System.StringComparison]::Ordinal)
 if ($bootstrapBeforeKcs -lt 0 -or $bootstrapBeforeKcs -gt $moduleBeforeRoot) {

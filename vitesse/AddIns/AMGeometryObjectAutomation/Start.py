@@ -144,6 +144,32 @@ def _sort_text(value):
         return TEXT_TYPE(data)
 
 
+def _stable_sort_plan_items(items):
+    decorated = []
+    index = 0
+    for item in items:
+        decorated.append((_sort_text(item.get("operationId", "")), _sort_text(item.get("stableObjectId", "")), index, item))
+        index = index + 1
+    decorated.sort()
+    result = []
+    for entry in decorated:
+        result.append(entry[3])
+    return result
+
+
+def _stable_sort_text_values(values):
+    decorated = []
+    index = 0
+    for value in values:
+        decorated.append((_sort_text(value), index, value))
+        index = index + 1
+    decorated.sort()
+    result = []
+    for entry in decorated:
+        result.append(entry[2])
+    return result
+
+
 def _append_field(parts, value):
     data = _utf8(value)
     parts.append(str(len(data)) + ":" + data + "\n")
@@ -257,13 +283,9 @@ def _inline_compute_plan_hash(preflight):
         preflight.get("preInspectionErrorCount", 0)
     )
 
-    items = list(preflight.get("items", []))
-    items.sort(
-        key=lambda item: (
-            _sort_text(item.get("operationId", "")),
-            _sort_text(item.get("stableObjectId", ""))
-        )
-    )
+    _trace_stage("PLAN_HASH_SORT_START", None, None, "")
+    items = _stable_sort_plan_items(list(preflight.get("items", [])))
+    _trace_stage("PLAN_HASH_SORT_RETURNED", None, None, "count=%s" % len(items))
 
     for item in items:
         _append_field(
@@ -320,7 +342,9 @@ def _inline_ready_operation_ids(preflight):
                 item.get("operationId", "")
             )
 
-    result.sort(key=_sort_text)
+    _trace_stage("READY_IDS_SORT_START", None, None, "")
+    result = _stable_sort_text_values(result)
+    _trace_stage("READY_IDS_SORT_RETURNED", None, None, "count=%s" % len(result))
     _trace_stage("READY_IDS_COMPUTE_RETURNED", None, None, "count=%s" % len(result))
     return result
 
@@ -548,12 +572,16 @@ def _inline_validate_against_preflight(
     confirmed = list(
         binding["confirmedOperationIds"]
     )
-    confirmed.sort(key=_sort_text)
+    _trace_stage("CONFIRMED_IDS_SORT_START", None, None, "")
+    confirmed = _stable_sort_text_values(confirmed)
+    _trace_stage("CONFIRMED_IDS_SORT_RETURNED", None, None, "count=%s" % len(confirmed))
 
     current = list(
         attached["readyOperationIds"]
     )
-    current.sort(key=_sort_text)
+    _trace_stage("CURRENT_IDS_SORT_START", None, None, "")
+    current = _stable_sort_text_values(current)
+    _trace_stage("CURRENT_IDS_SORT_RETURNED", None, None, "count=%s" % len(current))
 
     if confirmed != current:
         _changed(
@@ -2471,6 +2499,7 @@ def _process(name):
             )
     except (SystemExit, Exception), error:
         _trace_stage("PROCESS_EXCEPTION", name, operation_id, _text(error))
+        _trace_stage("FAILURE_RESULT_BUILD_START", name, operation_id, "")
         envelope = _result_envelope(
             command_id,
             correlation_id,
@@ -2496,47 +2525,52 @@ def _process(name):
                 }
             }
         )
+        _trace_stage("FAILURE_RESULT_BUILD_RETURNED", name, operation_id, "")
 
-    _trace_stage("RESULT_SERIALIZE_START", name, operation_id, "")
-    serialized = _json(envelope)
-    _trace_stage("RESULT_SERIALIZE_RETURNED", name, operation_id, "")
-    if envelope.get("status") == "succeeded":
-        _trace_stage("RESULT_WRITE_START", name, operation_id, "")
-    else:
-        _trace_stage("FAILURE_RESULT_WRITE_START", name, operation_id, "")
-    _atomic(
-        os.path.join(
-            OUTPUT,
-            command_id + ".result.json"
-        ),
-        serialized
-    )
-    if envelope.get("status") == "succeeded":
-        _trace_stage("RESULT_WRITE_RETURNED", name, operation_id, "")
-    else:
-        _trace_stage("FAILURE_RESULT_WRITE_RETURNED", name, operation_id, "")
+    result_io_failed = False
+    try:
+        _trace_stage("RESULT_SERIALIZE_START", name, operation_id, "")
+        serialized = _json(envelope)
+        _trace_stage("RESULT_SERIALIZE_RETURNED", name, operation_id, "")
+        if envelope.get("status") == "succeeded":
+            _trace_stage("RESULT_WRITE_START", name, operation_id, "")
+        else:
+            _trace_stage("FAILURE_RESULT_WRITE_START", name, operation_id, "")
+        _atomic(os.path.join(OUTPUT, command_id + ".result.json"), serialized)
+        if envelope.get("status") == "succeeded":
+            _trace_stage("RESULT_WRITE_RETURNED", name, operation_id, "")
+        else:
+            _trace_stage("FAILURE_RESULT_WRITE_RETURNED", name, operation_id, "")
+    except (SystemExit, Exception), error:
+        result_io_failed = True
+        _trace_stage("FAILURE_RESULT_WRITE_FAILED", name, operation_id, _text(error))
+        _write_worker_diagnostic("PROCESS", "FAILED", error, name, "failure result write failed")
 
     archive_path = os.path.join(
         ARCHIVE,
         name
     )
 
-    if envelope.get("status") == "succeeded":
+    if envelope.get("status") == "succeeded" and not result_io_failed:
         _trace_stage("REQUEST_ARCHIVE_START", name, operation_id, "")
     else:
         _trace_stage("FAILURE_ARCHIVE_START", name, operation_id, "")
-    if os.path.exists(archive_path):
-        os.remove(archive_path)
-
-    os.rename(source, archive_path)
-    if envelope.get("status") == "succeeded":
-        _trace_stage("REQUEST_ARCHIVE_RETURNED", name, operation_id, "")
-    else:
-        _trace_stage("FAILURE_ARCHIVE_RETURNED", name, operation_id, "")
-    if envelope.get("status") == "succeeded":
+    try:
+        if os.path.exists(archive_path):
+            os.remove(archive_path)
+        os.rename(source, archive_path)
+        if envelope.get("status") == "succeeded":
+            _trace_stage("REQUEST_ARCHIVE_RETURNED", name, operation_id, "")
+        else:
+            _trace_stage("FAILURE_ARCHIVE_RETURNED", name, operation_id, "")
+    except (SystemExit, Exception), error:
+        _trace_stage("FAILURE_ARCHIVE_FAILED", name, operation_id, _text(error))
+        _write_worker_diagnostic("PROCESS", "FAILED", error, name, "request archive failed")
+    if envelope.get("status") == "succeeded" and not result_io_failed:
         _trace_stage("PROCESS_SUCCESS", name, operation_id, "")
         _write_worker_diagnostic("PROCESS", "SUCCESS", None, name, "result written")
     else:
+        _trace_stage("PROCESS_FAILED", name, operation_id, "")
         _write_worker_diagnostic("PROCESS", "FAILED", envelope.get("error", {}).get("message", "processing failed"), name, "result written")
 
 

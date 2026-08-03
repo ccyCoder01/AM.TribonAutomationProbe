@@ -124,6 +124,13 @@ public sealed class VitessePlanBindingContractTests
         Assert.DoesNotMatch(
             @"(?m)^\s*(?:return\s+)?[^#\r\n:]+?\s+if\s+[^:\r\n]+?\s+else\s+[^#\r\n]+$",
             worker);
+        Assert.DoesNotContain(".sort(key=", worker, StringComparison.Ordinal);
+        Assert.DoesNotContain(".sort(reverse=", worker, StringComparison.Ordinal);
+        Assert.DoesNotContain("sorted(", worker, StringComparison.Ordinal);
+        foreach (var marker in new[] { "PLAN_HASH_SORT_START", "PLAN_HASH_SORT_RETURNED", "READY_IDS_SORT_START", "READY_IDS_SORT_RETURNED", "CONFIRMED_IDS_SORT_START", "CONFIRMED_IDS_SORT_RETURNED", "CURRENT_IDS_SORT_START", "CURRENT_IDS_SORT_RETURNED", "FAILURE_RESULT_BUILD_START", "FAILURE_RESULT_BUILD_RETURNED", "FAILURE_RESULT_WRITE_FAILED", "FAILURE_ARCHIVE_FAILED", "PROCESS_FAILED" })
+        {
+            Assert.Contains("\"" + marker + "\"", worker, StringComparison.Ordinal);
+        }
     }
 
     [Fact]
