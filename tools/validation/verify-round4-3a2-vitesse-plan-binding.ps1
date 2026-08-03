@@ -7,6 +7,45 @@ Set-StrictMode -Version Latest
 
 $Root = (Resolve-Path -LiteralPath $Root).Path
 
+$workerPath = Join-Path $Root "vitesse\AddIns\AMGeometryObjectAutomation\Start.py"
+$worker = [System.IO.File]::ReadAllText($workerPath)
+foreach ($forbidden in @(
+        'import json',
+        'json.loads',
+        '(?m)^\s*b"',
+        "(?m)^\s*b'",
+        '\bbytes\b',
+        '\bwith\s+open\b',
+        '\bpathlib\b',
+        '\bdataclass\b',
+        'GetX\s*\(',
+        'GetY\s*\(')) {
+    if ($worker -match $forbidden) {
+        throw "Forbidden Python 2.3/runtime dependency or syntax found: $forbidden"
+    }
+}
+if ($worker -notmatch 'def _bootstrap_status\(' -or
+    $worker -notmatch '_bootstrap_status\("MODULE_STARTED"' -or
+    $worker -notmatch '_bootstrap_status\("KCS_IMPORTS_OK"' -or
+    $worker -notmatch '_bootstrap_status\("PLAN_BINDING_DEFINED"' -or
+    $worker -notmatch '_bootstrap_status\("ADDIN_ROOT_RESOLVED"' -or
+    $worker -notmatch '_bootstrap_status\("DIRECT_ENTRY_CHECK"' -or
+    $worker -notmatch '_bootstrap_status\("RUN_STARTED"') {
+    throw "Bootstrap diagnostics contract is incomplete."
+}
+if ($worker -notmatch 'def _string_array_field\(' -or
+    $worker -notmatch 'def _sha256_fallback\(' -or
+    $worker -notmatch 'SHA256_EMPTY_EXPECTED' -or
+    $worker -notmatch 'SHA256_ABC_EXPECTED' -or
+    $worker -notmatch 'F2B14D4200E1AC239FBF1CFD28D2F99439E631EC2D6FA129ECB6A92A841B75F2') {
+    throw "Inline parser/hash fallback contract is incomplete."
+}
+$moduleBeforeRoot = $worker.IndexOf('import kcs_draft', [System.StringComparison]::Ordinal)
+$bootstrapBeforeKcs = $worker.IndexOf('_bootstrap_status("MODULE_STARTED"', [System.StringComparison]::Ordinal)
+if ($bootstrapBeforeKcs -lt 0 -or $bootstrapBeforeKcs -gt $moduleBeforeRoot) {
+    throw "Bootstrap must run before KCS imports."
+}
+
 $module = Join-Path `
     $Root `
     "vitesse\AddIns\AMGeometryObjectAutomation\geometry_label_plan_binding.py"

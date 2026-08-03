@@ -1,48 +1,91 @@
 # -*- coding: ascii -*-
 import os
-import re
+import sys
 import time
+
+ROOT = r"C:\AM_TribonBridge"
+DIAGNOSTICS = os.path.join(ROOT, "diagnostics")
+
+
+def _bootstrap_status(status, detail):
+    try:
+        if not os.path.exists(DIAGNOSTICS):
+            os.makedirs(DIAGNOSTICS)
+        handle = open(os.path.join(DIAGNOSTICS, "geometry-object-worker-bootstrap.txt"), "wb")
+        try:
+            lines = []
+            lines.append("STAGE=BOOTSTRAP STATUS=%s" % status)
+            lines.append("PYTHON_VERSION=%s" % sys.version)
+            lines.append("PYTHON_HEXVERSION=%s" % sys.hexversion)
+            lines.append("NAME=%s" % globals().get("__name__", ""))
+            lines.append("FILE=%s" % globals().get("__file__", ""))
+            lines.append("CWD=%s" % os.getcwd())
+            lines.append("TIME=%s" % time.time())
+            if detail:
+                lines.append("DETAIL=%s" % detail)
+            handle.write("\n".join(lines) + "\n")
+            handle.flush()
+        finally:
+            handle.close()
+    except:
+        pass
+
+
+_bootstrap_status("MODULE_STARTED", "")
+_bootstrap_status("BASIC_IMPORTS_OK", "")
+
+import re
 import traceback
 import math
 import imp
 
-import kcs_draft
-import kcs_ui
-import KcsCaptureRegion2D
-import KcsText
-import KcsPoint2D
-import KcsColour
+try:
+    import hashlib
+except:
+    hashlib = None
 
-ROOT = r"C:\AM_TribonBridge"
+try:
+    import kcs_draft
+    import kcs_ui
+    import KcsCaptureRegion2D
+    import KcsText
+    import KcsPoint2D
+    import KcsColour
+except Exception, error:
+    _bootstrap_status("FAILED", error)
+    raise
+
+_bootstrap_status("KCS_IMPORTS_OK", "")
+
 INBOX = os.path.join(ROOT, "inbox")
 PROCESSING = os.path.join(ROOT, "processing")
 OUTPUT = os.path.join(ROOT, "output")
 ARCHIVE = os.path.join(ROOT, "archive")
-DIAGNOSTICS = os.path.join(ROOT, "diagnostics")
 PLAN_PATH = os.path.join(DIAGNOSTICS, "geometry-object-label-plan.json")
 EXPANSION_PATH = os.path.join(DIAGNOSTICS, "geometry-object-expansion.tsv")
-
-try:
-    ADDIN_ROOT = os.path.dirname(os.path.abspath(__file__))
-except:
-    ADDIN_ROOT = os.getcwd()
-
-import hashlib
-import json
-import hashlib
-import json
-import re
 
 CONTRACT_VERSION = "geometry-label-plan/v1"
 SELF_TEST_EXPECTED_HASH = (
     "F2B14D4200E1AC239FBF1CFD28D2F994"
     "39E631EC2D6FA129ECB6A92A841B75F2"
 )
+SHA256_EMPTY_EXPECTED = "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+SHA256_ABC_EXPECTED = "BA7816BF8F01CFEA414140DE5DAE2223B00361A396177A9CB410FF61F20015AD"
+SHA256_PLAN_EXPECTED = "F2B14D4200E1AC239FBF1CFD28D2F99439E631EC2D6FA129ECB6A92A841B75F2"
 
 try:
     TEXT_TYPE = unicode
 except NameError:
     TEXT_TYPE = str
+
+
+def _text(value):
+    try:
+        if isinstance(value, TEXT_TYPE):
+            return value
+        return TEXT_TYPE(value)
+    except:
+        return "<unprintable>"
 
 
 class _InlinePlanBindingError(Exception):
@@ -56,11 +99,9 @@ class _InlinePlanBindingError(Exception):
 def _utf8(value):
     if value is None:
         value = ""
-    if isinstance(value, bytes):
-        return value
     if isinstance(value, TEXT_TYPE):
         return value.encode("utf-8")
-    return TEXT_TYPE(value).encode("utf-8")
+    return str(value)
 
 
 def _sort_text(value):
@@ -73,12 +114,89 @@ def _sort_text(value):
 
 def _append_field(parts, value):
     data = _utf8(value)
-    parts.append(
-        str(len(data)).encode("ascii") +
-        b":" +
-        data +
-        b"\n"
-    )
+    parts.append(str(len(data)) + ":" + data + "\n")
+
+
+_SHA256_K = [
+    0x428A2F98, 0x71374491, 0xB5C0FBCF, 0xE9B5DBA5,
+    0x3956C25B, 0x59F111F1, 0x923F82A4, 0xAB1C5ED5,
+    0xD807AA98, 0x12835B01, 0x243185BE, 0x550C7DC3,
+    0x72BE5D74, 0x80DEB1FE, 0x9BDC06A7, 0xC19BF174,
+    0xE49B69C1, 0xEFBE4786, 0x0FC19DC6, 0x240CA1CC,
+    0x2DE92C6F, 0x4A7484AA, 0x5CB0A9DC, 0x76F988DA,
+    0x983E5152, 0xA831C66D, 0xB00327C8, 0xBF597FC7,
+    0xC6E00BF3, 0xD5A79147, 0x06CA6351, 0x14292967,
+    0x27B70A85, 0x2E1B2138, 0x4D2C6DFC, 0x53380D13,
+    0x650A7354, 0x766A0ABB, 0x81C2C92E, 0x92722C85,
+    0xA2BFE8A1, 0xA81A664B, 0xC24B8B70, 0xC76C51A3,
+    0xD192E819, 0xD6990624, 0xF40E3585, 0x106AA070,
+    0x19A4C116, 0x1E376C08, 0x2748774C, 0x34B0BCB5,
+    0x391C0CB3, 0x4ED8AA4A, 0x5B9CCA4F, 0x682E6FF3,
+    0x748F82EE, 0x78A5636F, 0x84C87814, 0x8CC70208,
+    0x90BEFFFA, 0xA4506CEB, 0xBEF9A3F7, 0xC67178F2
+]
+_SHA256_H0 = [
+    0x6A09E667, 0xBB67AE85, 0x3C6EF372, 0xA54FF53A,
+    0x510E527F, 0x9B05688C, 0x1F83D9AB, 0x5BE0CD19
+]
+
+
+def _sha256_rotr(value, count):
+    return ((value >> count) | ((value << (32 - count)) & 0xffffffff)) & 0xffffffff
+
+
+def _sha256_fallback(data):
+    bit_length = len(data) * 8
+    padded = data + chr(128)
+    while ((len(padded) + 8) % 64) != 0:
+        padded += chr(0)
+    count = 56
+    while count >= 0:
+        padded += chr((bit_length >> count) & 255)
+        count -= 8
+    state = list(_SHA256_H0)
+    offset = 0
+    while offset < len(padded):
+        chunk = padded[offset:offset + 64]
+        words = []
+        index = 0
+        while index < 16:
+            base = index * 4
+            words.append((ord(chunk[base]) << 24) | (ord(chunk[base + 1]) << 16) | (ord(chunk[base + 2]) << 8) | ord(chunk[base + 3]))
+            index += 1
+        while len(words) < 64:
+            value = words[-15]
+            s0 = _sha256_rotr(value, 7) ^ _sha256_rotr(value, 18) ^ (value >> 3)
+            value = words[-2]
+            s1 = _sha256_rotr(value, 17) ^ _sha256_rotr(value, 19) ^ (value >> 10)
+            words.append((words[-16] + s0 + words[-7] + s1) & 0xffffffff)
+        a, b, c, d, e, f, g, h = state
+        index = 0
+        while index < 64:
+            s1 = _sha256_rotr(e, 6) ^ _sha256_rotr(e, 11) ^ _sha256_rotr(e, 25)
+            choose = (e & f) ^ ((~e) & g)
+            temp1 = (h + s1 + choose + _SHA256_K[index] + words[index]) & 0xffffffff
+            s0 = _sha256_rotr(a, 2) ^ _sha256_rotr(a, 13) ^ _sha256_rotr(a, 22)
+            majority = (a & b) ^ (a & c) ^ (b & c)
+            temp2 = (s0 + majority) & 0xffffffff
+            h, g, f, e, d, c, b, a = g, f, e, (d + temp1) & 0xffffffff, c, b, a, (temp1 + temp2) & 0xffffffff
+            index += 1
+        values = (a, b, c, d, e, f, g, h)
+        index = 0
+        while index < 8:
+            state[index] = (state[index] + values[index]) & 0xffffffff
+            index += 1
+        offset += 64
+    result = ""
+    for value in state:
+        result += "%08x" % value
+    return result.upper()
+
+
+def _sha256_hex(data):
+    if hashlib is not None:
+        return hashlib.sha256(data).hexdigest().upper()
+    return _sha256_fallback(data)
 
 
 def _inline_compute_plan_hash(preflight):
@@ -144,9 +262,7 @@ def _inline_compute_plan_hash(preflight):
             item.get("matchHandle", "") or ""
         )
 
-    return hashlib.sha256(
-        b"".join(parts)
-    ).hexdigest().upper()
+    return _sha256_hex("".join(parts))
 
 
 def _inline_ready_operation_ids(preflight):
@@ -188,37 +304,96 @@ def _changed(message):
     )
 
 
+def _inline_json_string(text, start):
+    value = ""
+    index = start + 1
+    while index < len(text):
+        char = text[index]
+        if char == '"':
+            return value, index + 1
+        if char == "\\":
+            index += 1
+            if index >= len(text):
+                _invalid("JSON string is incomplete.")
+            escaped = text[index]
+            mapping = {"\"": '"', "\\": "\\", "/": "/", "b": "\b", "f": "\f", "n": "\n", "r": "\r", "t": "\t"}
+            if mapping.has_key(escaped):
+                value += mapping[escaped]
+            elif escaped == "u":
+                if index + 4 >= len(text):
+                    _invalid("JSON unicode escape is incomplete.")
+                value += "?"
+                index += 4
+            else:
+                _invalid("JSON string escape is invalid.")
+        else:
+            value += char
+        index += 1
+    _invalid("JSON string is incomplete.")
+
+
+def _inline_field_start(text, name):
+    match = re.search('"' + re.escape(name) + '"\\s*:', text)
+    if match is None:
+        return -1
+    return match.end()
+
+
+def _inline_skip_space(text, index):
+    while index < len(text) and text[index] in " \t\r\n":
+        index += 1
+    return index
+
+
+def _string_array_field(text, name):
+    index = _inline_skip_space(text, _inline_field_start(text, name))
+    if index < 0 or index >= len(text) or text[index] != "[":
+        _invalid("JSON string array field is missing: " + name)
+    index += 1
+    result = []
+    while True:
+        index = _inline_skip_space(text, index)
+        if index >= len(text):
+            _invalid("JSON array is incomplete: " + name)
+        if text[index] == "]":
+            return result
+        if text[index] != '"':
+            _invalid("JSON array contains a non-string value: " + name)
+        value, index = _inline_json_string(text, index)
+        result.append(value)
+        index = _inline_skip_space(text, index)
+        if index < len(text) and text[index] == ",":
+            index += 1
+            continue
+        if index < len(text) and text[index] == "]":
+            return result
+        _invalid("JSON array separator is invalid: " + name)
+
+
+def _inline_bool_field(text, name):
+    index = _inline_skip_space(text, _inline_field_start(text, name))
+    if index < 0 or text[index:index + 4] != "true":
+        return False
+    return True
+
+
+def _inline_string_field(text, name):
+    index = _inline_skip_space(text, _inline_field_start(text, name))
+    if index < 0 or index >= len(text) or text[index] != '"':
+        return ""
+    value, unused = _inline_json_string(text, index)
+    return value
+
+
 def _inline_parse_request_binding(request_text):
-    try:
-        document = json.loads(request_text)
-    except Exception:
-        _invalid("Request JSON is invalid.")
-
-    payload = document.get("payload")
-
-    if not isinstance(payload, dict):
+    if _inline_field_start(request_text, "payload") < 0:
         _invalid("Request payload is required.")
-
     return {
-        "allowWrite":
-            payload.get("allowWrite") is True,
-        "writeConfirmed":
-            payload.get("writeConfirmed") is True,
-        "confirmedPreflightOperationId":
-            payload.get(
-                "confirmedPreflightOperationId",
-                ""
-            ),
-        "confirmedPlanHash":
-            payload.get(
-                "confirmedPlanHash",
-                ""
-            ),
-        "confirmedOperationIds":
-            payload.get(
-                "confirmedOperationIds",
-                []
-            )
+        "allowWrite": _inline_bool_field(request_text, "allowWrite"),
+        "writeConfirmed": _inline_bool_field(request_text, "writeConfirmed"),
+        "confirmedPreflightOperationId": _inline_string_field(request_text, "confirmedPreflightOperationId"),
+        "confirmedPlanHash": _inline_string_field(request_text, "confirmedPlanHash"),
+        "confirmedOperationIds": _string_array_field(request_text, "confirmedOperationIds")
     }
 
 
@@ -463,6 +638,9 @@ class _InlinePlanBinding(object):
         return _inline_validate_against_preflight(binding, current_preflight)
 # END INLINE GEOMETRY LABEL PLAN BINDING
 
+PLAN_BINDING = _InlinePlanBinding()
+_bootstrap_status("PLAN_BINDING_DEFINED", "")
+
 def _resolve_addin_root():
     candidates = []
     try:
@@ -493,9 +671,13 @@ def _resolve_addin_root():
             return candidate
     raise Exception("addin root not found cwd=%s file=%s checked=%s" % (_text(cwd), _text(globals().get("__file__", "")), _text(checked)))
 
-ADDIN_ROOT = _resolve_addin_root()
+try:
+    ADDIN_ROOT = _resolve_addin_root()
+except Exception, error:
+    _bootstrap_status("FAILED", error)
+    raise
 RUNTIME_ROOT = os.path.join(ADDIN_ROOT, "runtime")
-PLAN_BINDING = _InlinePlanBinding()
+_bootstrap_status("ADDIN_ROOT_RESOLVED", ADDIN_ROOT)
 
 DETECTOR_SCRIPTS = [
     "detect_pipe_flange_candidates.py",
@@ -519,13 +701,6 @@ FLANGE_CATEGORIES = {
 
 POSITION_TOLERANCE = 0.01
 HEIGHT_TOLERANCE = 0.01
-
-
-def _text(value):
-    try:
-        return str(value)
-    except:
-        return "<value error>"
 
 
 def _now():
@@ -2300,8 +2475,12 @@ def run(*args):
 # ---------------------------------------------------------------------------
 
 def _should_run_direct_entry():
+    actual_name = ""
     try:
-        if __name__ != "__main__":
+        actual_name = __name__
+        _bootstrap_status("DIRECT_ENTRY_CHECK", "NAME=" + actual_name)
+        if actual_name != "__main__":
+            _bootstrap_status("NOT_MAIN", "NAME=" + actual_name)
             return False
     except:
         return False
@@ -2325,6 +2504,7 @@ def _run_direct_entry():
         pass
 
     _AM_GEOMETRY_DIRECT_ENTRY_ACTIVE = True
+    _bootstrap_status("RUN_STARTED", "")
 
     try:
         return run()

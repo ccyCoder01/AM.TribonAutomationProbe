@@ -76,6 +76,16 @@ public sealed class VitessePlanBindingContractTests
         Assert.Contains("_write_worker_diagnostic(\"DIRECT_ENTRY\", \"STARTED\"", worker, StringComparison.Ordinal);
         Assert.Contains("_write_worker_diagnostic(\"DIRECT_ENTRY\", \"NO_REQUEST\"", worker, StringComparison.Ordinal);
         Assert.Contains("_write_worker_diagnostic(\"DIRECT_ENTRY\", \"FAILED\"", worker, StringComparison.Ordinal);
+        Assert.DoesNotContain("import json", worker, StringComparison.Ordinal);
+        Assert.DoesNotContain("json.loads", worker, StringComparison.Ordinal);
+        Assert.DoesNotContain("bytes", worker, StringComparison.Ordinal);
+        Assert.Contains("def _bootstrap_status(", worker, StringComparison.Ordinal);
+        Assert.Contains("def _string_array_field(", worker, StringComparison.Ordinal);
+        Assert.Contains("def _sha256_fallback(", worker, StringComparison.Ordinal);
+        Assert.Contains("SHA256_EMPTY_EXPECTED", worker, StringComparison.Ordinal);
+        Assert.Contains("SHA256_ABC_EXPECTED", worker, StringComparison.Ordinal);
+        Assert.True(worker.IndexOf("STATUS=MODULE_STARTED", StringComparison.Ordinal) < worker.IndexOf("import kcs_draft", StringComparison.Ordinal));
+        Assert.True(worker.IndexOf("PLAN_BINDING = _InlinePlanBinding()", StringComparison.Ordinal) < worker.IndexOf("def _resolve_addin_root", StringComparison.Ordinal));
     }
 
     [Fact]
