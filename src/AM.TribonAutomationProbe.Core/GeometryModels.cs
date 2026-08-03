@@ -23,9 +23,17 @@ public sealed record GeometryHighlightResult(string SchemaVersion, string TaskTy
 public sealed record GeometryHighlightClearRequest(string SchemaVersion = "1.0", string TaskType = "geometry.highlight-clear", string OperationId = "");
 public sealed record GeometryHighlightClearResult(string SchemaVersion, string TaskType, string OperationId, string DrawingContext, DateTimeOffset StartedAt, DateTimeOffset CompletedAt, string Status, bool Cleared, bool DrawingWritePerformed, bool SavePerformed = false);
 public sealed record GeometryLabelPreflightRequest(string SchemaVersion = "1.0", string TaskType = "geometry.label-preflight", string OperationId = "");
-public sealed record GeometryLabelPreflightResult(string SchemaVersion, string TaskType, string OperationId, string DrawingContext, DateTimeOffset StartedAt, DateTimeOffset CompletedAt, string Status, int PreAlreadyPresentCount, int PreMissingCount, int PreDuplicateTextCount, int PreInspectionErrorCount, IReadOnlyList<GeometryLabelPreflightItem> Items, bool DrawingWritePerformed, bool SavePerformed = false, int PreTextConflictCount = 0);
+public sealed record GeometryLabelPreflightResult(string SchemaVersion, string TaskType, string OperationId, string DrawingContext, DateTimeOffset StartedAt, DateTimeOffset CompletedAt, string Status, int PreAlreadyPresentCount, int PreMissingCount, int PreDuplicateTextCount, int PreInspectionErrorCount, IReadOnlyList<GeometryLabelPreflightItem> Items, bool DrawingWritePerformed, bool SavePerformed = false, int PreTextConflictCount = 0, string PlanHash = "", IReadOnlyList<string>? ReadyOperationIds = null);
 public sealed record GeometryLabelPreflightItem(string OperationId, string SourceObjectId, string StableObjectId, string ExpectedText, int MatchCount, double NearestDistance, double AllowedDistance, string Decision, string? MatchHandle = null);
-public sealed record GeometryLabelApplyMissingRequest(string SchemaVersion = "1.0", string TaskType = "geometry.label-apply-missing", string OperationId = "", bool AllowWrite = false);
+public sealed record GeometryLabelApplyMissingRequest(
+    string SchemaVersion = "1.0",
+    string TaskType = "geometry.label-apply-missing",
+    string OperationId = "",
+    bool AllowWrite = false,
+    bool WriteConfirmed = false,
+    string ConfirmedPreflightOperationId = "",
+    string ConfirmedPlanHash = "",
+    IReadOnlyList<string>? ConfirmedOperationIds = null);
 public sealed record GeometryLabelPropertyDrift(
     string OperationId,
     string StableObjectId,

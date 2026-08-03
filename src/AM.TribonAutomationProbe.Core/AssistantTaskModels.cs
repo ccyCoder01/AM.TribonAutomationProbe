@@ -97,7 +97,10 @@ public sealed record AssistantTaskPlan(
 
 public sealed record AssistantExecutionAuthorization(
     bool AllowWrite = false,
-    bool WriteConfirmed = false);
+    bool WriteConfirmed = false,
+    string? ConfirmedPreflightOperationId = null,
+    string? ConfirmedPlanHash = null,
+    IReadOnlyList<string>? ConfirmedOperationIds = null);
 
 public sealed record AssistantProgressUpdate(
     int Sequence,

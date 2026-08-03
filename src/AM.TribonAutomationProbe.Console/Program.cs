@@ -40,7 +40,13 @@ try
                 new AssistantConversationContext(text),
                 new AssistantExecutionAuthorization(
                     AllowWrite: options.AllowWrite,
-                    WriteConfirmed: options.ConfirmWrite),
+                    WriteConfirmed: options.ConfirmWrite,
+                    ConfirmedPreflightOperationId:
+                        options.Get("confirmed-preflight-operation-id"),
+                    ConfirmedPlanHash:
+                        options.Get("confirmed-plan-hash"),
+                    ConfirmedOperationIds:
+                        ParseConfirmedOperationIds(options)),
                 cancellationToken: CancellationToken.None);
 
             Console.WriteLine(JsonSerializer.Serialize(result, JsonDefaults.Options));
@@ -111,7 +117,40 @@ try
         case "highlight-flanges": { var result = await geometry.HighlightAsync(new GeometryHighlightRequest(TaskType: "geometry.highlight-flanges", OperationId: Guid.NewGuid().ToString("N"), Categories: new GeometryObjectCategory[] { GeometryObjectCategory.PIPE_FLANGE_FRONT, GeometryObjectCategory.PIPE_FLANGE_SIDE, GeometryObjectCategory.STRUCTURAL_FLANGE }), CancellationToken.None); Console.WriteLine(JsonSerializer.Serialize(result, JsonDefaults.Options)); break; }
         case "clear-highlight": Console.WriteLine(JsonSerializer.Serialize(await geometry.ClearHighlightAsync(new GeometryHighlightClearRequest(OperationId: Guid.NewGuid().ToString("N")), CancellationToken.None), JsonDefaults.Options)); break;
         case "preflight-object-labels": Console.WriteLine(JsonSerializer.Serialize(await geometry.PreflightLabelsAsync(new GeometryLabelPreflightRequest(OperationId: Guid.NewGuid().ToString("N")), CancellationToken.None), JsonDefaults.Options)); break;
-        case "apply-missing-object-labels": if (!options.AllowWrite) { Console.Error.WriteLine("apply-missing-object-labels requires --allow-write=true"); return 2; } Console.WriteLine(JsonSerializer.Serialize(await geometry.ApplyMissingLabelsAsync(new GeometryLabelApplyMissingRequest(OperationId: Guid.NewGuid().ToString("N"), AllowWrite: true), CancellationToken.None), JsonDefaults.Options)); break;
+        case "apply-missing-object-labels":
+        {
+            if (!options.AllowWrite || !options.ConfirmWrite)
+            {
+                Console.Error.WriteLine(
+                    "apply-missing-object-labels requires both --allow-write=true and --confirm-write=true");
+                return 2;
+            }
+
+            var request = new GeometryLabelApplyMissingRequest(
+                OperationId: Guid.NewGuid().ToString("N"),
+                AllowWrite: true,
+                WriteConfirmed: true,
+                ConfirmedPreflightOperationId:
+                    RequireOption(
+                        options,
+                        "confirmed-preflight-operation-id"),
+                ConfirmedPlanHash:
+                    RequireOption(
+                        options,
+                        "confirmed-plan-hash"),
+                ConfirmedOperationIds:
+                    ParseConfirmedOperationIds(options));
+
+            GeometryLabelPlanBinding.ValidateAuthorization(request);
+
+            Console.WriteLine(
+                JsonSerializer.Serialize(
+                    await geometry.ApplyMissingLabelsAsync(
+                        request,
+                        CancellationToken.None),
+                    JsonDefaults.Options));
+            break;
+        }
         case "audit-geometry-object-labels":
             var auditSnapshot = JsonSerializer.Deserialize<GeometryObjectDetectionResponse>(File.ReadAllText(options.Get("snapshot") ?? throw new ProbeException(ProbeErrorCodes.InvalidMessage, "--snapshot is required", "validation")), JsonDefaults.Options) ?? throw new ProbeException(ProbeErrorCodes.InvalidMessage, "Invalid snapshot", "validation");
             var auditLabels = JsonSerializer.Deserialize<GeometryLabelInspectionResponse>(File.ReadAllText(options.Get("labels") ?? throw new ProbeException(ProbeErrorCodes.InvalidMessage, "--labels is required", "validation")), JsonDefaults.Options) ?? throw new ProbeException(ProbeErrorCodes.InvalidMessage, "Invalid labels", "validation");
@@ -132,6 +171,41 @@ try
     return 0;
 }
 catch (ProbeException ex) { Console.Error.WriteLine($"{ex.Code}: {ex.Message}"); return 1; }
+
+static string RequireOption(
+    CliOptions options,
+    string name)
+{
+    var value = options.Get(name);
+
+    if (string.IsNullOrWhiteSpace(value))
+    {
+        throw new ProbeException(
+            ProbeErrorCodes.InvalidMessage,
+            $"--{name} is required",
+            "validation");
+    }
+
+    return value;
+}
+
+static IReadOnlyList<string> ParseConfirmedOperationIds(
+    CliOptions options)
+{
+    var value = options.Get("confirmed-operation-ids");
+
+    if (string.IsNullOrWhiteSpace(value))
+    {
+        return Array.Empty<string>();
+    }
+
+    return value
+        .Split(
+            ',',
+            StringSplitOptions.RemoveEmptyEntries |
+            StringSplitOptions.TrimEntries)
+        .ToArray();
+}
 
 static void ValidateRound42CPlan(AssistantTaskPlan plan)
 {
@@ -220,6 +294,9 @@ Options:
   --poll-interval-ms=<milliseconds>
   --allow-write=true
   --confirm-write=true
+  --confirmed-preflight-operation-id=<preflight-operation-id>
+  --confirmed-plan-hash=<sha256>
+  --confirmed-operation-ids=<operation-id-1,operation-id-2>
   --text=<natural-language-instruction>
   --base-url=<OpenAI-compatible base URL>
   --model=<model-id>
@@ -235,7 +312,7 @@ Options:
 Examples:
   probe assistant --text="识别当前图纸中的目标对象" --adapter=mock
   probe assistant-interpret --text="把所有法兰高亮出来" --base-url=https://api.yygu.cn/v3/llm.chat --model=deepseek/deepseek-v4-pro
-  probe assistant --text="创建缺失的对象标签" --adapter=file-bridge --confirm-write=true --allow-write=true
+  probe assistant --text="创建缺失的对象标签" --adapter=file-bridge --confirm-write=true --allow-write=true --confirmed-preflight-operation-id=<id> --confirmed-plan-hash=<sha256> --confirmed-operation-ids=<id1,id2>
   probe context --adapter=mock
   probe context --adapter=file-bridge --bridge-root=C:\AM_TribonBridge --timeout-ms=120000
   probe move-annotation --adapter=file-bridge ... --allow-write=true
@@ -244,7 +321,7 @@ No command is supplied by default: run-all is never implicit and a command must 
 assistant only executes tasks from the controlled whitelist.
 assistant-interpret performs model interpretation and planning only; it never calls Tribon.
 Assistant model configuration uses ASSISTANT_BASE_URL, ASSISTANT_API_KEY, and ASSISTANT_MODEL. API keys are never accepted on the command line.
-assistant drawing-write tasks require both --confirm-write=true and --allow-write=true.
+assistant drawing-write tasks require both --confirm-write=true and --allow-write=true, plus an exact confirmed preflight binding.
 Assistant tasks never execute SAVEWORK automatically.
 File-bridge write operations require --allow-write=true.
 plan-annotation-layout only generates a plan; it never applies drawing changes and does not require --allow-write=true.

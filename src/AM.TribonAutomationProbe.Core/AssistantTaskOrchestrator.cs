@@ -104,8 +104,7 @@ public sealed class AssistantTaskOrchestrator(
                 AssistantTaskState.Planned,
                 $"已生成 {plan.Tasks.Count} 个受控任务。任务计划不自动执行 SAVEWORK。");
 
-            if (plan.RequiresConfirmation &&
-                (!authorization.WriteConfirmed || !authorization.AllowWrite))
+            if (plan.RequiresConfirmation)
             {
                 var missing = new List<string>();
 
@@ -119,23 +118,48 @@ public sealed class AssistantTaskOrchestrator(
                     missing.Add("写权限授权");
                 }
 
-                var message = plan.Message + " 当前缺少：" + string.Join("、", missing) + "。";
-                plan = plan with
+                if (string.IsNullOrWhiteSpace(
+                        authorization.ConfirmedPreflightOperationId))
                 {
-                    State = AssistantTaskState.AwaitingConfirmation,
-                    Message = message
-                };
+                    missing.Add("已确认的预检操作标识");
+                }
 
-                Report(
-                    AssistantTaskState.AwaitingConfirmation,
-                    message);
+                if (string.IsNullOrWhiteSpace(
+                        authorization.ConfirmedPlanHash))
+                {
+                    missing.Add("已确认的计划哈希");
+                }
 
-                return Complete(
-                    AssistantTaskState.AwaitingConfirmation,
-                    formatter.FormatRun(
-                        plan,
+                if ((authorization.ConfirmedOperationIds?.Count ?? 0) == 0)
+                {
+                    missing.Add("已确认的补标操作集合");
+                }
+
+                if (missing.Count > 0)
+                {
+                    var message =
+                        plan.Message +
+                        " 当前缺少：" +
+                        string.Join("、", missing) +
+                        "。";
+
+                    plan = plan with
+                    {
+                        State = AssistantTaskState.AwaitingConfirmation,
+                        Message = message
+                    };
+
+                    Report(
                         AssistantTaskState.AwaitingConfirmation,
-                        taskResults));
+                        message);
+
+                    return Complete(
+                        AssistantTaskState.AwaitingConfirmation,
+                        formatter.FormatRun(
+                            plan,
+                            AssistantTaskState.AwaitingConfirmation,
+                            taskResults));
+                }
             }
 
             plan = plan with
@@ -330,7 +354,16 @@ public sealed class AssistantTaskOrchestrator(
                     new GeometryLabelApplyMissingRequest(
                         TaskType: task.TaskType,
                         OperationId: operationId,
-                        AllowWrite: authorization.AllowWrite && authorization.WriteConfirmed),
+                        AllowWrite: authorization.AllowWrite,
+                        WriteConfirmed: authorization.WriteConfirmed,
+                        ConfirmedPreflightOperationId:
+                            authorization.ConfirmedPreflightOperationId ??
+                            string.Empty,
+                        ConfirmedPlanHash:
+                            authorization.ConfirmedPlanHash ??
+                            string.Empty,
+                        ConfirmedOperationIds:
+                            authorization.ConfirmedOperationIds),
                     cancellationToken),
 
             _ => throw new ProbeException(

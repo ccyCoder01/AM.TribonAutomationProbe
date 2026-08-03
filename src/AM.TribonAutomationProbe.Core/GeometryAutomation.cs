@@ -136,7 +136,7 @@ public sealed class GeometryAutomationAdapter(ITribonAdapter inner) : IGeometryA
         var conflictCount = items.Count(
             x => x.Decision == "BLOCKED_TEXT_CONFLICT");
 
-        return new(
+        var result = new GeometryLabelPreflightResult(
             "1.0",
             request.TaskType,
             request.OperationId,
@@ -154,24 +154,25 @@ public sealed class GeometryAutomationAdapter(ITribonAdapter inner) : IGeometryA
             false,
             false,
             conflictCount);
+
+        return GeometryLabelPlanBinding.Attach(result);
     }
 
     public async Task<GeometryLabelApplyMissingResult> ApplyMissingLabelsAsync(
         GeometryLabelApplyMissingRequest request,
         CancellationToken cancellationToken)
     {
-        if (!request.AllowWrite)
-        {
-            throw new ProbeException(
-                ProbeErrorCodes.InvalidMessage,
-                "allowWrite must be true",
-                "validation");
-        }
+        GeometryLabelPlanBinding.ValidateAuthorization(request);
 
         var preflight = await PreflightLabelsAsync(
             new GeometryLabelPreflightRequest(
-                OperationId: request.OperationId),
+                OperationId:
+                    request.ConfirmedPreflightOperationId),
             cancellationToken);
+
+        GeometryLabelPlanBinding.ValidateAgainstPreflight(
+            request,
+            preflight);
 
         var blocked = preflight.Status == "BLOCKED";
         var createdIds = preflight.Items

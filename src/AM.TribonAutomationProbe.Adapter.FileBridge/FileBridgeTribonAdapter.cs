@@ -134,12 +134,28 @@ public sealed class FileBridgeGeometryAutomationAdapter(FileBridgeTransport tran
         => Read<GeometryHighlightClearResult>(await SendAsync("geometry.highlight-clear", request, cancellationToken), "geometry.highlight-clear", request.OperationId);
 
     public async Task<GeometryLabelPreflightResult> PreflightLabelsAsync(GeometryLabelPreflightRequest request, CancellationToken cancellationToken)
-        => Read<GeometryLabelPreflightResult>(await SendAsync("geometry.label-preflight", request, cancellationToken), "geometry.label-preflight", request.OperationId);
-
-    public async Task<GeometryLabelApplyMissingResult> ApplyMissingLabelsAsync(GeometryLabelApplyMissingRequest request, CancellationToken cancellationToken)
     {
-        if (!request.AllowWrite) throw new ProbeException(ProbeErrorCodes.InvalidMessage, "allowWrite must be true", "validation");
-        return Read<GeometryLabelApplyMissingResult>(await SendAsync("geometry.label-apply-missing", request, cancellationToken), "geometry.label-apply-missing", request.OperationId);
+        var result = Read<GeometryLabelPreflightResult>(
+            await SendAsync(
+                "geometry.label-preflight",
+                request,
+                cancellationToken),
+            "geometry.label-preflight",
+            request.OperationId);
+
+        return GeometryLabelPlanBinding.Attach(result);
+    }
+
+    public Task<GeometryLabelApplyMissingResult> ApplyMissingLabelsAsync(GeometryLabelApplyMissingRequest request, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        GeometryLabelPlanBinding.ValidateAuthorization(request);
+
+        return Task.FromException<GeometryLabelApplyMissingResult>(
+            new ProbeException(
+                "GEOMETRY_LABEL_PLAN_BINDING_NOT_ENFORCED",
+                "Real Tribon label writes remain disabled until the Vitesse worker validates the confirmed preflight binding.",
+                "safety"));
     }
 
     private async Task<BridgeResult> SendAsync(string action, object payload, CancellationToken cancellationToken)

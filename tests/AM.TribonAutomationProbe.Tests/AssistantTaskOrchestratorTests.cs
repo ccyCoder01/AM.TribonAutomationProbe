@@ -35,6 +35,7 @@ public sealed class AssistantTaskOrchestratorTests
     [InlineData(false, false)]
     [InlineData(true, false)]
     [InlineData(false, true)]
+    [InlineData(true, true)]
     public async Task WriteTaskDoesNotExecuteUntilConfirmedAndAuthorized(
         bool allowWrite,
         bool writeConfirmed)
@@ -57,9 +58,7 @@ public sealed class AssistantTaskOrchestratorTests
         var adapter = new FakeGeometryAutomationAdapter();
         var result = await Orchestrator(adapter).RunAsync(
             new AssistantConversationContext("创建缺失的对象标签"),
-            new AssistantExecutionAuthorization(
-                AllowWrite: true,
-                WriteConfirmed: true),
+            ConfirmedAuthorization(),
             cancellationToken: CancellationToken.None);
 
         Assert.Equal(AssistantTaskState.Completed, result.State);
@@ -68,6 +67,11 @@ public sealed class AssistantTaskOrchestratorTests
         Assert.True(task.DrawingWritePerformed);
         Assert.False(task.SavePerformed);
         Assert.Contains("创建 12 个", task.Summary, StringComparison.Ordinal);
+        Assert.NotNull(adapter.LastApplyRequest);
+        Assert.Equal(
+            "PREFLIGHT-1",
+            adapter.LastApplyRequest!.ConfirmedPreflightOperationId);
+        Assert.Single(adapter.LastApplyRequest.ConfirmedOperationIds!);
     }
 
     [Fact]
@@ -105,7 +109,7 @@ public sealed class AssistantTaskOrchestratorTests
 
         var result = await Orchestrator(adapter).RunAsync(
             new AssistantConversationContext("创建缺失的对象标签"),
-            new AssistantExecutionAuthorization(true, true),
+            ConfirmedAuthorization(),
             cancellationToken: CancellationToken.None);
 
         Assert.Equal(AssistantTaskState.Failed, result.State);
@@ -156,6 +160,18 @@ public sealed class AssistantTaskOrchestratorTests
         Assert.Equal(1, adapter.HighlightCallCount);
     }
 
+    private static AssistantExecutionAuthorization ConfirmedAuthorization() =>
+        new(
+            AllowWrite: true,
+            WriteConfirmed: true,
+            ConfirmedPreflightOperationId: "PREFLIGHT-1",
+            ConfirmedPlanHash:
+                "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            ConfirmedOperationIds:
+            [
+                "label:LB-01"
+            ]);
+
     private static AssistantTaskOrchestrator Orchestrator(
         IGeometryAutomationAdapter adapter) =>
         new(
@@ -178,6 +194,7 @@ public sealed class AssistantTaskOrchestratorTests
         public int ClearCallCount { get; private set; }
         public int PreflightCallCount { get; private set; }
         public int ApplyCallCount { get; private set; }
+        public GeometryLabelApplyMissingRequest? LastApplyRequest { get; private set; }
 
         public ProbeException? DetectException { get; init; }
         public Func<string, GeometryDetectionResult> DetectResultFactory { get; init; } =
@@ -282,14 +299,8 @@ public sealed class AssistantTaskOrchestratorTests
         {
             cancellationToken.ThrowIfCancellationRequested();
             ApplyCallCount++;
-
-            if (!request.AllowWrite)
-            {
-                throw new ProbeException(
-                    ProbeErrorCodes.InvalidMessage,
-                    "allowWrite must be true",
-                    "validation");
-            }
+            LastApplyRequest = request;
+            GeometryLabelPlanBinding.ValidateAuthorization(request);
 
             return Task.FromResult(ApplyResultFactory(request.OperationId));
         }
