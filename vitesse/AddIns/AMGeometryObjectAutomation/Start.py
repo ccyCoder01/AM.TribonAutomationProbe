@@ -119,6 +119,25 @@ def _text(value):
         return "<unprintable>"
 
 
+def _format_current_exception():
+    try:
+        error_type, error_value, error_traceback = sys.exc_info()
+        try:
+            return "".join(
+                traceback.format_exception(
+                    error_type,
+                    error_value,
+                    error_traceback
+                )
+            )
+        finally:
+            error_type = None
+            error_value = None
+            error_traceback = None
+    except:
+        return ""
+
+
 class _InlinePlanBindingError(Exception):
     def __init__(self, code, category, message):
         Exception.__init__(self, message)
@@ -2575,7 +2594,7 @@ def _process(name):
                 "retryable": False,
                 "details": {
                     "traceback":
-                        traceback.format_exc()
+                        _format_current_exception()
                 }
             }
         )
@@ -2653,7 +2672,7 @@ def _write_failure_result_for_selected(name, error):
             "category": "execution",
             "message": _text(error),
             "retryable": False,
-            "details": {"traceback": traceback.format_exc()}
+            "details": {"traceback": _format_current_exception()}
         }
     )
     _atomic(os.path.join(OUTPUT, command_id + ".result.json"), _json(envelope))
@@ -2712,7 +2731,7 @@ def run(*args):
         return "processed " + name
     except SystemExit, error:
         _write_failure_result_for_selected(name, error)
-        _write_worker_diagnostic("DIRECT_ENTRY", "FAILED", error, name, traceback.format_exc())
+        _write_worker_diagnostic("DIRECT_ENTRY", "FAILED", error, name, _format_current_exception())
         archive_path = os.path.join(ARCHIVE, name)
         source = os.path.join(PROCESSING, name)
         if os.path.exists(source) and not os.path.exists(archive_path):
@@ -2722,7 +2741,7 @@ def run(*args):
         return "worker failure: " + _text(error)
     except Exception, error:
         _write_failure_result_for_selected(name, error)
-        _write_worker_diagnostic("DIRECT_ENTRY", "FAILED", error, name, traceback.format_exc())
+        _write_worker_diagnostic("DIRECT_ENTRY", "FAILED", error, name, _format_current_exception())
         archive_path = os.path.join(ARCHIVE, name)
         source = os.path.join(PROCESSING, name)
         if os.path.exists(source) and not os.path.exists(archive_path):
@@ -2733,7 +2752,7 @@ def run(*args):
             "worker failure: " +
             _text(error) +
             "\n" +
-            traceback.format_exc()
+            _format_current_exception()
         )
 # ---------------------------------------------------------------------------
 # Direct Vitesse entry point.

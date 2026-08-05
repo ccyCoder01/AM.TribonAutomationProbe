@@ -81,6 +81,10 @@ public sealed class VitessePlanBindingContractTests
         Assert.Contains("ADDIN_ROOT, ADDIN_ROOT_SOURCE = _resolve_addin_root()", worker, StringComparison.Ordinal);
         Assert.Contains("except SystemExit, error", worker, StringComparison.Ordinal);
         Assert.Contains("_write_failure_result_for_selected", worker, StringComparison.Ordinal);
+        Assert.Contains("def _format_current_exception(", worker, StringComparison.Ordinal);
+        Assert.Contains("sys.exc_info()", worker, StringComparison.Ordinal);
+        Assert.Contains("traceback.format_exception(", worker, StringComparison.Ordinal);
+        Assert.DoesNotContain("traceback.format_exc()", worker, StringComparison.Ordinal);
         Assert.DoesNotContain("import json", worker, StringComparison.Ordinal);
         Assert.DoesNotContain("json.loads", worker, StringComparison.Ordinal);
         Assert.DoesNotContain("bytes", worker, StringComparison.Ordinal);
