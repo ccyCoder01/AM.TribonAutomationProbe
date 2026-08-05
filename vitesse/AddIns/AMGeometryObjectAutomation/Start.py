@@ -103,7 +103,6 @@ SELF_TEST_EXPECTED_HASH = (
 )
 SHA256_EMPTY_EXPECTED = "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
 SHA256_ABC_EXPECTED = "BA7816BF8F01CFEA414140DE5DAE2223B00361A396177A9CB410FF61F20015AD"
-SHA256_PLAN_EXPECTED = "F2B14D4200E1AC239FBF1CFD28D2F99439E631EC2D6FA129ECB6A92A841B75F2"
 
 try:
     TEXT_TYPE = unicode
@@ -175,7 +174,21 @@ def _append_field(parts, value):
     parts.append(str(len(data)) + ":" + data + "\n")
 
 
-_SHA256_K = [
+_U32_MASK = 4294967295
+
+
+def _u32(value):
+    return value & _U32_MASK
+
+
+def _normalize_u32_values(values):
+    result = []
+    for value in values:
+        result.append(_u32(value))
+    return result
+
+
+_SHA256_K_RAW = [
     0x428A2F98, 0x71374491, 0xB5C0FBCF, 0xE9B5DBA5,
     0x3956C25B, 0x59F111F1, 0x923F82A4, 0xAB1C5ED5,
     0xD807AA98, 0x12835B01, 0x243185BE, 0x550C7DC3,
@@ -193,14 +206,17 @@ _SHA256_K = [
     0x748F82EE, 0x78A5636F, 0x84C87814, 0x8CC70208,
     0x90BEFFFA, 0xA4506CEB, 0xBEF9A3F7, 0xC67178F2
 ]
-_SHA256_H0 = [
+_SHA256_H0_RAW = [
     0x6A09E667, 0xBB67AE85, 0x3C6EF372, 0xA54FF53A,
     0x510E527F, 0x9B05688C, 0x1F83D9AB, 0x5BE0CD19
 ]
+_SHA256_K = _normalize_u32_values(_SHA256_K_RAW)
+_SHA256_H0 = _normalize_u32_values(_SHA256_H0_RAW)
 
 
 def _sha256_rotr(value, count):
-    return ((value >> count) | ((value << (32 - count)) & 0xffffffff)) & 0xffffffff
+    value = _u32(value)
+    return _u32((value >> count) | (value << (32 - count)))
 
 
 def _sha256_fallback(data):
@@ -227,34 +243,67 @@ def _sha256_fallback(data):
             s0 = _sha256_rotr(value, 7) ^ _sha256_rotr(value, 18) ^ (value >> 3)
             value = words[-2]
             s1 = _sha256_rotr(value, 17) ^ _sha256_rotr(value, 19) ^ (value >> 10)
-            words.append((words[-16] + s0 + words[-7] + s1) & 0xffffffff)
+            words.append(_u32(words[-16] + s0 + words[-7] + s1))
         a, b, c, d, e, f, g, h = state
         index = 0
         while index < 64:
             s1 = _sha256_rotr(e, 6) ^ _sha256_rotr(e, 11) ^ _sha256_rotr(e, 25)
-            choose = (e & f) ^ ((~e) & g)
-            temp1 = (h + s1 + choose + _SHA256_K[index] + words[index]) & 0xffffffff
+            not_e = _u32(~e)
+            choose = _u32((e & f) ^ (not_e & g))
+            temp1 = _u32(h + s1 + choose + _SHA256_K[index] + words[index])
             s0 = _sha256_rotr(a, 2) ^ _sha256_rotr(a, 13) ^ _sha256_rotr(a, 22)
             majority = (a & b) ^ (a & c) ^ (b & c)
-            temp2 = (s0 + majority) & 0xffffffff
-            h, g, f, e, d, c, b, a = g, f, e, (d + temp1) & 0xffffffff, c, b, a, (temp1 + temp2) & 0xffffffff
+            temp2 = _u32(s0 + majority)
+            h, g, f, e, d, c, b, a = g, f, e, _u32(d + temp1), c, b, a, _u32(temp1 + temp2)
             index += 1
         values = (a, b, c, d, e, f, g, h)
         index = 0
         while index < 8:
-            state[index] = (state[index] + values[index]) & 0xffffffff
+            state[index] = _u32(state[index] + values[index])
             index += 1
         offset += 64
     result = ""
     for value in state:
-        result += "%08x" % value
+        result += "%08x" % _u32(value)
     return result.upper()
 
 
+def _is_sha256_hex(value):
+    if not isinstance(value, str):
+        return False
+    if len(value) != 64:
+        return False
+    for char in value:
+        if char not in "0123456789ABCDEF":
+            return False
+    return True
+
+
+_SHA256_FALLBACK_CHECKED = False
+
+
+def _ensure_sha256_fallback():
+    global _SHA256_FALLBACK_CHECKED
+    if hashlib is not None or _SHA256_FALLBACK_CHECKED:
+        return
+    _trace_stage("SHA256_FALLBACK_SELF_TEST_START", None, None, "")
+    if (_sha256_fallback("") != SHA256_EMPTY_EXPECTED or
+            _sha256_fallback("abc") != SHA256_ABC_EXPECTED):
+        _trace_stage("SHA256_FALLBACK_SELF_TEST_FAILED", None, None, "")
+        raise _InlinePlanBindingError("geometry_label_plan_hash_invalid", "safety", "SHA-256 fallback self-test failed.")
+    _SHA256_FALLBACK_CHECKED = True
+    _trace_stage("SHA256_FALLBACK_SELF_TEST_RETURNED", None, None, "")
+
+
 def _sha256_hex(data):
+    _ensure_sha256_fallback()
     if hashlib is not None:
-        return hashlib.sha256(data).hexdigest().upper()
-    return _sha256_fallback(data)
+        result = hashlib.sha256(data).hexdigest().upper()
+    else:
+        result = _sha256_fallback(data)
+    if not _is_sha256_hex(result):
+        raise _InlinePlanBindingError("geometry_label_plan_hash_invalid", "safety", "SHA-256 digest format is invalid.")
+    return result
 
 
 def _inline_compute_plan_hash(preflight):
@@ -328,6 +377,11 @@ def _inline_compute_plan_hash(preflight):
         None,
         backend_name
     )
+    _trace_stage("PLAN_HASH_VALIDATE_START", None, None, "")
+    if not _is_sha256_hex(result):
+        _trace_stage("PLAN_HASH_VALIDATE_FAILED", None, None, "")
+        raise _InlinePlanBindingError("geometry_label_plan_hash_invalid", "safety", "Plan hash format is invalid.")
+    _trace_stage("PLAN_HASH_VALIDATE_RETURNED", None, None, result)
     _trace_stage("PLAN_HASH_COMPUTE_RETURNED", None, None, result)
     return result
 

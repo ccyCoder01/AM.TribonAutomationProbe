@@ -60,7 +60,9 @@ if ($worker -notmatch 'def _string_array_field\(' -or
     $worker -notmatch 'def _sha256_fallback\(' -or
     $worker -notmatch 'SHA256_EMPTY_EXPECTED' -or
     $worker -notmatch 'SHA256_ABC_EXPECTED' -or
-    $worker -notmatch 'F2B14D4200E1AC239FBF1CFD28D2F99439E631EC2D6FA129ECB6A92A841B75F2') {
+    $worker -notmatch 'SELF_TEST_EXPECTED_HASH' -or
+    $worker -notmatch 'F2B14D4200E1AC239FBF1CFD28D2F994' -or
+    $worker -notmatch '39E631EC2D6FA129ECB6A92A841B75F2') {
     throw "Inline parser/hash fallback contract is incomplete."
 }
 if ($worker -notmatch 'def _valid_addin_root\(' -or
@@ -80,6 +82,8 @@ if ($worker -match 'SAVEWORK') { throw "SAVEWORK is forbidden." }
 if ($worker -notmatch 'SetBoundaryInfinite\(\)') { throw "Capture boundary policy changed." }
 if ($worker -match '(?m)^\s*(?:return\s+)?[^#\r\n:]+?\s+if\s+[^:\r\n]+?\s+else\s+[^#\r\n]+$') { throw "Python conditional expression found." }
 if ($worker -match '\.sort\(key=' -or $worker -match '\.sort\(reverse=' -or $worker -match '\bsorted\(') { throw "Python 2.3-incompatible sort syntax found." }
+if ($worker -match '0xffffffff' -or $worker -notmatch '_U32_MASK = 4294967295' -or $worker -notmatch 'def _u32\(' -or $worker -notmatch 'def _normalize_u32_values\(') { throw "SHA-256 unsigned 32-bit normalization contract failed." }
+if ($worker -notmatch 'def _is_sha256_hex\(' -or $worker -notmatch 'SHA256_FALLBACK_SELF_TEST_START' -or $worker -notmatch 'PLAN_HASH_VALIDATE_START' -or $worker -notmatch 'PLAN_HASH_VALIDATE_FAILED') { throw "SHA-256 fail-closed contract is incomplete." }
 foreach ($marker in @('PLAN_HASH_SORT_START','PLAN_HASH_SORT_RETURNED','READY_IDS_SORT_START','READY_IDS_SORT_RETURNED','CONFIRMED_IDS_SORT_START','CONFIRMED_IDS_SORT_RETURNED','CURRENT_IDS_SORT_START','CURRENT_IDS_SORT_RETURNED','FAILURE_RESULT_BUILD_START','FAILURE_RESULT_BUILD_RETURNED','FAILURE_RESULT_WRITE_FAILED','FAILURE_ARCHIVE_FAILED','PROCESS_FAILED')) {
     if ($worker -notmatch ('"' + $marker + '"')) { throw "Missing failure/sort marker: $marker" }
 }

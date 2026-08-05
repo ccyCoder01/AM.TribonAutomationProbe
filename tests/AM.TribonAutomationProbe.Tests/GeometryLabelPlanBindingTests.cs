@@ -78,6 +78,38 @@ public sealed class GeometryLabelPlanBindingTests
     }
 
     [Fact]
+    public void RawVitessePlanHashMustBeValidAndMatchRecomputedValue()
+    {
+        var value = GeometryLabelPlanBinding.Attach(
+            Preflight(
+            [
+                Item("label:LB-01", "OBJ-1", "LB-01", "LB-01", "READY_TO_CREATE")
+            ]));
+
+        GeometryLabelPlanBinding.ValidateRawPlanHash(value);
+
+        var lowercase = value with
+        {
+            PlanHash = value.PlanHash.ToLowerInvariant()
+        };
+        var lowercaseError = Assert.Throws<ProbeException>(
+            () => GeometryLabelPlanBinding.ValidateRawPlanHash(lowercase));
+        Assert.Equal(
+            "GEOMETRY_LABEL_PLAN_HASH_MISMATCH",
+            lowercaseError.Code);
+
+        var malformed = value with { PlanHash = "ABC" };
+        var malformedError = Assert.Throws<ProbeException>(
+            () => GeometryLabelPlanBinding.ValidateRawPlanHash(malformed));
+        Assert.Equal("GEOMETRY_LABEL_PLAN_HASH_MISMATCH", malformedError.Code);
+
+        var mismatched = value with { PlanHash = new string('A', 64) };
+        var mismatchError = Assert.Throws<ProbeException>(
+            () => GeometryLabelPlanBinding.ValidateRawPlanHash(mismatched));
+        Assert.Equal("GEOMETRY_LABEL_PLAN_HASH_MISMATCH", mismatchError.Code);
+    }
+
+    [Fact]
     public void AuthorizationRequiresAllConfirmationFields()
     {
         var error = Assert.Throws<ProbeException>(

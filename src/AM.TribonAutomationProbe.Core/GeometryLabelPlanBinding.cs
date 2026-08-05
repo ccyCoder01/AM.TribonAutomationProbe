@@ -29,6 +29,22 @@ public static class GeometryLabelPlanBinding
         };
     }
 
+    public static void ValidateRawPlanHash(
+        GeometryLabelPreflightResult value)
+    {
+        ArgumentNullException.ThrowIfNull(value);
+        if (!IsSha256(value.PlanHash))
+        {
+            throw PlanHashMismatch("The Vitesse planHash is not a 64-character SHA-256 value.");
+        }
+
+        var recomputed = ComputeHash(value);
+        if (!string.Equals(value.PlanHash, recomputed, StringComparison.Ordinal))
+        {
+            throw PlanHashMismatch("The Vitesse planHash does not match the recomputed plan hash.");
+        }
+    }
+
     public static string ComputeHash(
         GeometryLabelPreflightResult value)
     {
@@ -224,6 +240,13 @@ public static class GeometryLabelPlanBinding
         string message) =>
         new(
             ProbeErrorCodes.VerificationFailed,
+            message,
+            "safety");
+
+    private static ProbeException PlanHashMismatch(
+        string message) =>
+        new(
+            "GEOMETRY_LABEL_PLAN_HASH_MISMATCH",
             message,
             "safety");
 }

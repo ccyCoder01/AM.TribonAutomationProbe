@@ -143,6 +143,7 @@ public sealed class FileBridgeGeometryAutomationAdapter(FileBridgeTransport tran
             "geometry.label-preflight",
             request.OperationId);
 
+        GeometryLabelPlanBinding.ValidateRawPlanHash(result);
         return GeometryLabelPlanBinding.Attach(result);
     }
 
