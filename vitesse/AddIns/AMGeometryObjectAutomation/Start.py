@@ -106,8 +106,10 @@ SHA256_ABC_EXPECTED = "BA7816BF8F01CFEA414140DE5DAE2223B00361A396177A9CB410FF61F
 
 try:
     TEXT_TYPE = unicode
+    STRING_TYPES = (str, unicode)
 except NameError:
     TEXT_TYPE = str
+    STRING_TYPES = (str,)
 
 
 def _text(value):
@@ -556,7 +558,7 @@ def _inline_validate_authorization(binding):
     if (
         not isinstance(
             preflight_operation_id,
-            TEXT_TYPE
+            STRING_TYPES
         ) or
         preflight_operation_id.strip() == ""
     ):
@@ -570,7 +572,7 @@ def _inline_validate_authorization(binding):
     )
 
     if (
-        not isinstance(plan_hash, TEXT_TYPE) or
+        not isinstance(plan_hash, STRING_TYPES) or
         re.match(
             r"^[0-9A-Fa-f]{64}$",
             plan_hash
@@ -602,7 +604,7 @@ def _inline_validate_authorization(binding):
 
     for operation_id in operation_ids:
         if (
-            not isinstance(operation_id, TEXT_TYPE) or
+            not isinstance(operation_id, STRING_TYPES) or
             operation_id.strip() == ""
         ):
             _invalid(
@@ -711,6 +713,30 @@ def _expect_binding_error(callback):
 
 
 def _inline_self_test():
+    parsed_binding = _inline_parse_request_binding(
+        '{"payload":{' +
+        '"allowWrite":true,' +
+        '"writeConfirmed":true,' +
+        '"confirmedPreflightOperationId":"PREFLIGHT-1",' +
+        '"confirmedPlanHash":"' + ("0" * 64) + '",' +
+        '"confirmedOperationIds":["label:LB-01"]' +
+        '}}'
+    )
+
+    if (
+        parsed_binding[
+            "confirmedPreflightOperationId"
+        ] != "PREFLIGHT-1"
+    ):
+        raise Exception(
+            "inline parsed binding string-type "
+            "self-test failed"
+        )
+
+    _inline_validate_authorization(
+        parsed_binding
+    )
+
     preflight = _inline_attach_plan_binding(
         _self_test_preflight()
     )

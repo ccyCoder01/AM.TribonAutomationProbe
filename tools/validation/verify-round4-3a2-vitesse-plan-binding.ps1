@@ -1,4 +1,4 @@
-﻿param(
+param(
     [string]$Root = "D:\CodeNetSpace\AM.TribonAutomationProbe"
 )
 
@@ -121,3 +121,44 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host "ROUND4_3A2_VITESSE_PLAN_BINDING=PASS"
+# ROUND4_3A3I_PYTHON23_STRING_TYPES_CONTRACT
+$round43a3iStartText = [System.IO.File]::ReadAllText(
+    (Join-Path $Root "vitesse\AddIns\AMGeometryObjectAutomation\Start.py"),
+    [System.Text.Encoding]::ASCII
+)
+
+foreach ($requiredToken in @(
+    "STRING_TYPES = (str, unicode)",
+    "STRING_TYPES = (str,)",
+    "preflight_operation_id,`r`n            STRING_TYPES",
+    "not isinstance(plan_hash, STRING_TYPES)",
+    "not isinstance(operation_id, STRING_TYPES)",
+    "inline parsed binding string-type ",
+    "_inline_validate_authorization(`r`n        parsed_binding"
+)) {
+    if (
+        $round43a3iStartText.IndexOf(
+            $requiredToken,
+            [System.StringComparison]::Ordinal
+        ) -lt 0
+    ) {
+        throw "Round 4.3A-3I string-type contract missing: $requiredToken"
+    }
+}
+
+foreach ($prohibitedToken in @(
+    "preflight_operation_id,`r`n            TEXT_TYPE",
+    "not isinstance(plan_hash, TEXT_TYPE)",
+    "not isinstance(operation_id, TEXT_TYPE)"
+)) {
+    if (
+        $round43a3iStartText.IndexOf(
+            $prohibitedToken,
+            [System.StringComparison]::Ordinal
+        ) -ge 0
+    ) {
+        throw "Round 4.3A-3I prohibited string-type check remains: $prohibitedToken"
+    }
+}
+
+Write-Host "ROUND4_3A3I_PYTHON23_STRING_TYPES=PASS"
