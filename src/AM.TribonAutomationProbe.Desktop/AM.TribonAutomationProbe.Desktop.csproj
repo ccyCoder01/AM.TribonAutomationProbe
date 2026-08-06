@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <AssemblyName>AM.TribonAutomationProbe.Desktop</AssemblyName>
+    <RootNamespace>AM.TribonAutomationProbe.Desktop</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../AM.TribonAutomationProbe.Core/AM.TribonAutomationProbe.Core.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,432 @@
+<Window x:Class="AM.TribonAutomationProbe.Desktop.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="船舶设计智能助手"
+        Width="1120"
+        Height="820"
+        MinWidth="960"
+        MinHeight="700"
+        WindowStartupLocation="CenterScreen">
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+    </Grid.RowDefinitions>
+
+    <Border Grid.Row="0"
+            Background="{StaticResource PrimaryBrush}"
+            Padding="24,18">
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+
+        <StackPanel>
+          <TextBlock Text="船舶设计智能助手"
+                     Foreground="White"
+                     FontSize="25"
+                     FontWeight="SemiBold" />
+          <TextBlock Text="对象标签只读检查与受控创建"
+                     Foreground="#D9EAF2"
+                     Margin="0,4,0,0"
+                     FontSize="14" />
+        </StackPanel>
+
+        <Border Grid.Column="1"
+                Background="#1C4861"
+                CornerRadius="5"
+                Padding="12,7"
+                VerticalAlignment="Center">
+          <TextBlock Text="单图纸受控工作流"
+                     Foreground="White"
+                     FontWeight="SemiBold" />
+        </Border>
+      </Grid>
+    </Border>
+
+    <ScrollViewer Grid.Row="1"
+                  VerticalScrollBarVisibility="Auto">
+      <Grid Margin="22">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0"
+                Style="{StaticResource CardStyle}"
+                IsEnabled="{Binding CanRunPreflight}">
+          <StackPanel>
+            <TextBlock Text="运行环境"
+                       FontSize="17"
+                       FontWeight="SemiBold"
+                       Margin="0,0,0,14" />
+
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="155" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+              </Grid.ColumnDefinitions>
+              <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+              </Grid.RowDefinitions>
+
+              <TextBlock Grid.Row="0"
+                         Grid.Column="0"
+                         Text="Console 可执行文件"
+                         VerticalAlignment="Center"
+                         Foreground="{StaticResource TextSecondaryBrush}" />
+              <TextBox Grid.Row="0"
+                       Grid.Column="1"
+                       Text="{Binding ConsolePath, UpdateSourceTrigger=PropertyChanged}"
+                       Margin="0,0,10,8" />
+              <Button Grid.Row="0"
+                      Grid.Column="2"
+                      Content="浏览"
+                      Style="{StaticResource SecondaryButtonStyle}"
+                      Click="BrowseConsole_Click"
+                      Margin="0,0,0,8" />
+
+              <TextBlock Grid.Row="1"
+                         Grid.Column="0"
+                         Text="FileBridge 根目录"
+                         VerticalAlignment="Center"
+                         Foreground="{StaticResource TextSecondaryBrush}" />
+              <TextBox Grid.Row="1"
+                       Grid.Column="1"
+                       Grid.ColumnSpan="2"
+                       Text="{Binding BridgeRoot, UpdateSourceTrigger=PropertyChanged}"
+                       Margin="0,0,0,8" />
+
+              <TextBlock Grid.Row="2"
+                         Grid.Column="0"
+                         Text="等待参数"
+                         VerticalAlignment="Center"
+                         Foreground="{StaticResource TextSecondaryBrush}" />
+              <StackPanel Grid.Row="2"
+                          Grid.Column="1"
+                          Grid.ColumnSpan="2"
+                          Orientation="Horizontal">
+                <TextBlock Text="超时 (ms)"
+                           VerticalAlignment="Center"
+                           Margin="0,0,8,0" />
+                <TextBox Width="120"
+                         Text="{Binding TimeoutMs, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBlock Text="轮询间隔 (ms)"
+                           VerticalAlignment="Center"
+                           Margin="18,0,8,0" />
+                <TextBox Width="100"
+                         Text="{Binding PollIntervalMs, UpdateSourceTrigger=PropertyChanged}" />
+              </StackPanel>
+            </Grid>
+          </StackPanel>
+        </Border>
+
+        <Border Grid.Row="1"
+                Style="{StaticResource CardStyle}">
+          <StackPanel>
+            <Grid Margin="0,0,0,10">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+              </Grid.ColumnDefinitions>
+
+              <StackPanel>
+                <TextBlock Text="工作流状态"
+                           FontSize="17"
+                           FontWeight="SemiBold" />
+                <TextBlock Text="{Binding StatusMessage}"
+                           Foreground="{StaticResource TextSecondaryBrush}"
+                           TextWrapping="Wrap"
+                           Margin="0,5,18,0" />
+              </StackPanel>
+
+              <StackPanel Grid.Column="1"
+                          Orientation="Horizontal"
+                          VerticalAlignment="Center">
+                <Button Content="执行只读检查"
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        IsEnabled="{Binding CanRunPreflight}"
+                        Click="RunPreflight_Click"
+                        Margin="0,0,8,0" />
+                <Button Content="取消"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        IsEnabled="{Binding CanCancel}"
+                        Click="Cancel_Click" />
+              </StackPanel>
+            </Grid>
+
+            <ProgressBar Value="{Binding ProgressPercent, Mode=OneWay}"
+                         IsIndeterminate="{Binding IsProgressIndeterminate}" />
+
+            <Border Background="#FDECEC"
+                    BorderBrush="#E8B7B7"
+                    BorderThickness="1"
+                    CornerRadius="5"
+                    Padding="12"
+                    Margin="0,12,0,0"
+                    Visibility="{Binding HasError, Converter={StaticResource BooleanToVisibilityConverter}}">
+              <TextBlock Text="{Binding ErrorMessage}"
+                         Foreground="{StaticResource ErrorBrush}"
+                         TextWrapping="Wrap" />
+            </Border>
+
+            <Border Background="#FFF8E8"
+                    BorderBrush="#E7D19A"
+                    BorderThickness="1"
+                    CornerRadius="5"
+                    Padding="12"
+                    Margin="0,12,0,0">
+              <TextBlock Foreground="{StaticResource WarningBrush}"
+                         TextWrapping="Wrap">
+                <Run Text="每次只读检查或 Apply 提交后，" />
+                <Run Text="必须在 Tribon 当前图纸中运行 Start.py 恰好一次。" FontWeight="Bold" />
+                <Run Text=" 本程序不会自动执行 Start.py，也不会执行 SAVEWORK。" />
+              </TextBlock>
+            </Border>
+          </StackPanel>
+        </Border>
+
+        <Border Grid.Row="2"
+                Style="{StaticResource CardStyle}"
+                Visibility="{Binding HasPreflight, Converter={StaticResource BooleanToVisibilityConverter}}">
+          <StackPanel>
+            <TextBlock Text="只读检查结果"
+                       FontSize="17"
+                       FontWeight="SemiBold"
+                       Margin="0,0,0,14" />
+
+            <UniformGrid Columns="5"
+                         Margin="0,0,0,14">
+              <Border BorderBrush="{StaticResource BorderBrush}"
+                      BorderThickness="1"
+                      CornerRadius="5"
+                      Padding="12"
+                      Margin="0,0,8,0">
+                <StackPanel>
+                  <TextBlock Text="已存在"
+                             Foreground="{StaticResource TextSecondaryBrush}" />
+                  <TextBlock Text="{Binding AlreadyPresentCount}"
+                             FontSize="24"
+                             FontWeight="SemiBold" />
+                </StackPanel>
+              </Border>
+              <Border BorderBrush="{StaticResource BorderBrush}"
+                      BorderThickness="1"
+                      CornerRadius="5"
+                      Padding="12"
+                      Margin="0,0,8,0">
+                <StackPanel>
+                  <TextBlock Text="待创建"
+                             Foreground="{StaticResource TextSecondaryBrush}" />
+                  <TextBlock Text="{Binding MissingCount}"
+                             FontSize="24"
+                             FontWeight="SemiBold" />
+                </StackPanel>
+              </Border>
+              <Border BorderBrush="{StaticResource BorderBrush}"
+                      BorderThickness="1"
+                      CornerRadius="5"
+                      Padding="12"
+                      Margin="0,0,8,0">
+                <StackPanel>
+                  <TextBlock Text="重复文字"
+                             Foreground="{StaticResource TextSecondaryBrush}" />
+                  <TextBlock Text="{Binding DuplicateCount}"
+                             FontSize="24"
+                             FontWeight="SemiBold" />
+                </StackPanel>
+              </Border>
+              <Border BorderBrush="{StaticResource BorderBrush}"
+                      BorderThickness="1"
+                      CornerRadius="5"
+                      Padding="12"
+                      Margin="0,0,8,0">
+                <StackPanel>
+                  <TextBlock Text="文字冲突"
+                             Foreground="{StaticResource TextSecondaryBrush}" />
+                  <TextBlock Text="{Binding TextConflictCount}"
+                             FontSize="24"
+                             FontWeight="SemiBold" />
+                </StackPanel>
+              </Border>
+              <Border BorderBrush="{StaticResource BorderBrush}"
+                      BorderThickness="1"
+                      CornerRadius="5"
+                      Padding="12">
+                <StackPanel>
+                  <TextBlock Text="检查错误"
+                             Foreground="{StaticResource TextSecondaryBrush}" />
+                  <TextBlock Text="{Binding InspectionErrorCount}"
+                             FontSize="24"
+                             FontWeight="SemiBold" />
+                </StackPanel>
+              </Border>
+            </UniformGrid>
+
+            <Grid Margin="0,0,0,12">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="125" />
+                <ColumnDefinition Width="*" />
+              </Grid.ColumnDefinitions>
+              <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+              </Grid.RowDefinitions>
+
+              <TextBlock Grid.Row="0"
+                         Text="状态"
+                         Foreground="{StaticResource TextSecondaryBrush}" />
+              <TextBlock Grid.Row="0"
+                         Grid.Column="1"
+                         Text="{Binding PreflightStatus}"
+                         FontWeight="SemiBold" />
+
+              <TextBlock Grid.Row="1"
+                         Text="Preflight ID"
+                         Foreground="{StaticResource TextSecondaryBrush}"
+                         Margin="0,6,0,0" />
+              <TextBlock Grid.Row="1"
+                         Grid.Column="1"
+                         Text="{Binding PreflightOperationId}"
+                         FontFamily="Consolas"
+                         Margin="0,6,0,0" />
+
+              <TextBlock Grid.Row="2"
+                         Text="Plan Hash"
+                         Foreground="{StaticResource TextSecondaryBrush}"
+                         Margin="0,6,0,0" />
+              <TextBlock Grid.Row="2"
+                         Grid.Column="1"
+                         Text="{Binding PlanHash}"
+                         FontFamily="Consolas"
+                         TextWrapping="Wrap"
+                         Margin="0,6,0,0" />
+            </Grid>
+
+            <DataGrid ItemsSource="{Binding PreflightItems}"
+                      Height="245">
+              <DataGrid.Columns>
+                <DataGridTextColumn Header="稳定对象 ID"
+                                    Binding="{Binding StableObjectId}"
+                                    Width="*" />
+                <DataGridTextColumn Header="预期文字"
+                                    Binding="{Binding ExpectedText}"
+                                    Width="*" />
+                <DataGridTextColumn Header="匹配数"
+                                    Binding="{Binding MatchCount}"
+                                    Width="80" />
+                <DataGridTextColumn Header="决策"
+                                    Binding="{Binding Decision}"
+                                    Width="170" />
+                <DataGridTextColumn Header="匹配句柄"
+                                    Binding="{Binding MatchHandle}"
+                                    Width="180" />
+              </DataGrid.Columns>
+            </DataGrid>
+          </StackPanel>
+        </Border>
+
+        <Border Grid.Row="3"
+                Style="{StaticResource CardStyle}"
+                Visibility="{Binding HasPreflight, Converter={StaticResource BooleanToVisibilityConverter}}">
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel>
+              <TextBlock Text="受控 Apply"
+                         FontSize="17"
+                         FontWeight="SemiBold" />
+              <TextBlock Text="Apply 仅创建当前 preflight 中 READY_TO_CREATE 的精确 operation 集合；不会自动保存。"
+                         Foreground="{StaticResource TextSecondaryBrush}"
+                         TextWrapping="Wrap"
+                         Margin="0,5,20,10" />
+              <CheckBox IsChecked="{Binding ApplyAcknowledged, Mode=TwoWay}"
+                        IsEnabled="{Binding HasWritablePreflight}"
+                        Content="我已核对待创建数量、Plan Hash 和对象列表，并授权本次写入。" />
+            </StackPanel>
+
+            <Button Grid.Column="1"
+                    Content="创建缺失标签"
+                    Style="{StaticResource PrimaryButtonStyle}"
+                    IsEnabled="{Binding CanApply}"
+                    Click="Apply_Click"
+                    VerticalAlignment="Center" />
+          </Grid>
+        </Border>
+
+        <Border Grid.Row="4"
+                Style="{StaticResource CardStyle}"
+                Visibility="{Binding HasApplyResult, Converter={StaticResource BooleanToVisibilityConverter}}">
+          <StackPanel>
+            <TextBlock Text="Apply 结果"
+                       FontSize="17"
+                       FontWeight="SemiBold"
+                       Margin="0,0,0,12" />
+
+            <UniformGrid Columns="5"
+                         Margin="0,0,0,14">
+              <StackPanel>
+                <TextBlock Text="状态"
+                           Foreground="{StaticResource TextSecondaryBrush}" />
+                <TextBlock Text="{Binding ApplyStatus}"
+                           FontSize="18"
+                           FontWeight="SemiBold" />
+              </StackPanel>
+              <StackPanel>
+                <TextBlock Text="已创建"
+                           Foreground="{StaticResource TextSecondaryBrush}" />
+                <TextBlock Text="{Binding CreatedCount}"
+                           FontSize="18"
+                           FontWeight="SemiBold" />
+              </StackPanel>
+              <StackPanel>
+                <TextBlock Text="失败"
+                           Foreground="{StaticResource TextSecondaryBrush}" />
+                <TextBlock Text="{Binding CreateFailedCount}"
+                           FontSize="18"
+                           FontWeight="SemiBold" />
+              </StackPanel>
+              <StackPanel>
+                <TextBlock Text="图纸写入数"
+                           Foreground="{StaticResource TextSecondaryBrush}" />
+                <TextBlock Text="{Binding DrawingWriteCount}"
+                           FontSize="18"
+                           FontWeight="SemiBold" />
+              </StackPanel>
+              <StackPanel>
+                <TextBlock Text="自动保存"
+                           Foreground="{StaticResource TextSecondaryBrush}" />
+                <TextBlock Text="{Binding SavePerformed}"
+                           FontSize="18"
+                           FontWeight="SemiBold" />
+              </StackPanel>
+            </UniformGrid>
+
+            <Border Background="#EAF5EF"
+                    BorderBrush="#B7D8C5"
+                    BorderThickness="1"
+                    CornerRadius="5"
+                    Padding="13"
+                    Visibility="{Binding ManualSaveRequired, Converter={StaticResource BooleanToVisibilityConverter}}">
+              <TextBlock Text="{Binding ManualSaveGuidance}"
+                         Foreground="{StaticResource SuccessBrush}"
+                         TextWrapping="Wrap"
+                         FontWeight="SemiBold" />
+            </Border>
+          </StackPanel>
+        </Border>
+      </Grid>
+    </ScrollViewer>
+  </Grid>
+</Window>
