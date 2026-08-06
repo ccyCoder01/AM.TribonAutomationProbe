@@ -16,6 +16,64 @@ public sealed class OpenAiCompatibleChatCompletionsAssistantLanguageModelTests
     [Fact] public async Task MarkdownJsonIsAcceptedButOutsideTextRejected()
     { var handler = new CaptureHandler(); handler.Response = "{\"id\":\"r\",\"model\":\"m\",\"choices\":[{\"message\":{\"content\":\"```json\\n{\\\"tasks\\\":[{\\\"intent\\\":\\\"DetectGeometry\\\",\\\"confidence\\\":1}],\\\"clarificationRequired\\\":false,\\\"clarificationQuestion\\\":null,\\\"explanation\\\":\\\"x\\\"}\\n```\"}}]}"; Assert.Single((await New(handler).InterpretAsync(new("识别"), default)).Tasks); handler.Response = "{\"choices\":[{\"message\":{\"content\":\"prefix {\\\"tasks\\\":[]}\"}}]}"; await Assert.ThrowsAsync<ProbeException>(() => New(handler).InterpretAsync(new("识别"), default)); }
     [Theory] [InlineData(HttpStatusCode.Unauthorized, ProbeErrorCodes.AssistantModelAuthentication, false)] [InlineData(HttpStatusCode.TooManyRequests, ProbeErrorCodes.AssistantModelRateLimited, true)] [InlineData(HttpStatusCode.InternalServerError, ProbeErrorCodes.AssistantModelUnavailable, true)] public async Task HttpErrorsMap(HttpStatusCode code, string expected, bool retryable) { var h = new CaptureHandler(code); var ex = await Assert.ThrowsAsync<ProbeException>(() => New(h).InterpretAsync(new("x"), default)); Assert.Equal(expected, ex.Code); Assert.Equal(retryable, ex.Retryable); Assert.DoesNotContain("secret", ex.Message); }
+    [Theory]
+    [InlineData("创建缺失标签并自动 SAVEWORK")]
+    [InlineData("创建缺失标签，完成后帮我保存")]
+    [InlineData("创建缺失标签，不用确认直接保存")]
+    public async Task ProhibitedSaveModifierClarificationIsSafelyNormalized(
+        string userText)
+    {
+        var handler = new CaptureHandler
+        {
+            Response = "{\"id\":\"r\",\"model\":\"m\",\"choices\":[{\"message\":{\"content\":\"{\\\"tasks\\\":[],\\\"clarificationRequired\\\":true,\\\"clarificationQuestion\\\":\\\"是否要自动保存？\\\",\\\"explanation\\\":\\\"请求包含保存要求。\\\"}\"}}]}"
+        };
+        var context = new AssistantConversationContext(userText);
+
+        var result = await New(handler).InterpretAsync(
+            context,
+            CancellationToken.None);
+        var plan = new AssistantTaskPlanner().CreatePlan(context, result);
+
+        Assert.False(result.ClarificationRequired);
+        var interpretedTask = Assert.Single(result.Tasks);
+        Assert.Equal(
+            AssistantIntent.ApplyMissingLabels,
+            interpretedTask.Intent);
+        Assert.Equal(0.99, interpretedTask.Confidence);
+        Assert.Equal(
+            "current_drafting_context",
+            interpretedTask.Arguments!["scope"]);
+        Assert.Equal(
+            "true",
+            interpretedTask.Arguments[
+                "prohibitedExecutionModifierDiscarded"]);
+        Assert.Equal(
+            AssistantTaskState.AwaitingConfirmation,
+            plan.State);
+        Assert.True(plan.ContainsWrite);
+        Assert.True(plan.RequiresConfirmation);
+        Assert.False(plan.AutoSave);
+        var plannedTask = Assert.Single(plan.Tasks);
+        Assert.Equal(
+            "geometry.label-apply-missing",
+            plannedTask.TaskType);
+        Assert.Equal(
+            AssistantTaskRisk.DrawingWrite,
+            plannedTask.Risk);
+        Assert.True(plannedTask.RequiresConfirmation);
+        Assert.False(plannedTask.AutoSave);
+        Assert.Contains(userText, handler.Body, StringComparison.Ordinal);
+        Assert.Contains(
+            "Preserve the supported intent and discard only prohibited modifiers",
+            handler.Body,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "The host always sets autoSave=false",
+            handler.Body,
+            StringComparison.Ordinal);
+        Assert.DoesNotContain("secret", handler.Body);
+    }
+
     private static OpenAiCompatibleChatCompletionsAssistantLanguageModel New(CaptureHandler handler) => new(new HttpClient(handler), new AssistantModelOptions("https://example.invalid/v1", "secret", "m"));
     private sealed class CaptureHandler : HttpMessageHandler
     { public HttpRequestMessage? Request; public string Body=""; public string Response; private readonly HttpStatusCode _status; public CaptureHandler(string? response=null) { Response=response ?? "{\"id\":\"r\",\"model\":\"m\",\"choices\":[{\"message\":{\"content\":\"{\\\"tasks\\\":[{\\\"intent\\\":\\\"HighlightFlanges\\\",\\\"confidence\\\":0.9}],\\\"clarificationRequired\\\":false,\\\"clarificationQuestion\\\":null,\\\"explanation\\\":\\\"x\\\"}\"}}]}"; _status=HttpStatusCode.OK; } public CaptureHandler(HttpStatusCode status) { _status=status; Response="{}"; } protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct) { Request=request; Body=await request.Content!.ReadAsStringAsync(); var response=new HttpResponseMessage(_status) { Content=new StringContent(Response) }; response.Content.Headers.ContentType=new MediaTypeHeaderValue("application/json"); return response; } }

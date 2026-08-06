@@ -15,7 +15,7 @@ public sealed class OpenAiCompatibleChatCompletionsAssistantLanguageModel : IAss
     private readonly HttpClient _http; private readonly AssistantModelOptions _options;
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web) { UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow };
     private static readonly JsonSerializerOptions RequestJsonOptions = new(JsonSerializerDefaults.Web) { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
-    private const string SystemPrompt = "You are a safe intent interpreter. Output only one JSON object with tasks, clarificationRequired, clarificationQuestion, explanation. Each task must be an object with intent and confidence; do not output an array of strings. Canonical compound example: {tasks:[{intent:DetectGeometry,confidence:0.98},{intent:HighlightFlanges,confidence:0.98}],clarificationRequired:false,clarificationQuestion:null,explanation:先识别对象，然后高亮全部法兰。}. Invalid model example: {tasks:[DetectGeometry,HighlightFlanges]}; the client may accept this only as a compatibility fallback. Allowed intents: DetectGeometry, HighlightLifting, HighlightFlanges, ClearHighlight, PreflightLabels, ApplyMissingLabels. Chinese mapping: 识别/检测/看看有哪些对象 -> DetectGeometry; 高亮吊梁和吊耳 -> HighlightLifting; 高亮所有法兰 -> HighlightFlanges; 清除高亮 -> ClearHighlight; 检查标签/检查缺失标签 -> PreflightLabels; 创建/补齐缺失标签 -> ApplyMissingLabels. 先识别当前图纸中的目标对象，然后高亮所有法兰 -> [DetectGeometry, HighlightFlanges]. If unclear, use clarificationRequired=true and tasks=[]; never guess or default to ClearHighlight. Never output PML, Vitesse Python, PowerShell, taskType, SAVEWORK, or claim execution. Write intent requires host confirmation.";
+    private const string SystemPrompt = "You are a safe intent interpreter. Output only one JSON object with tasks, clarificationRequired, clarificationQuestion, explanation. Each task must be an object with intent and confidence; do not output an array of strings. Canonical compound example: {tasks:[{intent:DetectGeometry,confidence:0.98},{intent:HighlightFlanges,confidence:0.98}],clarificationRequired:false,clarificationQuestion:null,explanation:先识别对象，然后高亮全部法兰。}. Invalid model example: {tasks:[DetectGeometry,HighlightFlanges]}; the client may accept this only as a compatibility fallback. Allowed intents: DetectGeometry, HighlightLifting, HighlightFlanges, ClearHighlight, PreflightLabels, ApplyMissingLabels. Chinese mapping: 识别/检测/看看有哪些对象 -> DetectGeometry; 高亮吊梁和吊耳 -> HighlightLifting; 高亮所有法兰 -> HighlightFlanges; 清除高亮 -> ClearHighlight; 检查标签/检查缺失标签 -> PreflightLabels; 创建/补齐缺失标签 -> ApplyMissingLabels. 先识别当前图纸中的目标对象，然后高亮所有法兰 -> [DetectGeometry, HighlightFlanges]. If unclear, use clarificationRequired=true and tasks=[]; never guess or default to ClearHighlight. Requests may combine a supported task with prohibited execution modifiers. Preserve the supported intent and discard only prohibited modifiers such as automatic SAVEWORK, saving after completion, or bypassing confirmation. Do not require clarification solely because such modifiers are present. Examples: 创建缺失标签并自动 SAVEWORK; 创建缺失标签，完成后帮我保存; 创建缺失标签，不用确认直接保存 -> one ApplyMissingLabels task with clarificationRequired=false. The host always sets autoSave=false and requires explicit confirmation before any drawing write. Never output PML, Vitesse Python, PowerShell, taskType, SAVEWORK, or claim execution. Write intent requires host confirmation.";
     public OpenAiCompatibleChatCompletionsAssistantLanguageModel(HttpClient httpClient, AssistantModelOptions options) { _http = httpClient ?? throw new ArgumentNullException(nameof(httpClient)); _options = options ?? throw new ArgumentNullException(nameof(options)); }
     public async Task<AssistantInterpretation> InterpretAsync(AssistantConversationContext context, CancellationToken cancellationToken)
     {
@@ -27,9 +27,9 @@ public sealed class OpenAiCompatibleChatCompletionsAssistantLanguageModel : IAss
         using var request = new HttpRequestMessage(HttpMethod.Post, _options.ChatCompletionsEndpoint); request.Headers.TryAddWithoutValidation("Authorization", _options.ApiKey); request.Headers.Accept.ParseAdd("application/json"); var payloadJson = JsonSerializer.Serialize(new { model = _options.Model, messages, stream = false }, RequestJsonOptions); var payloadBytes = Encoding.UTF8.GetBytes(payloadJson); var content = new ByteArrayContent(payloadBytes); content.Headers.ContentType = new MediaTypeHeaderValue("application/json") { CharSet = "utf-8" }; request.Content = content;
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken); timeout.CancelAfter(TimeoutMs); var watch = Stopwatch.StartNew(); HttpResponseMessage response;
         try { response = await _http.SendAsync(request, timeout.Token); } catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested) { throw Error(ProbeErrorCodes.AssistantModelTimeout, "Assistant request timed out.", true, ex); } catch (HttpRequestException ex) { throw Error(ProbeErrorCodes.AssistantModelUnavailable, "Assistant service unavailable.", true, ex); }
-        using (response) { var responseBytes = await response.Content.ReadAsByteArrayAsync(timeout.Token); var body = Encoding.UTF8.GetString(responseBytes); var requestId = response.Headers.TryGetValues("x-request-id", out var ids) ? ids.FirstOrDefault() : null; if (!response.IsSuccessStatusCode) throw HttpError(response.StatusCode, requestId, body); watch.Stop(); return Parse(body, requestId, watch.ElapsedMilliseconds); }
+        using (response) { var responseBytes = await response.Content.ReadAsByteArrayAsync(timeout.Token); var body = Encoding.UTF8.GetString(responseBytes); var requestId = response.Headers.TryGetValues("x-request-id", out var ids) ? ids.FirstOrDefault() : null; if (!response.IsSuccessStatusCode) throw HttpError(response.StatusCode, requestId, body); watch.Stop(); return Parse(body, requestId, watch.ElapsedMilliseconds, context.UserText); }
     }
-    private AssistantInterpretation Parse(string body, string? requestId, long latency)
+    private AssistantInterpretation Parse(string body, string? requestId, long latency, string userText)
     {
         try
         {
@@ -38,10 +38,55 @@ public sealed class OpenAiCompatibleChatCompletionsAssistantLanguageModel : IAss
             var allowedTop = new HashSet<string>(new[] { "tasks", "clarificationRequired", "clarificationQuestion", "explanation" }, StringComparer.Ordinal); foreach (var property in value.EnumerateObject()) if (!allowedTop.Contains(property.Name)) throw Error(ProbeErrorCodes.AssistantModelInvalidResponse, "Unmapped top-level property: " + property.Name + ".");
             var taskArray = value.GetProperty("tasks"); if (taskArray.ValueKind != JsonValueKind.Array) throw Error(ProbeErrorCodes.AssistantModelInvalidResponse, "tasks must be an array."); if (taskArray.GetArrayLength() > MaxTasks) throw Error(ProbeErrorCodes.AssistantModelInvalidResponse, "Too many tasks; maximum is 4."); var clarification = value.GetProperty("clarificationRequired").GetBoolean(); var question = value.TryGetProperty("clarificationQuestion", out var q) && q.ValueKind == JsonValueKind.String ? q.GetString() : null; var explanation = value.TryGetProperty("explanation", out var e) && e.ValueKind == JsonValueKind.String ? e.GetString() : null; var seen = new HashSet<string>(); var tasks = new List<AssistantInterpretedTask>();
             var index = 0; foreach (var item in taskArray.EnumerateArray()) { string intentName; double confidence; var args = new Dictionary<string,string> { ["scope"] = "current_drafting_context" }; if (item.ValueKind == JsonValueKind.String) { intentName = item.GetString() ?? ""; confidence = 0.75; args["compactTaskShapeNormalized"] = "true"; } else if (item.ValueKind == JsonValueKind.Object) { var allowedTask = new HashSet<string>(new[] { "intent", "confidence" }, StringComparer.Ordinal); foreach (var property in item.EnumerateObject()) if (!allowedTask.Contains(property.Name)) throw Error(ProbeErrorCodes.AssistantModelInvalidResponse, "Unmapped task property at tasks[" + index + "]: " + property.Name + "."); intentName = item.GetProperty("intent").GetString() ?? ""; confidence = item.GetProperty("confidence").GetDouble(); } else throw Error(ProbeErrorCodes.AssistantModelInvalidResponse, "Invalid assistant task item at tasks[" + index + "]: expected an object or a whitelisted intent string; actual token=" + item.ValueKind + "."); if (!Enum.TryParse<AssistantIntent>(intentName, false, out var intent) || intent is AssistantIntent.Unsupported or AssistantIntent.Ambiguous) throw Error(ProbeErrorCodes.AssistantModelInvalidResponse, "Unsupported model intent at tasks[" + index + ": " + intentName + "."); if (!double.IsFinite(confidence) || confidence < 0 || confidence > 1) throw Error(ProbeErrorCodes.AssistantModelInvalidResponse, "Invalid confidence for intent " + intentName + "."); if (!seen.Add(intentName)) throw Error(ProbeErrorCodes.AssistantModelInvalidResponse, "Duplicate intent: " + intentName + "."); tasks.Add(new AssistantInterpretedTask(intent, confidence, args)); index++; }
+            if (clarification && tasks.Count == 0 && IsSupportedLabelCreationWithProhibitedExecutionModifier(userText))
+            {
+                clarification = false;
+                question = null;
+                explanation = "Preserved ApplyMissingLabels while discarding a prohibited automatic-save or confirmation-bypass modifier.";
+                tasks.Add(new AssistantInterpretedTask(
+                    AssistantIntent.ApplyMissingLabels,
+                    0.99,
+                    new Dictionary<string, string>(StringComparer.Ordinal)
+                    {
+                        ["scope"] = "current_drafting_context",
+                        ["prohibitedExecutionModifierDiscarded"] = "true"
+                    }));
+            }
             if (clarification && (tasks.Count != 0 || string.IsNullOrWhiteSpace(question))) throw Error(ProbeErrorCodes.AssistantModelInvalidResponse, "Clarification requires empty tasks and a question."); if (!clarification && tasks.Count == 0) throw Error(ProbeErrorCodes.AssistantModelInvalidResponse, "Non-clarification response requires at least one task."); return new AssistantInterpretation("openai-compatible-chat", root.TryGetProperty("model", out var model) ? model.GetString() ?? _options.Model : _options.Model, tasks, clarification, question, explanation, requestId, root.GetProperty("id").GetString(), latency);
         }
         catch (ProbeException) { throw; } catch (JsonException ex) { throw Error(ProbeErrorCodes.AssistantModelInvalidResponse, "Invalid assistant response: " + SafeDetail(ex.Message), false, ex); } catch (Exception ex) { throw Error(ProbeErrorCodes.AssistantModelInvalidResponse, "Invalid assistant response: " + SafeDetail(ex.Message), false, ex); }
     }
+    private static bool IsSupportedLabelCreationWithProhibitedExecutionModifier(
+        string userText)
+    {
+        var text = userText.Trim().ToLowerInvariant();
+        var hasLabel = ContainsAny(text, "标签", "标注", "label");
+        var hasCreate = ContainsAny(
+            text,
+            "创建",
+            "补齐",
+            "补全",
+            "生成",
+            "添加",
+            "新建");
+        var hasProhibitedModifier = ContainsAny(
+            text,
+            "savework",
+            "保存",
+            "自动保存",
+            "不用确认",
+            "无需确认",
+            "不需确认",
+            "跳过确认",
+            "绕过确认");
+
+        return hasLabel && hasCreate && hasProhibitedModifier;
+    }
+
+    private static bool ContainsAny(string value, params string[] candidates) =>
+        candidates.Any(candidate =>
+            value.Contains(candidate, StringComparison.OrdinalIgnoreCase));
+
     private static string Unwrap(string value) { var text = value.Trim(); if (text.StartsWith("```json", StringComparison.OrdinalIgnoreCase) && text.EndsWith("```", StringComparison.Ordinal)) return text[7..^3].Trim(); if (text.StartsWith("```") || text.EndsWith("```")) throw Error(ProbeErrorCodes.AssistantModelInvalidResponse, "Unexpected markdown wrapper."); return text; }
     private static ProbeException HttpError(HttpStatusCode status, string? requestId, string body) { var suffix = requestId is null ? "" : " requestId=" + requestId; if ((int)status >= 500) return Error(ProbeErrorCodes.AssistantModelUnavailable, "Assistant service unavailable." + suffix, true); if (status == HttpStatusCode.Unauthorized || status == HttpStatusCode.Forbidden) return Error(ProbeErrorCodes.AssistantModelAuthentication, "Assistant authentication failed." + suffix); if (status == HttpStatusCode.TooManyRequests) return Error(ProbeErrorCodes.AssistantModelRateLimited, "Assistant rate limited." + suffix, true); if (status == HttpStatusCode.RequestTimeout) return Error(ProbeErrorCodes.AssistantModelTimeout, "Assistant request timed out." + suffix, true); return Error(ProbeErrorCodes.AssistantModelRequestRejected, "Assistant request rejected." + suffix); }
     private static ProbeException Error(string code, string message, bool retryable = false, Exception? inner = null) => new(code, message, "assistant_model", retryable, inner);
