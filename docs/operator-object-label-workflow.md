@@ -88,3 +88,27 @@ Apply 成功后，先检查：
 - Apply 状态未知时，不要再次提交写入；
 - 界面提示配置已变化时，必须重新运行 preflight；
 - 任一结果报告 `SavePerformed=True` 时按安全异常处理，停止后续操作。
+
+## 自然语言计划入口（Round 4.5B）
+
+桌面主界面提供自然语言输入，但自然语言不会直接调用 Tribon：
+
+1. 输入任务并点击“生成执行计划”或按 `Ctrl+Enter`；
+2. Desktop 仅启动已发布 Console 的 `assistant-interpret` 命令；
+3. Console 通过 `AssistantLanguageModelFactory` 选择规则模型或受控的
+   OpenAI-compatible 模型；
+4. Desktop 校验结构化解释和计划，确认：
+   - 任务全部在白名单内；
+   - `ExecutionPerformed=False`；
+   - `DrawingWritePerformed=False`；
+   - `SavePerformed=False`；
+   - 风险、确认要求和计划状态相互一致；
+5. 标签类单任务计划可以进入现有只读 preflight；
+6. 写入计划仍必须经过精确 preflight 绑定、复选框授权和二次确认。
+
+当前增量只把标签类计划接入确定性执行。几何识别、高亮和清除高亮仅展示计划，
+后续增量再分别绑定到对应的确定性 Console 命令。不得把计划预览当作已执行结果。
+
+Desktop 不直接引用 `Adapter.OpenAI`，主界面不接收 API Key。模型配置继续通过
+Console 进程环境中的 `ASSISTANT_BASE_URL`、`ASSISTANT_API_KEY` 和
+`ASSISTANT_MODEL` 提供。API Key 不得写入源码、命令行、日志或对话记录。
