@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Security;
 using AM.TribonAutomationProbe.Core;
 using AM.TribonAutomationProbe.Desktop.Models;
 using AM.TribonAutomationProbe.Desktop.Services;
@@ -14,6 +15,12 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
     private string _userInput = string.Empty;
     private bool _isInterpreting;
     private string _errorMessage = string.Empty;
+    private bool _useRealModel;
+    private string _assistantBaseUrl =
+        "https://api.yygu.cn/v3/llm.chat/chat/completions";
+    private string _assistantModel = "deepseek/deepseek-v4-pro";
+    private AssistantAuthorizationMode _authorizationMode =
+        AssistantAuthorizationMode.BearerToken;
     private AssistantInterpretationEnvelope? _currentInterpretation;
 
     public AssistantConversationViewModel(
@@ -56,6 +63,64 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
         }
     }
 
+    public bool UseRealModel
+    {
+        get => _useRealModel;
+        set
+        {
+            if (SetProperty(ref _useRealModel, value))
+            {
+                OnPropertyChanged(nameof(ModelConfigurationSummary));
+                OnPropertyChanged(nameof(CanInterpret));
+            }
+        }
+    }
+
+    public string AssistantBaseUrl
+    {
+        get => _assistantBaseUrl;
+        set
+        {
+            if (SetProperty(
+                    ref _assistantBaseUrl,
+                    value ?? string.Empty))
+            {
+                OnPropertyChanged(nameof(ModelConfigurationSummary));
+                OnPropertyChanged(nameof(CanInterpret));
+            }
+        }
+    }
+
+    public string AssistantModel
+    {
+        get => _assistantModel;
+        set
+        {
+            if (SetProperty(
+                    ref _assistantModel,
+                    value ?? string.Empty))
+            {
+                OnPropertyChanged(nameof(ModelConfigurationSummary));
+                OnPropertyChanged(nameof(CanInterpret));
+            }
+        }
+    }
+
+    public AssistantAuthorizationMode AuthorizationMode
+    {
+        get => _authorizationMode;
+        set
+        {
+            if (SetProperty(ref _authorizationMode, value))
+            {
+                OnPropertyChanged(nameof(ModelConfigurationSummary));
+            }
+        }
+    }
+
+    public string ModelConfigurationSummary =>
+        CreateProviderSettings().DisplayName;
+
     public bool IsInterpreting
     {
         get => _isInterpreting;
@@ -96,7 +161,10 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
 
     public bool CanInterpret =>
         !IsBusy &&
-        !string.IsNullOrWhiteSpace(UserInput);
+        !string.IsNullOrWhiteSpace(UserInput) &&
+        (!UseRealModel ||
+         (!string.IsNullOrWhiteSpace(AssistantBaseUrl) &&
+          !string.IsNullOrWhiteSpace(AssistantModel)));
 
     public bool CanCancel => IsBusy;
 
@@ -181,7 +249,8 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
         }
     }
 
-    public async Task InterpretAsync()
+    public async Task InterpretAsync(
+        SecureString? authorizationSecret = null)
     {
         if (!CanInterpret)
         {
@@ -207,6 +276,8 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
         {
             var result = await _assistantClient.InterpretAsync(
                 CreateSettings(),
+                CreateProviderSettings(),
+                authorizationSecret,
                 input,
                 cancellation.Token);
 
@@ -362,6 +433,15 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
             LabelWorkflow.BridgeRoot,
             LabelWorkflow.TimeoutMs,
             LabelWorkflow.PollIntervalMs);
+
+    private AssistantProviderSessionSettings CreateProviderSettings() =>
+        UseRealModel
+            ? new AssistantProviderSessionSettings(
+                AssistantProviderMode.OpenAiCompatible,
+                AssistantBaseUrl,
+                AssistantModel,
+                AuthorizationMode)
+            : AssistantProviderSessionSettings.RuleBased;
 
     private AssistantPlannedTask? GetSinglePlanTask()
     {

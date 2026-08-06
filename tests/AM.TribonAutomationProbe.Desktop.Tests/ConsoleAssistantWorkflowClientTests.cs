@@ -23,6 +23,21 @@ public sealed class ConsoleAssistantWorkflowClientTests
         Assert.DoesNotContain("--adapter=file-bridge", arguments);
         Assert.DoesNotContain("--allow-write=true", arguments);
         Assert.DoesNotContain("--confirm-write=true", arguments);
+        Assert.DoesNotContain(
+            arguments,
+            argument => argument.Contains(
+                "token",
+                StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain(
+            arguments,
+            argument => argument.StartsWith(
+                "--base-url=",
+                StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain(
+            arguments,
+            argument => argument.StartsWith(
+                "--model=",
+                StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -72,6 +87,53 @@ public sealed class ConsoleAssistantWorkflowClientTests
             () => ConsoleAssistantWorkflowClient.ValidateInterpretation(
                 invalid,
                 "创建缺失对象标签"));
+    }
+
+    [Fact]
+    public void BuildAuthorizationValue_AddsBearerPrefix()
+    {
+        var value = ConsoleAssistantWorkflowClient.BuildAuthorizationValue(
+            AssistantAuthorizationMode.BearerToken,
+            "token-value");
+
+        Assert.Equal("Bearer token-value", value);
+    }
+
+    [Fact]
+    public void BuildAuthorizationValue_RejectsExistingBearerPrefix()
+    {
+        Assert.Throws<ArgumentException>(
+            () => ConsoleAssistantWorkflowClient.BuildAuthorizationValue(
+                AssistantAuthorizationMode.BearerToken,
+                "Bearer token-value"));
+    }
+
+    [Fact]
+    public void ProviderSettings_RejectsNonHttpsBaseUrl()
+    {
+        var settings = new AssistantProviderSessionSettings(
+            AssistantProviderMode.OpenAiCompatible,
+            "http://example.test/chat/completions",
+            "model",
+            AssistantAuthorizationMode.BearerToken);
+
+        Assert.Throws<ArgumentException>(settings.Validate);
+    }
+
+    [Fact]
+    public void ValidateInterpretation_RejectsRuleEnvelopeForRealProvider()
+    {
+        var provider = new AssistantProviderSessionSettings(
+            AssistantProviderMode.OpenAiCompatible,
+            "https://example.test/chat/completions",
+            "model",
+            AssistantAuthorizationMode.BearerToken);
+
+        Assert.Throws<InvalidDataException>(
+            () => ConsoleAssistantWorkflowClient.ValidateInterpretation(
+                CreateEnvelope(AssistantIntent.PreflightLabels),
+                "检查对象标签",
+                provider));
     }
 
     internal static AssistantInterpretationEnvelope CreateEnvelope(

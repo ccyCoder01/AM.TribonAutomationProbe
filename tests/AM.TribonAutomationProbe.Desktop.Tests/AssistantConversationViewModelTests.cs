@@ -1,3 +1,4 @@
+using System.Security;
 using Xunit;
 using AM.TribonAutomationProbe.Core;
 using AM.TribonAutomationProbe.Desktop.Models;
@@ -92,21 +93,91 @@ public sealed class AssistantConversationViewModelTests
         Assert.True(viewModel.CanRunLabelPreflightFromPlan);
     }
 
+    [Fact]
+    public async Task RealModelSession_PassesSecureCredentialWithoutStoringIt()
+    {
+        var assistant = new FakeAssistantWorkflowClient(
+            ConsoleAssistantWorkflowClientTests.CreateEnvelope(
+                AssistantIntent.PreflightLabels));
+        var viewModel = new AssistantConversationViewModel(
+            assistant,
+            new ObjectLabelWorkflowViewModel(
+                new FakeLabelWorkflowClient()))
+        {
+            UseRealModel = true,
+            AssistantBaseUrl =
+                "https://example.test/chat/completions",
+            AssistantModel = "provider-model",
+            UserInput = "检查对象标签"
+        };
+
+        using var secret = new SecureString();
+
+        foreach (var character in "session-token")
+        {
+            secret.AppendChar(character);
+        }
+
+        secret.MakeReadOnly();
+
+        await viewModel.InterpretAsync(secret);
+
+        Assert.NotNull(assistant.LastProviderSettings);
+        Assert.Equal(
+            AssistantProviderMode.OpenAiCompatible,
+            assistant.LastProviderSettings!.Mode);
+        Assert.Equal(
+            "provider-model",
+            assistant.LastProviderSettings.Model);
+        Assert.True(assistant.LastAuthorizationSecretPresent);
+        Assert.True(viewModel.HasPlan);
+    }
+
     private sealed class FakeAssistantWorkflowClient(
         AssistantInterpretationEnvelope result) : IAssistantWorkflowClient
     {
+        public AssistantProviderSessionSettings? LastProviderSettings
+        {
+            get;
+            private set;
+        }
+
+        public bool LastAuthorizationSecretPresent
+        {
+            get;
+            private set;
+        }
+
         public Task<AssistantInterpretationEnvelope> InterpretAsync(
             ConsoleWorkflowSettings settings,
+            AssistantProviderSessionSettings providerSettings,
+            SecureString? authorizationSecret,
             string userText,
-            CancellationToken cancellationToken) =>
-            Task.FromResult(
-                result with
+            CancellationToken cancellationToken)
+        {
+            LastProviderSettings = providerSettings;
+            LastAuthorizationSecretPresent =
+                authorizationSecret is { Length: > 0 };
+
+            var envelope = result with
+            {
+                Plan = result.Plan with
                 {
-                    Plan = result.Plan with
-                    {
-                        UserText = userText
-                    }
-                });
+                    UserText = userText
+                },
+                Interpretation =
+                    providerSettings.Mode ==
+                    AssistantProviderMode.OpenAiCompatible
+                        ? result.Interpretation with
+                        {
+                            Provider = "openai-compatible-chat",
+                            Model = providerSettings.Model
+                        }
+                        : result.Interpretation
+            };
+
+            return Task.FromResult(envelope);
+        }
     }
 
     private sealed class FakeLabelWorkflowClient : IConsoleWorkflowClient

@@ -1,3 +1,4 @@
+using System.Security;
 using System.Windows;
 using System.Windows.Input;
 using Microsoft.Win32;
@@ -49,8 +50,7 @@ public partial class MainWindow : Window
         object sender,
         RoutedEventArgs e)
     {
-        await _viewModel.InterpretAsync();
-        ScrollConversationToEnd();
+        await InterpretFromUiAsync();
     }
 
     private async void RunPlanPreflight_Click(
@@ -131,8 +131,31 @@ public partial class MainWindow : Window
         }
 
         e.Handled = true;
-        await _viewModel.InterpretAsync();
-        ScrollConversationToEnd();
+        await InterpretFromUiAsync();
+    }
+
+    private async Task InterpretFromUiAsync()
+    {
+        SecureString? authorizationSecret = null;
+
+        try
+        {
+            if (_viewModel.UseRealModel)
+            {
+                authorizationSecret =
+                    AssistantApiTokenBox.SecurePassword.Copy();
+                authorizationSecret.MakeReadOnly();
+            }
+
+            await _viewModel.InterpretAsync(
+                authorizationSecret);
+        }
+        finally
+        {
+            authorizationSecret?.Dispose();
+            AssistantApiTokenBox.Clear();
+            ScrollConversationToEnd();
+        }
     }
 
     protected override void OnClosed(EventArgs e)

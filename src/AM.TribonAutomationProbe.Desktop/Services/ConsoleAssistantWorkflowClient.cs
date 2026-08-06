@@ -1,4 +1,6 @@
 using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System.Security;
 using System.IO;
 using System.Text;
 using System.Text.Json;
@@ -40,10 +42,13 @@ public sealed class ConsoleAssistantWorkflowClient : IAssistantWorkflowClient
 
     public async Task<AssistantInterpretationEnvelope> InterpretAsync(
         ConsoleWorkflowSettings settings,
+        AssistantProviderSessionSettings providerSettings,
+        SecureString? authorizationSecret,
         string userText,
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(settings);
+        ArgumentNullException.ThrowIfNull(providerSettings);
 
         if (string.IsNullOrWhiteSpace(userText))
         {
@@ -53,14 +58,31 @@ public sealed class ConsoleAssistantWorkflowClient : IAssistantWorkflowClient
         }
 
         settings.Validate();
+        providerSettings.Validate();
 
+        if (providerSettings.RequiresAuthorizationSecret &&
+            (authorizationSecret is null ||
+             authorizationSecret.Length == 0))
+        {
+            throw new ArgumentException(
+                "A session API credential is required for the real model.",
+                nameof(authorizationSecret));
+        }
+
+        var normalizedText = userText.Trim();
         var result = await RunConsoleAsync(
                 settings,
-                BuildInterpretArguments(settings, userText.Trim()),
+                providerSettings,
+                authorizationSecret,
+                BuildInterpretArguments(settings, normalizedText),
                 cancellationToken)
             .ConfigureAwait(false);
 
-        ValidateInterpretation(result, userText.Trim());
+        ValidateInterpretation(
+            result,
+            normalizedText,
+            providerSettings);
+
         return result;
     }
 
@@ -90,7 +112,8 @@ public sealed class ConsoleAssistantWorkflowClient : IAssistantWorkflowClient
 
     public static void ValidateInterpretation(
         AssistantInterpretationEnvelope result,
-        string expectedUserText)
+        string expectedUserText,
+        AssistantProviderSessionSettings? providerSettings = null)
     {
         ArgumentNullException.ThrowIfNull(result);
 
@@ -120,6 +143,39 @@ public sealed class ConsoleAssistantWorkflowClient : IAssistantWorkflowClient
         var interpretation = result.Interpretation ??
             throw new InvalidDataException(
                 "Assistant interpretation payload is missing.");
+
+        if (providerSettings is not null)
+        {
+            providerSettings.Validate();
+
+            if (providerSettings.Mode ==
+                    AssistantProviderMode.OpenAiCompatible &&
+                (!string.Equals(
+                    interpretation.Provider,
+                    "openai-compatible-chat",
+                    StringComparison.Ordinal) ||
+                 string.IsNullOrWhiteSpace(interpretation.Model) ||
+                 string.Equals(
+                    interpretation.Model,
+                    "rule-based-v1",
+                    StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new InvalidDataException(
+                    "The Desktop requested a real model but received a non-real provider envelope.");
+            }
+
+            if (providerSettings.Mode ==
+                    AssistantProviderMode.RuleBased &&
+                string.Equals(
+                    interpretation.Provider,
+                    "openai-compatible-chat",
+                    StringComparison.Ordinal))
+            {
+                throw new InvalidDataException(
+                    "The Desktop requested the rule-based model but received a real-model provider envelope.");
+            }
+        }
+
         var plan = result.Plan ??
             throw new InvalidDataException(
                 "Assistant task plan is missing.");
@@ -207,8 +263,47 @@ public sealed class ConsoleAssistantWorkflowClient : IAssistantWorkflowClient
         }
     }
 
+    public static string BuildAuthorizationValue(
+        AssistantAuthorizationMode mode,
+        string rawSecret)
+    {
+        if (string.IsNullOrWhiteSpace(rawSecret))
+        {
+            throw new ArgumentException(
+                "Authorization secret must not be empty.",
+                nameof(rawSecret));
+        }
+
+        var normalized = rawSecret.Trim();
+
+        if (mode == AssistantAuthorizationMode.BearerToken)
+        {
+            if (normalized.StartsWith(
+                    "Bearer ",
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                throw new ArgumentException(
+                    "Enter the token only; the Bearer prefix is added by the Desktop.",
+                    nameof(rawSecret));
+            }
+
+            return "Bearer " + normalized;
+        }
+
+        if (mode == AssistantAuthorizationMode.RawAuthorizationValue)
+        {
+            return normalized;
+        }
+
+        throw new ArgumentOutOfRangeException(
+            nameof(mode),
+            "Unsupported assistant authorization mode.");
+    }
+
     private static async Task<AssistantInterpretationEnvelope> RunConsoleAsync(
         ConsoleWorkflowSettings settings,
+        AssistantProviderSessionSettings providerSettings,
+        SecureString? authorizationSecret,
         IReadOnlyList<string> arguments,
         CancellationToken cancellationToken)
     {
@@ -231,6 +326,11 @@ public sealed class ConsoleAssistantWorkflowClient : IAssistantWorkflowClient
             startInfo.ArgumentList.Add(argument);
         }
 
+        ConfigureAssistantEnvironment(
+            startInfo,
+            providerSettings,
+            authorizationSecret);
+
         using var process = new Process
         {
             StartInfo = startInfo
@@ -240,10 +340,17 @@ public sealed class ConsoleAssistantWorkflowClient : IAssistantWorkflowClient
 
         timeout.CancelAfter(settings.TimeoutMs);
 
-        if (!process.Start())
+        try
         {
-            throw new InvalidOperationException(
-                "The verified Console process could not be started.");
+            if (!process.Start())
+            {
+                throw new InvalidOperationException(
+                    "The verified Console process could not be started.");
+            }
+        }
+        finally
+        {
+            ClearAssistantEnvironment(startInfo);
         }
 
         using var cancellationRegistration = timeout.Token.Register(
@@ -310,6 +417,79 @@ public sealed class ConsoleAssistantWorkflowClient : IAssistantWorkflowClient
             throw new InvalidDataException(
                 "The verified Console assistant output is not valid JSON.",
                 ex);
+        }
+    }
+
+    private static void ConfigureAssistantEnvironment(
+        ProcessStartInfo startInfo,
+        AssistantProviderSessionSettings providerSettings,
+        SecureString? authorizationSecret)
+    {
+        ClearAssistantEnvironment(startInfo);
+
+        if (providerSettings.Mode == AssistantProviderMode.RuleBased)
+        {
+            return;
+        }
+
+        providerSettings.Validate();
+
+        if (authorizationSecret is null ||
+            authorizationSecret.Length == 0)
+        {
+            throw new ArgumentException(
+                "A session API credential is required for the real model.",
+                nameof(authorizationSecret));
+        }
+
+        var rawSecret = ConvertSecureStringToPlainText(
+            authorizationSecret);
+        string? authorizationValue = null;
+
+        try
+        {
+            authorizationValue = BuildAuthorizationValue(
+                providerSettings.AuthorizationMode,
+                rawSecret);
+
+            startInfo.Environment["ASSISTANT_BASE_URL"] =
+                providerSettings.NormalizedBaseUrl();
+            startInfo.Environment["ASSISTANT_API_KEY"] =
+                authorizationValue;
+            startInfo.Environment["ASSISTANT_MODEL"] =
+                providerSettings.NormalizedModel();
+        }
+        finally
+        {
+            rawSecret = string.Empty;
+            authorizationValue = null;
+        }
+    }
+
+    private static void ClearAssistantEnvironment(
+        ProcessStartInfo startInfo)
+    {
+        startInfo.Environment.Remove("ASSISTANT_BASE_URL");
+        startInfo.Environment.Remove("ASSISTANT_API_KEY");
+        startInfo.Environment.Remove("ASSISTANT_MODEL");
+    }
+
+    private static string ConvertSecureStringToPlainText(
+        SecureString value)
+    {
+        var pointer = IntPtr.Zero;
+
+        try
+        {
+            pointer = Marshal.SecureStringToBSTR(value);
+            return Marshal.PtrToStringBSTR(pointer);
+        }
+        finally
+        {
+            if (pointer != IntPtr.Zero)
+            {
+                Marshal.ZeroFreeBSTR(pointer);
+            }
         }
     }
 
