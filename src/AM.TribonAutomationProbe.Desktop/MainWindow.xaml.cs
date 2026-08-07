@@ -21,7 +21,9 @@ public partial class MainWindow : Window
 
         _viewModel = new AssistantConversationViewModel(
             new ConsoleAssistantWorkflowClient(),
-            labelWorkflow);
+            labelWorkflow,
+            new ConsoleAssistantReadOnlyPlanExecutionClient(
+                new BridgeResultMonitor()));
 
         DataContext = _viewModel;
     }
@@ -51,6 +53,33 @@ public partial class MainWindow : Window
         RoutedEventArgs e)
     {
         await InterpretFromUiAsync();
+    }
+
+    private async void ExecuteReadOnlyPlan_Click(
+        object sender,
+        RoutedEventArgs e)
+    {
+        if (!_viewModel.CanExecuteReadOnlyPlan)
+        {
+            return;
+        }
+
+        var answer = MessageBox.Show(
+            this,
+            "即将把当前单一只读计划映射为固定 Console 白名单命令。\n\n" +
+            "提交后需要在 Tribon 当前图纸中运行 Start.py 恰好一次。\n" +
+            "该操作不会重新调用模型，不会写入图纸数据库，也不会执行 SAVEWORK。\n\n" +
+            "确认继续？",
+            "确认执行确定性只读计划",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Information,
+            MessageBoxResult.No);
+
+        if (answer == MessageBoxResult.Yes)
+        {
+            await _viewModel.ExecuteReadOnlyPlanAsync();
+            ScrollConversationToEnd();
+        }
     }
 
     private async void RunPlanPreflight_Click(

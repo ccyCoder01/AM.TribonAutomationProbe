@@ -11,7 +11,10 @@ namespace AM.TribonAutomationProbe.Desktop.ViewModels;
 public sealed class AssistantConversationViewModel : INotifyPropertyChanged
 {
     private readonly IAssistantWorkflowClient _assistantClient;
+    private readonly IAssistantReadOnlyPlanExecutionClient
+        _readOnlyExecutionClient;
     private CancellationTokenSource? _interpretationCancellation;
+    private CancellationTokenSource? _readOnlyExecutionCancellation;
     private string _userInput = string.Empty;
     private bool _isInterpreting;
     private string _errorMessage = string.Empty;
@@ -22,13 +25,22 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
     private AssistantAuthorizationMode _authorizationMode =
         AssistantAuthorizationMode.BearerToken;
     private AssistantInterpretationEnvelope? _currentInterpretation;
+    private bool _isExecutingReadOnlyPlan;
+    private double _readOnlyExecutionProgress;
+    private bool _isReadOnlyExecutionProgressIndeterminate;
+    private string _readOnlyExecutionStatus =
+        "尚未执行确定性只读计划。";
+    private AssistantTaskExecutionResult? _readOnlyExecutionResult;
 
     public AssistantConversationViewModel(
         IAssistantWorkflowClient assistantClient,
-        ObjectLabelWorkflowViewModel labelWorkflow)
+        ObjectLabelWorkflowViewModel labelWorkflow,
+        IAssistantReadOnlyPlanExecutionClient? readOnlyExecutionClient = null)
     {
         _assistantClient = assistantClient ??
             throw new ArgumentNullException(nameof(assistantClient));
+        _readOnlyExecutionClient = readOnlyExecutionClient ??
+            new ConsoleAssistantReadOnlyPlanExecutionClient();
         LabelWorkflow = labelWorkflow ??
             throw new ArgumentNullException(nameof(labelWorkflow));
 
@@ -157,7 +169,85 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
         }
     }
 
-    public bool IsBusy => IsInterpreting || LabelWorkflow.IsBusy;
+    public bool IsExecutingReadOnlyPlan
+    {
+        get => _isExecutingReadOnlyPlan;
+        private set
+        {
+            if (SetProperty(ref _isExecutingReadOnlyPlan, value))
+            {
+                RaiseBusyProperties();
+                OnPropertyChanged(nameof(ShowReadOnlyExecutionPanel));
+            }
+        }
+    }
+
+    public double ReadOnlyExecutionProgress
+    {
+        get => _readOnlyExecutionProgress;
+        private set => SetProperty(ref _readOnlyExecutionProgress, value);
+    }
+
+    public bool IsReadOnlyExecutionProgressIndeterminate
+    {
+        get => _isReadOnlyExecutionProgressIndeterminate;
+        private set => SetProperty(
+            ref _isReadOnlyExecutionProgressIndeterminate,
+            value);
+    }
+
+    public string ReadOnlyExecutionStatus
+    {
+        get => _readOnlyExecutionStatus;
+        private set => SetProperty(
+            ref _readOnlyExecutionStatus,
+            value ?? string.Empty);
+    }
+
+    public AssistantTaskExecutionResult? ReadOnlyExecutionResult
+    {
+        get => _readOnlyExecutionResult;
+        private set
+        {
+            if (SetProperty(ref _readOnlyExecutionResult, value))
+            {
+                OnPropertyChanged(nameof(HasReadOnlyExecutionResult));
+                OnPropertyChanged(nameof(ReadOnlyExecutionSummary));
+                OnPropertyChanged(nameof(ShowReadOnlyExecutionPanel));
+            }
+        }
+    }
+
+    public bool HasReadOnlyExecutionResult =>
+        ReadOnlyExecutionResult is not null;
+
+    public string ReadOnlyExecutionSummary =>
+        ReadOnlyExecutionResult?.Summary ??
+        "尚未收到确定性只读执行回执。";
+
+    public bool CanExecuteReadOnlyPlan =>
+        !IsBusy &&
+        TryGetExecutableReadOnlyTask(out _);
+
+    public bool ShowReadOnlyExecutionPanel =>
+        CanExecuteReadOnlyPlan ||
+        IsExecutingReadOnlyPlan ||
+        HasReadOnlyExecutionResult;
+
+    public string ReadOnlyExecutionButtonText =>
+        GetSinglePlanTask()?.Intent switch
+        {
+            AssistantIntent.DetectGeometry => "执行对象识别",
+            AssistantIntent.HighlightLifting => "执行吊装对象高亮",
+            AssistantIntent.HighlightFlanges => "执行法兰高亮",
+            AssistantIntent.ClearHighlight => "执行清除高亮",
+            _ => "执行确定性只读计划"
+        };
+
+    public bool IsBusy =>
+        IsInterpreting ||
+        IsExecutingReadOnlyPlan ||
+        LabelWorkflow.IsBusy;
 
     public bool CanInterpret =>
         !IsBusy &&
@@ -208,9 +298,14 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
                 return plan.Message;
             }
 
-            return plan.ContainsWrite
-                ? "计划包含图纸写入。必须先执行标签只读检查，并继续使用精确 preflight 绑定和显式确认；不会自动 SAVEWORK。"
-                : "计划仅包含只读任务；当前增量不会从自然语言直接调用 Tribon。";
+            if (plan.ContainsWrite)
+            {
+                return "计划包含图纸写入。必须先执行标签只读检查，并继续使用精确 preflight 绑定和显式确认；不会自动 SAVEWORK。";
+            }
+
+            return TryGetExecutableReadOnlyTask(out var task)
+                ? $"计划可通过固定白名单命令执行：{GetDisplayName(task.Intent)}。点击后仅提交一次 FileBridge 请求，仍需在 Tribon 当前图纸中运行 Start.py 恰好一次；不会写入图纸数据库，也不会执行 SAVEWORK。"
+                : "当前计划不满足单任务确定性只读执行门禁，仅保留为计划预览。";
         }
     }
 
@@ -326,6 +421,92 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
         }
     }
 
+    public async Task ExecuteReadOnlyPlanAsync()
+    {
+        if (!CanExecuteReadOnlyPlan ||
+            CurrentInterpretation is null)
+        {
+            ErrorMessage =
+                "当前计划不满足单任务确定性只读执行门禁，或系统正忙。";
+            return;
+        }
+
+        var plan = CurrentInterpretation.Plan;
+        ErrorMessage = string.Empty;
+        ReadOnlyExecutionResult = null;
+        ReadOnlyExecutionProgress = 0;
+        IsReadOnlyExecutionProgressIndeterminate = false;
+        ReadOnlyExecutionStatus =
+            "正在准备确定性只读命令。";
+
+        Messages.Add(
+            new AssistantConversationMessage(
+                "assistant",
+                "已将单一只读计划映射为固定 Console 白名单命令。提交后请在 Tribon 当前图纸中运行 Start.py 恰好一次；不会重新调用模型，不会写图，也不会执行 SAVEWORK。",
+                DateTimeOffset.Now));
+
+        var cancellation = new CancellationTokenSource();
+        _readOnlyExecutionCancellation = cancellation;
+        IsExecutingReadOnlyPlan = true;
+        var progress = new Progress<WorkflowProgress>(
+            UpdateReadOnlyExecutionProgress);
+
+        try
+        {
+            var result = await _readOnlyExecutionClient.ExecuteAsync(
+                CreateSettings(),
+                plan,
+                progress,
+                cancellation.Token);
+
+            ReadOnlyExecutionResult = result;
+            ReadOnlyExecutionProgress = 100;
+            IsReadOnlyExecutionProgressIndeterminate = false;
+            ReadOnlyExecutionStatus = result.Summary;
+
+            Messages.Add(
+                new AssistantConversationMessage(
+                    "assistant",
+                    $"确定性只读执行回执：{result.Summary} 图纸写入={result.DrawingWritePerformed}，自动保存={result.SavePerformed}。",
+                    DateTimeOffset.Now));
+        }
+        catch (OperationCanceledException)
+        {
+            ReadOnlyExecutionStatus =
+                "确定性只读执行已取消。请检查 FileBridge 状态后再决定下一步。";
+            IsReadOnlyExecutionProgressIndeterminate = false;
+            Messages.Add(
+                new AssistantConversationMessage(
+                    "system",
+                    ReadOnlyExecutionStatus,
+                    DateTimeOffset.Now));
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = ex.Message;
+            ReadOnlyExecutionStatus =
+                "确定性只读执行失败。不要盲目重复运行 Start.py 或重新提交请求。";
+            IsReadOnlyExecutionProgressIndeterminate = false;
+            Messages.Add(
+                new AssistantConversationMessage(
+                    "system",
+                    $"确定性只读执行失败：{ex.Message}",
+                    DateTimeOffset.Now));
+        }
+        finally
+        {
+            if (ReferenceEquals(
+                    _readOnlyExecutionCancellation,
+                    cancellation))
+            {
+                _readOnlyExecutionCancellation = null;
+            }
+
+            cancellation.Dispose();
+            IsExecutingReadOnlyPlan = false;
+        }
+    }
+
     public async Task RunLabelPreflightFromPlanAsync()
     {
         if (!CanRunLabelPreflightFromPlan)
@@ -407,6 +588,7 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
     public void CancelActiveOperation()
     {
         _interpretationCancellation?.Cancel();
+        _readOnlyExecutionCancellation?.Cancel();
         LabelWorkflow.CancelActiveOperation();
     }
 
@@ -451,6 +633,53 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
             : null;
     }
 
+    private bool TryGetExecutableReadOnlyTask(
+        out AssistantPlannedTask task)
+    {
+        task = null!;
+        var plan = CurrentInterpretation?.Plan;
+
+        if (plan is null ||
+            plan.State != AssistantTaskState.Planned ||
+            plan.ContainsWrite ||
+            plan.RequiresConfirmation ||
+            plan.AutoSave ||
+            plan.Tasks.Count != 1)
+        {
+            return false;
+        }
+
+        var candidate = plan.Tasks[0];
+
+        if (candidate.Sequence != 1 ||
+            candidate.Risk != AssistantTaskRisk.ReadOnly ||
+            candidate.RequiresConfirmation ||
+            candidate.AutoSave ||
+            candidate.Intent is not (
+                AssistantIntent.DetectGeometry or
+                AssistantIntent.HighlightLifting or
+                AssistantIntent.HighlightFlanges or
+                AssistantIntent.ClearHighlight))
+        {
+            return false;
+        }
+
+        task = candidate;
+        return true;
+    }
+
+    private void UpdateReadOnlyExecutionProgress(
+        WorkflowProgress value)
+    {
+        ReadOnlyExecutionProgress = Math.Clamp(
+            value.Percent,
+            0,
+            100);
+        ReadOnlyExecutionStatus = value.Message;
+        IsReadOnlyExecutionProgressIndeterminate =
+            value.IsIndeterminate;
+    }
+
     private void PopulatePlanTasks(AssistantTaskPlan plan)
     {
         PlanTasks.Clear();
@@ -478,6 +707,11 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
     {
         PlanTasks.Clear();
         CurrentInterpretation = null;
+        ReadOnlyExecutionResult = null;
+        ReadOnlyExecutionProgress = 0;
+        IsReadOnlyExecutionProgressIndeterminate = false;
+        ReadOnlyExecutionStatus =
+            "尚未执行确定性只读计划。";
     }
 
     private static string BuildPlanResponse(
@@ -491,7 +725,14 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
                 .Select(x => GetDisplayName(x.Intent)));
         var safety = plan.ContainsWrite
             ? "计划包含写入，当前不会执行；必须先完成只读检查并显式确认。"
-            : "计划仅包含只读任务，当前不会从自然语言直接调用 Tribon。";
+            : plan.Tasks.Count == 1 &&
+              plan.Tasks[0].Intent is (
+                  AssistantIntent.DetectGeometry or
+                  AssistantIntent.HighlightLifting or
+                  AssistantIntent.HighlightFlanges or
+                  AssistantIntent.ClearHighlight)
+                ? "计划可由用户显式点击后映射为固定只读命令；不会重新调用模型。"
+                : "计划当前仅用于预览。";
 
         return $"已生成 {plan.Tasks.Count} 个受控任务：{taskNames}。{safety}";
     }
@@ -531,6 +772,8 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(CanCancel));
         OnPropertyChanged(nameof(CanRunLabelPreflightFromPlan));
         OnPropertyChanged(nameof(CanApplyFromPlan));
+        OnPropertyChanged(nameof(CanExecuteReadOnlyPlan));
+        OnPropertyChanged(nameof(ShowReadOnlyExecutionPanel));
     }
 
     private void RaisePlanProperties()
@@ -543,9 +786,12 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(PlanContainsWrite));
         OnPropertyChanged(nameof(PlanRequiresConfirmation));
         OnPropertyChanged(nameof(PlanSafetySummary));
+        OnPropertyChanged(nameof(ReadOnlyExecutionButtonText));
         OnPropertyChanged(nameof(IsSingleLabelPlan));
         OnPropertyChanged(nameof(CanRunLabelPreflightFromPlan));
         OnPropertyChanged(nameof(CanApplyFromPlan));
+        OnPropertyChanged(nameof(CanExecuteReadOnlyPlan));
+        OnPropertyChanged(nameof(ShowReadOnlyExecutionPanel));
     }
 
     private bool SetProperty<T>(

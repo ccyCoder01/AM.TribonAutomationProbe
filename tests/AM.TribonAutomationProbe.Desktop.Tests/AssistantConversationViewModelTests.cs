@@ -9,7 +9,48 @@ namespace AM.TribonAutomationProbe.Desktop.Tests;
 
 public sealed class AssistantConversationViewModelTests
 {
-    [Fact]
+        [Fact]
+    public void MainWindow_ReadOnlyExecutionProgressBindings_AreExplicitlyOneWay()
+    {
+        var directory = new System.IO.DirectoryInfo(
+            AppContext.BaseDirectory);
+
+        while (directory is not null &&
+               !System.IO.File.Exists(
+                   System.IO.Path.Combine(
+                       directory.FullName,
+                       "AM.TribonAutomationProbe.sln")))
+        {
+            directory = directory.Parent;
+        }
+
+        Assert.NotNull(directory);
+
+        var xamlPath = System.IO.Path.Combine(
+            directory!.FullName,
+            "src",
+            "AM.TribonAutomationProbe.Desktop",
+            "MainWindow.xaml");
+        var xaml = System.IO.File.ReadAllText(xamlPath);
+
+        Assert.Contains(
+            "Value=\"{Binding ReadOnlyExecutionProgress, Mode=OneWay}\"",
+            xaml,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "IsIndeterminate=\"{Binding IsReadOnlyExecutionProgressIndeterminate, Mode=OneWay}\"",
+            xaml,
+            StringComparison.Ordinal);
+        Assert.DoesNotContain(
+            "Value=\"{Binding ReadOnlyExecutionProgress}\"",
+            xaml,
+            StringComparison.Ordinal);
+        Assert.DoesNotContain(
+            "IsIndeterminate=\"{Binding IsReadOnlyExecutionProgressIndeterminate}\"",
+            xaml,
+            StringComparison.Ordinal);
+    }
+[Fact]
     public async Task ApplyIntent_PreviewsThenUsesExistingPreflightGate()
     {
         var assistant = new FakeAssistantWorkflowClient(
@@ -30,6 +71,7 @@ public sealed class AssistantConversationViewModelTests
         Assert.True(viewModel.PlanContainsWrite);
         Assert.True(viewModel.PlanRequiresConfirmation);
         Assert.True(viewModel.CanRunLabelPreflightFromPlan);
+        Assert.False(viewModel.CanExecuteReadOnlyPlan);
         Assert.False(labels.HasPreflight);
         Assert.False(viewModel.CanApplyFromPlan);
 
@@ -67,8 +109,9 @@ public sealed class AssistantConversationViewModelTests
         Assert.True(viewModel.HasPlan);
         Assert.False(viewModel.PlanContainsWrite);
         Assert.False(viewModel.CanRunLabelPreflightFromPlan);
+        Assert.True(viewModel.CanExecuteReadOnlyPlan);
         Assert.Contains(
-            "不会从自然语言直接调用 Tribon",
+            "固定白名单命令",
             viewModel.PlanSafetySummary,
             StringComparison.Ordinal);
     }
@@ -91,6 +134,43 @@ public sealed class AssistantConversationViewModelTests
         Assert.Equal(0, labelClient.PreflightCallCount);
         Assert.Equal(0, labelClient.ApplyCallCount);
         Assert.True(viewModel.CanRunLabelPreflightFromPlan);
+    }
+
+    [Fact]
+    public async Task ReadOnlyPlan_ExecutesThroughDeterministicClient()
+    {
+        var execution = new FakeReadOnlyPlanExecutionClient();
+        var viewModel = new AssistantConversationViewModel(
+            new FakeAssistantWorkflowClient(
+                ConsoleAssistantWorkflowClientTests.CreateEnvelope(
+                    AssistantIntent.HighlightFlanges)),
+            new ObjectLabelWorkflowViewModel(
+                new FakeLabelWorkflowClient()),
+            execution)
+        {
+            UserInput = "高亮法兰"
+        };
+
+        await viewModel.InterpretAsync();
+
+        Assert.True(viewModel.CanExecuteReadOnlyPlan);
+        Assert.Contains(
+            "法兰",
+            viewModel.ReadOnlyExecutionButtonText,
+            StringComparison.Ordinal);
+
+        await viewModel.ExecuteReadOnlyPlanAsync();
+
+        Assert.Equal(1, execution.CallCount);
+        Assert.NotNull(execution.LastPlan);
+        Assert.True(viewModel.HasReadOnlyExecutionResult);
+        Assert.False(
+            viewModel.ReadOnlyExecutionResult!.DrawingWritePerformed);
+        Assert.False(viewModel.ReadOnlyExecutionResult.SavePerformed);
+        Assert.Contains(
+            "高亮完成",
+            viewModel.ReadOnlyExecutionSummary,
+            StringComparison.Ordinal);
     }
 
     [Fact]
@@ -177,6 +257,36 @@ public sealed class AssistantConversationViewModelTests
             };
 
             return Task.FromResult(envelope);
+        }
+    }
+
+    private sealed class FakeReadOnlyPlanExecutionClient :
+        IAssistantReadOnlyPlanExecutionClient
+    {
+        public int CallCount { get; private set; }
+
+        public AssistantTaskPlan? LastPlan { get; private set; }
+
+        public Task<AssistantTaskExecutionResult> ExecuteAsync(
+            ConsoleWorkflowSettings settings,
+            AssistantTaskPlan plan,
+            IProgress<WorkflowProgress>? progress,
+            CancellationToken cancellationToken)
+        {
+            CallCount++;
+            LastPlan = plan;
+            progress?.Report(
+                new WorkflowProgress(100, "高亮完成"));
+
+            return Task.FromResult(
+                new AssistantTaskExecutionResult(
+                    1,
+                    "geometry.highlight-flanges",
+                    AssistantTaskState.Completed,
+                    "succeeded",
+                    DrawingWritePerformed: false,
+                    SavePerformed: false,
+                    Summary: "高亮完成：2 个对象。"));
         }
     }
 

@@ -383,11 +383,49 @@
                              TextWrapping="Wrap" />
                 </Border>
 
-                <Button Content="按计划执行标签只读检查"
-                        Style="{StaticResource PrimaryButtonStyle}"
-                        IsEnabled="{Binding CanRunLabelPreflightFromPlan}"
-                        Click="RunPlanPreflight_Click" />
-                <TextBlock Text="其他识别和高亮计划当前只进行预览；其确定性执行适配将在后续增量接入。"
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                  </Grid.ColumnDefinitions>
+                  <Button Content="{Binding ReadOnlyExecutionButtonText}"
+                          Style="{StaticResource PrimaryButtonStyle}"
+                          IsEnabled="{Binding CanExecuteReadOnlyPlan}"
+                          Click="ExecuteReadOnlyPlan_Click"
+                          Margin="0,0,5,0" />
+                  <Button Grid.Column="1"
+                          Content="按计划执行标签只读检查"
+                          Style="{StaticResource PrimaryButtonStyle}"
+                          IsEnabled="{Binding CanRunLabelPreflightFromPlan}"
+                          Click="RunPlanPreflight_Click"
+                          Margin="5,0,0,0" />
+                </Grid>
+
+                <Border Background="#EEF5F7"
+                        BorderBrush="#C5D8DF"
+                        BorderThickness="1"
+                        CornerRadius="5"
+                        Padding="10"
+                        Margin="0,8,0,0"
+                        Visibility="{Binding ShowReadOnlyExecutionPanel, Converter={StaticResource BooleanToVisibilityConverter}}">
+                  <StackPanel>
+                    <TextBlock Text="确定性只读执行"
+                               FontWeight="SemiBold" />
+                    <ProgressBar Value="{Binding ReadOnlyExecutionProgress, Mode=OneWay}"
+                                 IsIndeterminate="{Binding IsReadOnlyExecutionProgressIndeterminate, Mode=OneWay}"
+                                 Margin="0,7,0,6" />
+                    <TextBlock Text="{Binding ReadOnlyExecutionStatus}"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding ReadOnlyExecutionSummary}"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               TextWrapping="Wrap"
+                               Margin="0,3,0,0"
+                               Visibility="{Binding HasReadOnlyExecutionResult, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                  </StackPanel>
+                </Border>
+
+                <TextBlock Text="当前只支持单一对象识别、吊装对象高亮、法兰高亮或清除高亮计划。多任务计划继续只做预览；标签写入仍使用独立 preflight 和显式确认。"
                            Foreground="{StaticResource TextSecondaryBrush}"
                            TextWrapping="Wrap"
                            FontSize="11"
