@@ -383,23 +383,15 @@
                              TextWrapping="Wrap" />
                 </Border>
 
-                <Grid>
-                  <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                  </Grid.ColumnDefinitions>
-                  <Button Content="{Binding ReadOnlyExecutionButtonText}"
-                          Style="{StaticResource PrimaryButtonStyle}"
-                          IsEnabled="{Binding CanExecuteReadOnlyPlan}"
-                          Click="ExecuteReadOnlyPlan_Click"
-                          Margin="0,0,5,0" />
-                  <Button Grid.Column="1"
-                          Content="按计划执行标签只读检查"
-                          Style="{StaticResource PrimaryButtonStyle}"
-                          IsEnabled="{Binding CanRunLabelPreflightFromPlan}"
-                          Click="RunPlanPreflight_Click"
-                          Margin="5,0,0,0" />
-                </Grid>
+                <Button Content="{Binding PlanExecutionButtonText}"
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        IsEnabled="{Binding CanExecuteCurrentPlan}"
+                        Click="ExecutePlan_Click" />
+                <TextBlock Text="{Binding PlanExecutionLifecycleSummary}"
+                           Foreground="{StaticResource TextSecondaryBrush}"
+                           TextWrapping="Wrap"
+                           FontSize="11"
+                           Margin="0,7,0,0" />
 
                 <Border Background="#EEF5F7"
                         BorderBrush="#C5D8DF"
@@ -425,7 +417,7 @@
                   </StackPanel>
                 </Border>
 
-                <TextBlock Text="当前只支持单一对象识别、吊装对象高亮、法兰高亮或清除高亮计划。多任务计划继续只做预览；标签写入仍使用独立 preflight 和显式确认。"
+                <TextBlock Text="计划区现在使用统一执行入口：只读任务按 Sequence 进入固定白名单执行器；标签写入计划先执行 preflight，再保持精确绑定、勾选授权和原生确认。Worker、FileBridge 协议和 SAVEWORK 策略均不改变。"
                            Foreground="{StaticResource TextSecondaryBrush}"
                            TextWrapping="Wrap"
                            FontSize="11"

@@ -49,15 +49,37 @@ public sealed class AssistantConversationViewModelTests
             "IsIndeterminate=\"{Binding IsReadOnlyExecutionProgressIndeterminate}\"",
             xaml,
             StringComparison.Ordinal);
+        Assert.Contains(
+            "Content=\"{Binding PlanExecutionButtonText}\"",
+            xaml,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "IsEnabled=\"{Binding CanExecuteCurrentPlan}\"",
+            xaml,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "Click=\"ExecutePlan_Click\"",
+            xaml,
+            StringComparison.Ordinal);
+        Assert.DoesNotContain(
+            "Click=\"ExecuteReadOnlyPlan_Click\"",
+            xaml,
+            StringComparison.Ordinal);
+        Assert.DoesNotContain(
+            "Click=\"RunPlanPreflight_Click\"",
+            xaml,
+            StringComparison.Ordinal);
     }
-[Fact]
-    public async Task ApplyIntent_PreviewsThenUsesExistingPreflightGate()
+
+    [Fact]
+    public async Task ApplyIntent_UsesUnifiedPreflightThenBoundApplyRoute()
     {
         var assistant = new FakeAssistantWorkflowClient(
             ConsoleAssistantWorkflowClientTests.CreateEnvelope(
                 AssistantIntent.ApplyMissingLabels));
+        var labelClient = new FakeLabelWorkflowClient();
         var labels = new ObjectLabelWorkflowViewModel(
-            new FakeLabelWorkflowClient());
+            labelClient);
         var viewModel = new AssistantConversationViewModel(
             assistant,
             labels)
@@ -70,24 +92,99 @@ public sealed class AssistantConversationViewModelTests
         Assert.True(viewModel.HasPlan);
         Assert.True(viewModel.PlanContainsWrite);
         Assert.True(viewModel.PlanRequiresConfirmation);
-        Assert.True(viewModel.CanRunLabelPreflightFromPlan);
+        Assert.Equal(
+            AssistantPlanExecutionRoute.LabelPreflight,
+            viewModel.PlanExecutionRoute);
+        Assert.True(viewModel.CanExecuteCurrentPlan);
         Assert.False(viewModel.CanExecuteReadOnlyPlan);
         Assert.False(labels.HasPreflight);
         Assert.False(viewModel.CanApplyFromPlan);
 
-        await viewModel.RunLabelPreflightFromPlanAsync();
+        await viewModel.ExecuteCurrentPlanAsync();
 
+        Assert.Equal(1, labelClient.PreflightCallCount);
+        Assert.Equal(0, labelClient.ApplyCallCount);
         Assert.True(labels.HasWritablePreflight);
+        Assert.Equal(
+            AssistantPlanExecutionRoute.LabelApply,
+            viewModel.PlanExecutionRoute);
+        Assert.False(viewModel.CanExecuteCurrentPlan);
         Assert.False(viewModel.CanApplyFromPlan);
 
         labels.ApplyAcknowledged = true;
 
         Assert.True(viewModel.CanApplyFromPlan);
+        Assert.True(viewModel.CanExecuteCurrentPlan);
+
+        var authorization =
+            viewModel.CreateApplyAuthorizationFromPlan();
+
+        Assert.NotNull(authorization);
+        Assert.True(authorization!.AllowWrite);
+        Assert.True(authorization.WriteConfirmed);
+        Assert.Equal(
+            labels.PreflightResult!.OperationId,
+            authorization.ConfirmedPreflightOperationId);
+        Assert.Equal(
+            labels.PreflightResult.PlanHash,
+            authorization.ConfirmedPlanHash);
+        Assert.Equal(
+            labels.PreflightResult.ReadyOperationIds?.ToArray(),
+            authorization.ConfirmedOperationIds?.ToArray());
+
+        await viewModel.ExecuteCurrentPlanAsync(
+            authorization);
+
+        Assert.Equal(1, labelClient.ApplyCallCount);
+        Assert.True(labels.HasApplyResult);
+        Assert.False(labels.SavePerformed);
+        Assert.Equal(
+            AssistantPlanExecutionRoute.None,
+            viewModel.PlanExecutionRoute);
+        Assert.False(viewModel.CanExecuteCurrentPlan);
         Assert.Contains(
             viewModel.Messages,
             message => message.Content.Contains(
-                "待创建 2 个",
+                "Apply 回执",
                 StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task ApplyIntent_RejectsAuthorizationNotBoundToCurrentPreflight()
+    {
+        var labelClient = new FakeLabelWorkflowClient();
+        var labels = new ObjectLabelWorkflowViewModel(
+            labelClient);
+        var viewModel = new AssistantConversationViewModel(
+            new FakeAssistantWorkflowClient(
+                ConsoleAssistantWorkflowClientTests.CreateEnvelope(
+                    AssistantIntent.ApplyMissingLabels)),
+            labels)
+        {
+            UserInput = "创建缺失对象标签"
+        };
+
+        await viewModel.InterpretAsync();
+        await viewModel.ExecuteCurrentPlanAsync();
+        labels.ApplyAcknowledged = true;
+
+        var authorization =
+            viewModel.CreateApplyAuthorizationFromPlan();
+
+        Assert.NotNull(authorization);
+
+        var tampered = authorization! with
+        {
+            ConfirmedPlanHash =
+                new string('0', 64)
+        };
+
+        await Assert.ThrowsAsync<System.IO.InvalidDataException>(
+            () => viewModel.ExecuteCurrentPlanAsync(
+                tampered));
+
+        Assert.Equal(0, labelClient.ApplyCallCount);
+        Assert.False(labels.HasApplyResult);
     }
 
     [Fact]
@@ -110,6 +207,10 @@ public sealed class AssistantConversationViewModelTests
         Assert.False(viewModel.PlanContainsWrite);
         Assert.False(viewModel.CanRunLabelPreflightFromPlan);
         Assert.True(viewModel.CanExecuteReadOnlyPlan);
+        Assert.Equal(
+            AssistantPlanExecutionRoute.DeterministicReadOnly,
+            viewModel.PlanExecutionRoute);
+        Assert.True(viewModel.CanExecuteCurrentPlan);
         Assert.Contains(
             "固定白名单命令",
             viewModel.PlanSafetySummary,
@@ -134,6 +235,10 @@ public sealed class AssistantConversationViewModelTests
         Assert.Equal(0, labelClient.PreflightCallCount);
         Assert.Equal(0, labelClient.ApplyCallCount);
         Assert.True(viewModel.CanRunLabelPreflightFromPlan);
+        Assert.Equal(
+            AssistantPlanExecutionRoute.LabelPreflight,
+            viewModel.PlanExecutionRoute);
+        Assert.True(viewModel.CanExecuteCurrentPlan);
     }
 
     [Fact]
@@ -154,12 +259,16 @@ public sealed class AssistantConversationViewModelTests
         await viewModel.InterpretAsync();
 
         Assert.True(viewModel.CanExecuteReadOnlyPlan);
+        Assert.Equal(
+            AssistantPlanExecutionRoute.DeterministicReadOnly,
+            viewModel.PlanExecutionRoute);
+        Assert.True(viewModel.CanExecuteCurrentPlan);
         Assert.Contains(
             "法兰",
-            viewModel.ReadOnlyExecutionButtonText,
+            viewModel.PlanExecutionButtonText,
             StringComparison.Ordinal);
 
-        await viewModel.ExecuteReadOnlyPlanAsync();
+        await viewModel.ExecuteCurrentPlanAsync();
 
         Assert.Equal(1, execution.CallCount);
         Assert.NotNull(execution.LastPlan);

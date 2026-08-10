@@ -301,7 +301,7 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
 
             if (plan.ContainsWrite)
             {
-                return "计划包含图纸写入。必须先执行标签只读检查，并继续使用精确 preflight 绑定和显式确认；不会自动 SAVEWORK。";
+                return "计划包含图纸写入。统一计划入口只会先进入标签 preflight；只有完成精确 preflight 绑定、勾选授权并通过原生确认框后，才允许受控 Apply；不会自动 SAVEWORK。";
             }
 
             if (!TryGetExecutableReadOnlyTasks(out var tasks))
@@ -352,6 +352,135 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
             return !IsBusy &&
                    task?.Intent == AssistantIntent.ApplyMissingLabels &&
                    LabelWorkflow.CanApply;
+        }
+    }
+
+    public AssistantPlanExecutionRoute PlanExecutionRoute =>
+        GetPlanExecutionRoute();
+
+    public bool CanExecuteCurrentPlan =>
+        PlanExecutionRoute switch
+        {
+            AssistantPlanExecutionRoute.DeterministicReadOnly =>
+                CanExecuteReadOnlyPlan,
+            AssistantPlanExecutionRoute.LabelPreflight =>
+                CanRunLabelPreflightFromPlan,
+            AssistantPlanExecutionRoute.LabelApply =>
+                CanApplyFromPlan,
+            _ => false
+        };
+
+    public string PlanExecutionButtonText =>
+        PlanExecutionRoute switch
+        {
+            AssistantPlanExecutionRoute.DeterministicReadOnly =>
+                ReadOnlyExecutionButtonText,
+            AssistantPlanExecutionRoute.LabelPreflight =>
+                "执行标签只读检查",
+            AssistantPlanExecutionRoute.LabelApply =>
+                "执行受控 Apply",
+            _ => "当前计划仅预览"
+        };
+
+    public string PlanExecutionLifecycleSummary =>
+        PlanExecutionRoute switch
+        {
+            AssistantPlanExecutionRoute.DeterministicReadOnly =>
+                "统一计划入口将调用确定性只读执行器；不会写入图纸数据库，也不会执行 SAVEWORK。",
+            AssistantPlanExecutionRoute.LabelPreflight =>
+                "统一计划入口将先执行标签只读检查；不会直接执行写入。",
+            AssistantPlanExecutionRoute.LabelApply =>
+                LabelWorkflow.CanApply
+                    ? "当前写入计划已完成可写 preflight 并获得勾选授权；仍需原生确认框确认后，才可提交与该 preflight 精确绑定的 Apply。"
+                    : "当前写入计划已完成可写 preflight；请先核对 Plan Hash、对象列表并勾选授权，之后仍需原生确认框确认。",
+            _ => "当前计划没有可执行的统一确定性路线，仅保留计划预览。"
+        };
+
+    public AssistantExecutionAuthorization? CreateApplyAuthorizationFromPlan()
+    {
+        if (!CanApplyFromPlan ||
+            LabelWorkflow.PreflightResult is not { } preflight)
+        {
+            return null;
+        }
+
+        var operationIds =
+            (preflight.ReadyOperationIds ?? Array.Empty<string>())
+            .ToArray();
+
+        return new AssistantExecutionAuthorization(
+            AllowWrite: true,
+            WriteConfirmed: true,
+            ConfirmedPreflightOperationId: preflight.OperationId,
+            ConfirmedPlanHash: preflight.PlanHash,
+            ConfirmedOperationIds: operationIds);
+    }
+
+    public async Task ExecuteCurrentPlanAsync(
+        AssistantExecutionAuthorization? authorization = null)
+    {
+        switch (PlanExecutionRoute)
+        {
+            case AssistantPlanExecutionRoute.DeterministicReadOnly:
+                if (authorization is not null)
+                {
+                    throw new InvalidDataException(
+                        "Read-only plan execution does not accept write authorization.");
+                }
+
+                await ExecuteReadOnlyPlanAsync();
+                return;
+
+            case AssistantPlanExecutionRoute.LabelPreflight:
+                if (authorization is not null)
+                {
+                    throw new InvalidDataException(
+                        "Label preflight does not accept write authorization.");
+                }
+
+                await RunLabelPreflightFromPlanAsync();
+                return;
+
+            case AssistantPlanExecutionRoute.LabelApply:
+                if (!CanApplyFromPlan ||
+                    LabelWorkflow.PreflightResult is not { } preflight)
+                {
+                    ErrorMessage =
+                        "当前写入计划尚未完成有效 preflight 与显式授权。";
+                    return;
+                }
+
+                if (authorization is null)
+                {
+                    throw new InvalidDataException(
+                        "Label Apply requires an explicit bound execution authorization.");
+                }
+
+                ValidateApplyAuthorization(
+                    authorization,
+                    preflight);
+
+                await LabelWorkflow.ApplyAsync();
+
+                if (LabelWorkflow.HasError)
+                {
+                    ErrorMessage = LabelWorkflow.ErrorMessage;
+                    Messages.Add(
+                        new AssistantConversationMessage(
+                            "system",
+                            $"标签 Apply 失败：{LabelWorkflow.ErrorMessage}",
+                            DateTimeOffset.Now));
+                    RaisePlanProperties();
+                    return;
+                }
+
+                RecordApplyResult();
+                return;
+
+            default:
+                ErrorMessage =
+                    "当前计划没有可执行的统一确定性路线。";
+                return;
         }
     }
 
@@ -703,6 +832,105 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
                 AuthorizationMode)
             : AssistantProviderSessionSettings.RuleBased;
 
+    private AssistantPlanExecutionRoute GetPlanExecutionRoute()
+    {
+        if (TryGetExecutableReadOnlyTasks(out _))
+        {
+            return AssistantPlanExecutionRoute.DeterministicReadOnly;
+        }
+
+        var plan = CurrentInterpretation?.Plan;
+        var task = GetSinglePlanTask();
+
+        if (plan is null ||
+            task is null ||
+            plan.AutoSave ||
+            plan.State is not (
+                AssistantTaskState.Planned or
+                AssistantTaskState.AwaitingConfirmation))
+        {
+            return AssistantPlanExecutionRoute.None;
+        }
+
+        if (task.Intent == AssistantIntent.PreflightLabels &&
+            task.Risk == AssistantTaskRisk.ReadOnly &&
+            !task.RequiresConfirmation)
+        {
+            return AssistantPlanExecutionRoute.LabelPreflight;
+        }
+
+        if (task.Intent == AssistantIntent.ApplyMissingLabels &&
+            task.Risk == AssistantTaskRisk.DrawingWrite &&
+            task.RequiresConfirmation &&
+            plan.ContainsWrite &&
+            plan.RequiresConfirmation)
+        {
+            if (LabelWorkflow.HasApplyResult)
+            {
+                return AssistantPlanExecutionRoute.None;
+            }
+
+            return LabelWorkflow.HasWritablePreflight
+                ? AssistantPlanExecutionRoute.LabelApply
+                : AssistantPlanExecutionRoute.LabelPreflight;
+        }
+
+        return AssistantPlanExecutionRoute.None;
+    }
+
+    private static void ValidateApplyAuthorization(
+        AssistantExecutionAuthorization authorization,
+        GeometryLabelPreflightResult preflight)
+    {
+        ArgumentNullException.ThrowIfNull(authorization);
+        ArgumentNullException.ThrowIfNull(preflight);
+
+        if (!authorization.AllowWrite ||
+            !authorization.WriteConfirmed)
+        {
+            throw new InvalidDataException(
+                "Label Apply authorization must explicitly allow and confirm drawing write.");
+        }
+
+        if (!string.Equals(
+                authorization.ConfirmedPreflightOperationId,
+                preflight.OperationId,
+                StringComparison.Ordinal))
+        {
+            throw new InvalidDataException(
+                "Label Apply authorization preflight operation ID does not match the current preflight.");
+        }
+
+        if (!string.Equals(
+                authorization.ConfirmedPlanHash,
+                preflight.PlanHash,
+                StringComparison.Ordinal))
+        {
+            throw new InvalidDataException(
+                "Label Apply authorization plan hash does not match the current preflight.");
+        }
+
+        var expectedOperationIds =
+            (preflight.ReadyOperationIds ?? Array.Empty<string>())
+            .OrderBy(x => x, StringComparer.Ordinal)
+            .ToArray();
+
+        var confirmedOperationIds =
+            (authorization.ConfirmedOperationIds ??
+             Array.Empty<string>())
+            .OrderBy(x => x, StringComparer.Ordinal)
+            .ToArray();
+
+        if (expectedOperationIds.Length == 0 ||
+            !expectedOperationIds.SequenceEqual(
+                confirmedOperationIds,
+                StringComparer.Ordinal))
+        {
+            throw new InvalidDataException(
+                "Label Apply authorization operation IDs do not match the current preflight.");
+        }
+    }
+
     private AssistantPlannedTask? GetSinglePlanTask()
     {
         var tasks = CurrentInterpretation?.Plan.Tasks;
@@ -908,6 +1136,10 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(CanRunLabelPreflightFromPlan));
         OnPropertyChanged(nameof(CanApplyFromPlan));
         OnPropertyChanged(nameof(CanExecuteReadOnlyPlan));
+        OnPropertyChanged(nameof(PlanExecutionRoute));
+        OnPropertyChanged(nameof(CanExecuteCurrentPlan));
+        OnPropertyChanged(nameof(PlanExecutionButtonText));
+        OnPropertyChanged(nameof(PlanExecutionLifecycleSummary));
         OnPropertyChanged(nameof(ShowReadOnlyExecutionPanel));
     }
 
@@ -926,6 +1158,10 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(CanRunLabelPreflightFromPlan));
         OnPropertyChanged(nameof(CanApplyFromPlan));
         OnPropertyChanged(nameof(CanExecuteReadOnlyPlan));
+        OnPropertyChanged(nameof(PlanExecutionRoute));
+        OnPropertyChanged(nameof(CanExecuteCurrentPlan));
+        OnPropertyChanged(nameof(PlanExecutionButtonText));
+        OnPropertyChanged(nameof(PlanExecutionLifecycleSummary));
         OnPropertyChanged(nameof(ShowReadOnlyExecutionPanel));
     }
 

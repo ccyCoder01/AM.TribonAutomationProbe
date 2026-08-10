@@ -34,6 +34,14 @@ public enum AssistantTaskRisk
     DrawingWrite
 }
 
+public enum AssistantPlanExecutionRoute
+{
+    None,
+    DeterministicReadOnly,
+    LabelPreflight,
+    LabelApply
+}
+
 public sealed record AssistantConversationTurn(string Role, string Content);
 
 public sealed record AssistantConversationContext(
