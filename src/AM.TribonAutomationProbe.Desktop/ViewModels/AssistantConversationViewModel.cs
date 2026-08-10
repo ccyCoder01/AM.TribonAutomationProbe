@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Security;
 using AM.TribonAutomationProbe.Core;
@@ -227,7 +228,7 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
 
     public bool CanExecuteReadOnlyPlan =>
         !IsBusy &&
-        TryGetExecutableReadOnlyTask(out _);
+        TryGetExecutableReadOnlyTasks(out _);
 
     public bool ShowReadOnlyExecutionPanel =>
         CanExecuteReadOnlyPlan ||
@@ -303,9 +304,19 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
                 return "计划包含图纸写入。必须先执行标签只读检查，并继续使用精确 preflight 绑定和显式确认；不会自动 SAVEWORK。";
             }
 
-            return TryGetExecutableReadOnlyTask(out var task)
-                ? $"计划可通过固定白名单命令执行：{GetDisplayName(task.Intent)}。点击后仅提交一次 FileBridge 请求，仍需在 Tribon 当前图纸中运行 Start.py 恰好一次；不会写入图纸数据库，也不会执行 SAVEWORK。"
-                : "当前计划不满足单任务确定性只读执行门禁，仅保留为计划预览。";
+            if (!TryGetExecutableReadOnlyTasks(out var tasks))
+            {
+                return "当前计划不满足确定性只读任务序列执行门禁，仅保留为计划预览。";
+            }
+
+            var taskNames = string.Join(
+                "、",
+                tasks.Select(task => GetDisplayName(task.Intent)));
+
+            return
+                $"计划可按 Sequence 顺序通过固定白名单命令执行 {tasks.Count} 个只读任务：{taskNames}。" +
+                "每个已接受的 FileBridge 请求均需在 Tribon 当前图纸中运行 Start.py 恰好一次；" +
+                "执行阶段不会重新调用模型，不会写入图纸数据库，也不会执行 SAVEWORK。";
         }
     }
 
@@ -424,57 +435,122 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
     public async Task ExecuteReadOnlyPlanAsync()
     {
         if (!CanExecuteReadOnlyPlan ||
-            CurrentInterpretation is null)
+            CurrentInterpretation is null ||
+            !TryGetExecutableReadOnlyTasks(out var tasks))
         {
             ErrorMessage =
-                "当前计划不满足单任务确定性只读执行门禁，或系统正忙。";
+                "当前计划不满足确定性只读任务序列执行门禁，或系统正忙。";
             return;
         }
 
         var plan = CurrentInterpretation.Plan;
+        var settings = CreateSettings();
+
         ErrorMessage = string.Empty;
         ReadOnlyExecutionResult = null;
         ReadOnlyExecutionProgress = 0;
         IsReadOnlyExecutionProgressIndeterminate = false;
         ReadOnlyExecutionStatus =
-            "正在准备确定性只读命令。";
+            $"正在准备 {tasks.Count} 个确定性只读任务。";
 
         Messages.Add(
             new AssistantConversationMessage(
                 "assistant",
-                "已将单一只读计划映射为固定 Console 白名单命令。提交后请在 Tribon 当前图纸中运行 Start.py 恰好一次；不会重新调用模型，不会写图，也不会执行 SAVEWORK。",
+                $"已验证 {tasks.Count} 个确定性只读任务，将按 Sequence 升序逐个提交。" +
+                " 每个已接受的 FileBridge 请求都需要在 Tribon 当前图纸中运行 Start.py 恰好一次；" +
+                " 任一任务失败或取消后立即停止，不提交后续任务。" +
+                " 执行阶段不会重新调用模型，不会写入图纸数据库，也不会执行 SAVEWORK。",
                 DateTimeOffset.Now));
 
         var cancellation = new CancellationTokenSource();
         _readOnlyExecutionCancellation = cancellation;
         IsExecutingReadOnlyPlan = true;
-        var progress = new Progress<WorkflowProgress>(
-            UpdateReadOnlyExecutionProgress);
 
         try
         {
-            var result = await _readOnlyExecutionClient.ExecuteAsync(
-                CreateSettings(),
-                plan,
-                progress,
-                cancellation.Token);
+            for (var index = 0; index < tasks.Count; index++)
+            {
+                cancellation.Token.ThrowIfCancellationRequested();
 
-            ReadOnlyExecutionResult = result;
+                var task = tasks[index];
+                var singleTaskPlan =
+                    CreateSingleTaskReadOnlyPlan(
+                        plan,
+                        task);
+
+                ReadOnlyExecutionStatus =
+                    $"任务 {task.Sequence}/{tasks.Count}：" +
+                    $"正在准备 {task.TaskType}。";
+
+                var taskIndex = index;
+                var progress = new Progress<WorkflowProgress>(
+                    value =>
+                        UpdateReadOnlyExecutionProgress(
+                            new WorkflowProgress(
+                                MapReadOnlyTaskProgress(
+                                    value.Percent,
+                                    taskIndex,
+                                    tasks.Count),
+                                $"任务 {task.Sequence}/{tasks.Count}：" +
+                                value.Message,
+                                value.IsIndeterminate)));
+
+                var result =
+                    await _readOnlyExecutionClient.ExecuteAsync(
+                        settings,
+                        singleTaskPlan,
+                        progress,
+                        cancellation.Token);
+
+                result = result with
+                {
+                    Sequence = task.Sequence
+                };
+
+                if (result.State != AssistantTaskState.Completed ||
+                    result.DrawingWritePerformed ||
+                    result.SavePerformed)
+                {
+                    throw new InvalidDataException(
+                        "The deterministic read-only task result violated " +
+                        "the multi-task orchestration safety contract.");
+                }
+
+                ReadOnlyExecutionResult = result;
+                ReadOnlyExecutionProgress =
+                    ((index + 1d) / tasks.Count) * 100d;
+                IsReadOnlyExecutionProgressIndeterminate = false;
+                ReadOnlyExecutionStatus =
+                    $"任务 {task.Sequence}/{tasks.Count} 完成：{result.Summary}";
+
+                Messages.Add(
+                    new AssistantConversationMessage(
+                        "assistant",
+                        $"任务 {task.Sequence}/{tasks.Count} 回执：{result.Summary} " +
+                        $"图纸写入={result.DrawingWritePerformed}，" +
+                        $"自动保存={result.SavePerformed}。",
+                        DateTimeOffset.Now));
+            }
+
             ReadOnlyExecutionProgress = 100;
             IsReadOnlyExecutionProgressIndeterminate = false;
-            ReadOnlyExecutionStatus = result.Summary;
+            ReadOnlyExecutionStatus =
+                $"确定性只读任务序列已完成：{tasks.Count}/{tasks.Count}。";
 
             Messages.Add(
                 new AssistantConversationMessage(
                     "assistant",
-                    $"确定性只读执行回执：{result.Summary} 图纸写入={result.DrawingWritePerformed}，自动保存={result.SavePerformed}。",
+                    $"确定性只读任务序列执行完成：{tasks.Count}/{tasks.Count}。" +
+                    " 全程未重新调用模型，未写入图纸数据库，未执行 SAVEWORK。",
                     DateTimeOffset.Now));
         }
         catch (OperationCanceledException)
         {
             ReadOnlyExecutionStatus =
-                "确定性只读执行已取消。请检查 FileBridge 状态后再决定下一步。";
+                "确定性只读任务序列已取消；后续任务未提交。" +
+                " 请检查 FileBridge 状态后再决定下一步。";
             IsReadOnlyExecutionProgressIndeterminate = false;
+
             Messages.Add(
                 new AssistantConversationMessage(
                     "system",
@@ -485,12 +561,14 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
         {
             ErrorMessage = ex.Message;
             ReadOnlyExecutionStatus =
-                "确定性只读执行失败。不要盲目重复运行 Start.py 或重新提交请求。";
+                "确定性只读任务序列执行失败；已停止，后续任务未提交。" +
+                " 不要盲目重复运行 Start.py 或重新提交请求。";
             IsReadOnlyExecutionProgressIndeterminate = false;
+
             Messages.Add(
                 new AssistantConversationMessage(
                     "system",
-                    $"确定性只读执行失败：{ex.Message}",
+                    $"确定性只读任务序列执行失败：{ex.Message}",
                     DateTimeOffset.Now));
         }
         finally
@@ -633,10 +711,10 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
             : null;
     }
 
-    private bool TryGetExecutableReadOnlyTask(
-        out AssistantPlannedTask task)
+    private bool TryGetExecutableReadOnlyTasks(
+        out IReadOnlyList<AssistantPlannedTask> tasks)
     {
-        task = null!;
+        tasks = Array.Empty<AssistantPlannedTask>();
         var plan = CurrentInterpretation?.Plan;
 
         if (plan is null ||
@@ -644,28 +722,84 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
             plan.ContainsWrite ||
             plan.RequiresConfirmation ||
             plan.AutoSave ||
-            plan.Tasks.Count != 1)
+            plan.Tasks.Count == 0)
         {
             return false;
         }
 
-        var candidate = plan.Tasks[0];
+        var ordered = plan.Tasks
+            .OrderBy(x => x.Sequence)
+            .ToArray();
 
-        if (candidate.Sequence != 1 ||
-            candidate.Risk != AssistantTaskRisk.ReadOnly ||
-            candidate.RequiresConfirmation ||
-            candidate.AutoSave ||
-            candidate.Intent is not (
-                AssistantIntent.DetectGeometry or
-                AssistantIntent.HighlightLifting or
-                AssistantIntent.HighlightFlanges or
-                AssistantIntent.ClearHighlight))
+        for (var index = 0; index < ordered.Length; index++)
         {
-            return false;
+            var candidate = ordered[index];
+
+            if (candidate.Sequence != index + 1)
+            {
+                return false;
+            }
+
+            var singleTaskPlan =
+                CreateSingleTaskReadOnlyPlan(
+                    plan,
+                    candidate);
+
+            try
+            {
+                _ = ConsoleAssistantReadOnlyPlanExecutionClient.ValidatePlan(
+                    singleTaskPlan);
+            }
+            catch (InvalidDataException)
+            {
+                return false;
+            }
         }
 
-        task = candidate;
+        tasks = ordered;
         return true;
+    }
+
+    private static AssistantTaskPlan CreateSingleTaskReadOnlyPlan(
+        AssistantTaskPlan sourcePlan,
+        AssistantPlannedTask sourceTask) =>
+        sourcePlan with
+        {
+            Tasks = new[]
+            {
+                sourceTask with
+                {
+                    Sequence = 1
+                }
+            }
+        };
+
+    private static double MapReadOnlyTaskProgress(
+        double taskPercent,
+        int zeroBasedTaskIndex,
+        int taskCount)
+    {
+        if (taskCount <= 0 ||
+            zeroBasedTaskIndex < 0 ||
+            zeroBasedTaskIndex >= taskCount)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(zeroBasedTaskIndex));
+        }
+
+        var normalizedTaskPercent =
+            Math.Clamp(
+                taskPercent,
+                0d,
+                100d);
+
+        return Math.Clamp(
+            (
+                zeroBasedTaskIndex * 100d +
+                normalizedTaskPercent
+            ) / taskCount,
+            0d,
+            100d);
     }
 
     private void UpdateReadOnlyExecutionProgress(
@@ -725,13 +859,14 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
                 .Select(x => GetDisplayName(x.Intent)));
         var safety = plan.ContainsWrite
             ? "计划包含写入，当前不会执行；必须先完成只读检查并显式确认。"
-            : plan.Tasks.Count == 1 &&
-              plan.Tasks[0].Intent is (
-                  AssistantIntent.DetectGeometry or
-                  AssistantIntent.HighlightLifting or
-                  AssistantIntent.HighlightFlanges or
-                  AssistantIntent.ClearHighlight)
-                ? "计划可由用户显式点击后映射为固定只读命令；不会重新调用模型。"
+            : plan.Tasks.Count > 0 &&
+              plan.Tasks.All(task =>
+                  task.Intent is (
+                      AssistantIntent.DetectGeometry or
+                      AssistantIntent.HighlightLifting or
+                      AssistantIntent.HighlightFlanges or
+                      AssistantIntent.ClearHighlight))
+                ? "计划可由用户显式点击后按 Sequence 顺序映射为固定只读命令；不会重新调用模型。"
                 : "计划当前仅用于预览。";
 
         return $"已生成 {plan.Tasks.Count} 个受控任务：{taskNames}。{safety}";

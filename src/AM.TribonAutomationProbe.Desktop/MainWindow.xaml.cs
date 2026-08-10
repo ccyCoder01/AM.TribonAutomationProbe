@@ -64,13 +64,25 @@ public partial class MainWindow : Window
             return;
         }
 
+        var taskCount =
+            _viewModel.CurrentInterpretation?.Plan.Tasks.Count ?? 0;
+
+        if (taskCount <= 0)
+        {
+            return;
+        }
+
         var answer = MessageBox.Show(
             this,
-            "即将把当前单一只读计划映射为固定 Console 白名单命令。\n\n" +
-            "提交后需要在 Tribon 当前图纸中运行 Start.py 恰好一次。\n" +
-            "该操作不会重新调用模型，不会写入图纸数据库，也不会执行 SAVEWORK。\n\n" +
+            $"即将按 Sequence 顺序执行当前 {taskCount} 个确定性只读任务。\n\n" +
+            "每个任务仍通过已验证的单任务 Console 白名单执行器逐个提交；" +
+            "FileBridge 同一时刻只允许一个请求。\n" +
+            $"每出现一个已接受请求，都需要在 Tribon 当前图纸中运行 Start.py 恰好一次；" +
+            $"完整成功时预计共 {taskCount} 次。\n" +
+            "任何任务失败或取消后立即停止，不会提交后续任务。\n" +
+            "执行阶段不会重新调用模型，不会写入图纸数据库，也不会执行 SAVEWORK。\n\n" +
             "确认继续？",
-            "确认执行确定性只读计划",
+            "确认执行确定性只读任务序列",
             MessageBoxButton.YesNo,
             MessageBoxImage.Information,
             MessageBoxResult.No);
