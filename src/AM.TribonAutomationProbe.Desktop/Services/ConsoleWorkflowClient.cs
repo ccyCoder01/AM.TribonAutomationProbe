@@ -27,13 +27,13 @@ public sealed class ConsoleWorkflowClient : IConsoleWorkflowClient
         progress?.Report(
             new WorkflowProgress(
                 10,
-                "正在校验只读检查环境。"));
+                "正在校验标签安全检查环境。"));
 
         var arguments = BuildPreflightArguments(settings);
         var result = await RunConsoleAsync<GeometryLabelPreflightResult>(
                 settings.ConsolePath,
                 arguments,
-                "Console 已启动并正在提交只读检查请求。请在 Tribon 当前图纸中运行 Start.py 一次。",
+                "标签安全检查已提交，正在等待 Tribon 执行通道返回结果。",
                 progress,
                 cancellationToken)
             .ConfigureAwait(false);
@@ -41,14 +41,14 @@ public sealed class ConsoleWorkflowClient : IConsoleWorkflowClient
         progress?.Report(
             new WorkflowProgress(
                 90,
-                "正在验证只读检查结果。"));
+                "正在验证标签安全检查结果。"));
 
         ValidatePreflightResult(result);
 
         progress?.Report(
             new WorkflowProgress(
                 100,
-                "只读检查完成。"));
+                "标签安全检查完成。"));
 
         return result;
     }
@@ -68,13 +68,13 @@ public sealed class ConsoleWorkflowClient : IConsoleWorkflowClient
                 StringComparison.Ordinal))
         {
             throw new InvalidOperationException(
-                "Only a successful preflight can authorize Apply.");
+                "只有成功的标签安全检查才能授权创建标签。");
         }
 
         if (confirmedPreflight.PreMissingCount <= 0)
         {
             throw new InvalidOperationException(
-                "The confirmed preflight contains no missing labels.");
+                "已确认的标签安全检查没有待创建标签。");
         }
 
         _bridgeMonitor.EnsureIdle(settings.BridgeRoot);
@@ -91,7 +91,7 @@ public sealed class ConsoleWorkflowClient : IConsoleWorkflowClient
         var result = await RunConsoleAsync<GeometryLabelApplyMissingResult>(
                 settings.ConsolePath,
                 arguments,
-                "Console 已启动并正在提交 Apply 请求。请在 Tribon 当前图纸中运行 Start.py 一次。",
+                "标签创建请求已提交，正在等待 Tribon 执行通道返回结果。",
                 progress,
                 cancellationToken)
             .ConfigureAwait(false);
@@ -108,7 +108,7 @@ public sealed class ConsoleWorkflowClient : IConsoleWorkflowClient
         progress?.Report(
             new WorkflowProgress(
                 100,
-                "Apply 完成，尚未自动保存。"));
+                "标签创建完成，图纸尚未保存。"));
 
         return result;
     }
@@ -143,7 +143,7 @@ public sealed class ConsoleWorkflowClient : IConsoleWorkflowClient
         if (operationIds.Count == 0)
         {
             throw new InvalidOperationException(
-                "The confirmed preflight has no ready operation IDs.");
+                "已确认的标签安全检查没有可创建对象。");
         }
 
         return new[]
@@ -172,42 +172,42 @@ public sealed class ConsoleWorkflowClient : IConsoleWorkflowClient
                 StringComparison.Ordinal))
         {
             throw new InvalidDataException(
-                "Preflight taskType is invalid.");
+                "标签安全检查结果类型无效。");
         }
 
         if (result.DrawingWritePerformed)
         {
             throw new InvalidDataException(
-                "Read-only preflight unexpectedly reported a drawing write.");
+                "标签安全检查异常报告了图纸写入。");
         }
 
         if (result.SavePerformed)
         {
             throw new InvalidDataException(
-                "Read-only preflight unexpectedly reported a save.");
+                "标签安全检查异常报告了图纸保存。");
         }
 
         if (result.Status is not ("SUCCESS" or "BLOCKED"))
         {
             throw new InvalidDataException(
-                $"Preflight status is unsupported: {result.Status}");
+                $"标签安全检查状态不受支持：{result.Status}");
         }
 
         if (string.IsNullOrWhiteSpace(result.OperationId))
         {
             throw new InvalidDataException(
-                "Preflight operationId is missing.");
+                "标签安全检查缺少操作标识。");
         }
 
         if (!IsSha256(result.PlanHash))
         {
             throw new InvalidDataException(
-                "Preflight planHash is not a SHA-256 value.");
+                "标签安全检查缺少有效的计划校验值。");
         }
 
         var items = result.Items ??
                     throw new InvalidDataException(
-                        "Preflight items are missing.");
+                        "标签安全检查缺少对象明细。");
 
         var readyFromItems = items
             .Where(x => string.Equals(
@@ -229,7 +229,7 @@ public sealed class ConsoleWorkflowClient : IConsoleWorkflowClient
                 readyFromItems.Length)
         {
             throw new InvalidDataException(
-                "Preflight ready operation IDs are blank or duplicated.");
+                "标签安全检查中的待创建对象标识为空或重复。");
         }
 
         if (!readyFromItems.SequenceEqual(
@@ -237,13 +237,13 @@ public sealed class ConsoleWorkflowClient : IConsoleWorkflowClient
                 StringComparer.Ordinal))
         {
             throw new InvalidDataException(
-                "Preflight ready operation IDs do not match item decisions.");
+                "标签安全检查的待创建对象集合与检查决策不一致。");
         }
 
         if (result.PreMissingCount != readyFromItems.Length)
         {
             throw new InvalidDataException(
-                "Preflight missing count does not match ready operations.");
+                "标签安全检查的待创建数量与对象集合不一致。");
         }
 
         var alreadyAppliedCount = items.Count(
@@ -255,7 +255,7 @@ public sealed class ConsoleWorkflowClient : IConsoleWorkflowClient
         if (result.PreAlreadyPresentCount != alreadyAppliedCount)
         {
             throw new InvalidDataException(
-                "Preflight already-present count does not match item decisions.");
+                "标签安全检查的已存在数量与对象决策不一致。");
         }
 
         if (result.PreAlreadyPresentCount < 0 ||
@@ -265,7 +265,7 @@ public sealed class ConsoleWorkflowClient : IConsoleWorkflowClient
             result.PreInspectionErrorCount < 0)
         {
             throw new InvalidDataException(
-                "Preflight counts cannot be negative.");
+                "标签安全检查数量不能为负数。");
         }
 
         if (string.Equals(
@@ -277,7 +277,7 @@ public sealed class ConsoleWorkflowClient : IConsoleWorkflowClient
              result.PreInspectionErrorCount > 0))
         {
             throw new InvalidDataException(
-                "Successful preflight contains blocking diagnostics.");
+                "标签安全检查标记成功，但仍包含阻断问题。");
         }
     }
 
@@ -294,19 +294,19 @@ public sealed class ConsoleWorkflowClient : IConsoleWorkflowClient
                 StringComparison.Ordinal))
         {
             throw new InvalidDataException(
-                "Apply taskType is invalid.");
+                "标签创建结果类型无效。");
         }
 
         if (result.SavePerformed)
         {
             throw new InvalidDataException(
-                "Apply unexpectedly performed SAVEWORK.");
+                "标签创建异常执行了图纸保存。");
         }
 
         if (result.Status is not ("SUCCESS" or "ALREADY_COMPLETE"))
         {
             throw new InvalidDataException(
-                $"Apply status is unsupported: {result.Status}");
+                $"标签创建状态不受支持：{result.Status}");
         }
 
         var confirmed = (
@@ -340,7 +340,7 @@ public sealed class ConsoleWorkflowClient : IConsoleWorkflowClient
                 .Any())
         {
             throw new InvalidDataException(
-                "Apply operation IDs are duplicated or overlap.");
+                "标签创建结果中的对象标识重复或重叠。");
         }
 
         if (!completed.SequenceEqual(
@@ -348,7 +348,7 @@ public sealed class ConsoleWorkflowClient : IConsoleWorkflowClient
                 StringComparer.Ordinal))
         {
             throw new InvalidDataException(
-                "Apply completion set differs from the confirmed preflight set.");
+                "标签创建结果与已确认的对象集合不一致。");
         }
 
         if (result.CreatedCount != created.Length ||
@@ -358,13 +358,13 @@ public sealed class ConsoleWorkflowClient : IConsoleWorkflowClient
             result.DrawingWritePerformed != (created.Length > 0))
         {
             throw new InvalidDataException(
-                "Apply counts or drawing-write receipt are inconsistent.");
+                "标签创建数量与图纸写入回执不一致。");
         }
 
         if (result.PostMissingCount != 0)
         {
             throw new InvalidDataException(
-                "Apply result still reports missing labels.");
+                "标签创建完成后仍存在缺失标签。");
         }
     }
 
@@ -402,12 +402,12 @@ public sealed class ConsoleWorkflowClient : IConsoleWorkflowClient
         progress?.Report(
             new WorkflowProgress(
                 25,
-                "正在启动已验证的 Console。"));
+                "正在连接 Tribon 执行通道。"));
 
         if (!process.Start())
         {
             throw new InvalidOperationException(
-                "The verified Console process could not be started.");
+                "Tribon 执行通道启动失败。");
         }
 
         progress?.Report(
@@ -460,13 +460,13 @@ public sealed class ConsoleWorkflowClient : IConsoleWorkflowClient
         if (string.IsNullOrWhiteSpace(standardOutput))
         {
             throw new InvalidDataException(
-                "The verified Console returned no JSON result.");
+                "Tribon 执行通道未返回结果。");
         }
 
         progress?.Report(
             new WorkflowProgress(
                 80,
-                "已收到 Console 结果，正在解析。"));
+                "Tribon 执行通道已返回结果，正在解析。"));
 
         try
         {
@@ -474,12 +474,12 @@ public sealed class ConsoleWorkflowClient : IConsoleWorkflowClient
                        standardOutput.Trim(),
                        JsonDefaults.Options) ??
                    throw new InvalidDataException(
-                       "The verified Console JSON result is empty.");
+                       "Tribon 执行通道返回空结果。");
         }
         catch (JsonException ex)
         {
             throw new InvalidDataException(
-                "The verified Console output is not valid JSON.",
+                "Tribon 执行通道返回的结果格式无效。",
                 ex);
         }
     }
@@ -536,6 +536,6 @@ public sealed class ConsoleWorkflowException : Exception
             detail = detail[..1200];
         }
 
-        return $"Console exited with code {exitCode}: {detail}";
+        return $"Tribon 执行通道返回错误（代码 {exitCode}）：{detail}";
     }
 }

@@ -11,10 +11,18 @@ namespace AM.TribonAutomationProbe.Desktop;
 public partial class MainWindow : Window
 {
     private readonly AssistantConversationViewModel _viewModel;
+    private readonly AssistantModelConfigurationStore
+        _modelConfigurationStore;
 
     public MainWindow()
     {
         InitializeComponent();
+
+        _modelConfigurationStore =
+            new AssistantModelConfigurationStore();
+
+        var modelConfiguration =
+            _modelConfigurationStore.LoadSnapshot();
 
         var labelWorkflow = new ObjectLabelWorkflowViewModel(
             new ConsoleWorkflowClient(
@@ -24,9 +32,32 @@ public partial class MainWindow : Window
             new ConsoleAssistantWorkflowClient(),
             labelWorkflow,
             new ConsoleAssistantReadOnlyPlanExecutionClient(
-                new BridgeResultMonitor()));
+                new BridgeResultMonitor()),
+            modelConfiguration.HasCredential);
+
+        if (!string.IsNullOrWhiteSpace(
+                modelConfiguration.BaseUrl))
+        {
+            _viewModel.AssistantBaseUrl =
+                modelConfiguration.BaseUrl;
+        }
+
+        if (!string.IsNullOrWhiteSpace(
+                modelConfiguration.Model))
+        {
+            _viewModel.AssistantModel =
+                modelConfiguration.Model;
+        }
+
+        _viewModel.SetModelCredentialAvailable(
+            modelConfiguration.HasCredential);
 
         DataContext = _viewModel;
+
+        _viewModel.Messages.CollectionChanged +=
+            (_, _) =>
+                Dispatcher.BeginInvoke(
+                    new Action(ScrollConversationToEnd));
     }
 
     private void BrowseConsole_Click(
@@ -84,13 +115,10 @@ public partial class MainWindow : Window
 
                 var answer = MessageBox.Show(
                     this,
-                    $"即将按 Sequence 顺序执行当前 {taskCount} 个确定性只读任务。\n\n" +
-                    "每个任务仍通过已验证的单任务 Console 白名单执行器逐个提交；" +
-                    "FileBridge 同一时刻只允许一个请求。\n" +
-                    $"每出现一个已接受请求，都需要在 Tribon 当前图纸中运行 Start.py 恰好一次；" +
-                    $"完整成功时预计共 {taskCount} 次。\n" +
+                    $"即将按顺序执行当前 {taskCount} 个只读任务。\n\n" +
+                    "系统会通过受控 Tribon 执行通道自动逐个处理。\n" +
                     "任何任务失败或取消后立即停止，不会提交后续任务。\n" +
-                    "执行阶段不会重新调用模型，不会写入图纸数据库，也不会执行 SAVEWORK。\n\n" +
+                    "执行阶段不会重新调用模型，不会修改图纸，也不会自动保存。\n\n" +
                     "确认继续？",
                     "确认执行确定性只读任务序列",
                     MessageBoxButton.YesNo,
@@ -121,16 +149,14 @@ public partial class MainWindow : Window
 
                 var message =
                     $"即将创建 {preflight.PreMissingCount} 个缺失标签。\n\n" +
-                    $"Preflight ID:\n{preflight.OperationId}\n\n" +
-                    $"Plan Hash:\n{preflight.PlanHash}\n\n" +
-                    "本次 Apply 会修改当前图纸，但不会自动保存。\n" +
-                    "提交后仍需在 Tribon 中运行 Start.py 恰好一次。\n\n" +
-                    "确认继续？";
+                    "该写入已绑定刚完成的标签安全检查和已核对对象列表。\n" +
+                    "本次操作会修改当前图纸，但不会自动保存。\n\n" +
+                    "确认创建？";
 
                 var answer = MessageBox.Show(
                     this,
                     message,
-                    "确认受控 Apply",
+                    "确认创建标签",
                     MessageBoxButton.YesNo,
                     MessageBoxImage.Warning,
                     MessageBoxResult.No);
@@ -170,44 +196,52 @@ public partial class MainWindow : Window
         object sender,
         RoutedEventArgs e)
     {
-        if (_viewModel.PlanExecutionRoute ==
-                AssistantPlanExecutionRoute.LabelApply &&
-            _viewModel.CanExecuteCurrentPlan)
-        {
-            await ExecutePlanFromUiAsync();
-            return;
-        }
-
         var workflow = _viewModel.LabelWorkflow;
         var preflight = workflow.PreflightResult;
 
         if (preflight is null ||
-            !workflow.CanApply)
+            !_viewModel.CanCreateLabelsFromPreflight)
         {
             return;
         }
 
-        var message =
-            $"即将创建 {preflight.PreMissingCount} 个缺失标签。\n\n" +
-            $"Preflight ID:\n{preflight.OperationId}\n\n" +
-            $"Plan Hash:\n{preflight.PlanHash}\n\n" +
-            "本次 Apply 会修改当前图纸，但不会自动保存。\n" +
-            "提交后仍需在 Tribon 中运行 Start.py 恰好一次。\n\n" +
-            "确认继续？";
+        // Clicking "创建标签" is the explicit write confirmation for the
+        // exact current preflight. Keep the workflow-level acknowledgement
+        // scoped to this click only; the bound authorization remains the
+        // authoritative write gate for a conversation plan.
+        workflow.ApplyAcknowledged = true;
 
-        var answer = MessageBox.Show(
-            this,
-            message,
-            "确认受控 Apply",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Warning,
-            MessageBoxResult.No);
-
-        if (answer == MessageBoxResult.Yes)
+        try
         {
+            if (_viewModel.PlanExecutionRoute ==
+                    AssistantPlanExecutionRoute.LabelApply)
+            {
+                var authorization =
+                    _viewModel.CreateApplyAuthorizationFromPlan();
+
+                if (authorization is null)
+                {
+                    return;
+                }
+
+                await _viewModel.ExecuteCurrentPlanAsync(
+                    authorization);
+                ScrollConversationToEnd();
+                return;
+            }
+
+            if (!workflow.CanApply)
+            {
+                return;
+            }
+
             await workflow.ApplyAsync();
             _viewModel.RecordApplyResult();
             ScrollConversationToEnd();
+        }
+        finally
+        {
+            workflow.ApplyAcknowledged = false;
         }
     }
 
@@ -246,12 +280,45 @@ public partial class MainWindow : Window
 
         try
         {
-            if (_viewModel.UseRealModel)
+            var typedCredential =
+                AssistantApiTokenBox.SecurePassword;
+
+            if (typedCredential.Length > 0)
             {
-                authorizationSecret =
-                    AssistantApiTokenBox.SecurePassword.Copy();
-                authorizationSecret.MakeReadOnly();
+                using var credentialToPersist =
+                    typedCredential.Copy();
+
+                credentialToPersist.MakeReadOnly();
+
+                _modelConfigurationStore.Save(
+                    _viewModel.AssistantBaseUrl,
+                    _viewModel.AssistantModel,
+                    credentialToPersist);
             }
+            else
+            {
+                _modelConfigurationStore.Save(
+                    _viewModel.AssistantBaseUrl,
+                    _viewModel.AssistantModel);
+            }
+
+            authorizationSecret =
+                typedCredential.Length > 0
+                    ? typedCredential.Copy()
+                    : _modelConfigurationStore.LoadCredential();
+
+            if (authorizationSecret is null ||
+                authorizationSecret.Length == 0)
+            {
+                _viewModel.SetModelCredentialAvailable(
+                    false);
+                return;
+            }
+
+            authorizationSecret.MakeReadOnly();
+
+            _viewModel.SetModelCredentialAvailable(
+                true);
 
             await _viewModel.InterpretAsync(
                 authorizationSecret);
@@ -259,14 +326,49 @@ public partial class MainWindow : Window
         finally
         {
             authorizationSecret?.Dispose();
-            AssistantApiTokenBox.Clear();
             ScrollConversationToEnd();
         }
+    }
+
+    private void AssistantApiTokenBox_PasswordChanged(
+        object sender,
+        RoutedEventArgs e)
+    {
+        _viewModel.SetModelCredentialAvailable(
+            AssistantApiTokenBox.SecurePassword.Length > 0 ||
+            _modelConfigurationStore.HasStoredCredential());
+    }
+
+    private void ClearAssistantToken_Click(
+        object sender,
+        RoutedEventArgs e)
+    {
+        _modelConfigurationStore.ClearCredential(
+            _viewModel.AssistantBaseUrl,
+            _viewModel.AssistantModel);
+
+        AssistantApiTokenBox.Clear();
+
+        _viewModel.SetModelCredentialAvailable(
+            false);
     }
 
     protected override void OnClosed(EventArgs e)
     {
         _viewModel.CancelActiveOperation();
+
+        using var typedCredential =
+            AssistantApiTokenBox.SecurePassword.Length > 0
+                ? AssistantApiTokenBox.SecurePassword.Copy()
+                : null;
+
+        typedCredential?.MakeReadOnly();
+
+        _modelConfigurationStore.Save(
+            _viewModel.AssistantBaseUrl,
+            _viewModel.AssistantModel,
+            typedCredential);
+
         base.OnClosed(e);
     }
 

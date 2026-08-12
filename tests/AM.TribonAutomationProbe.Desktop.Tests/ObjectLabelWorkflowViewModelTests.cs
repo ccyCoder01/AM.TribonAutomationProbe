@@ -66,10 +66,9 @@ public sealed class ObjectLabelWorkflowViewModelTests
 
         Assert.False(viewModel.HasPreflight);
         Assert.False(viewModel.CanApply);
-        Assert.Contains(
-            "重新执行只读检查",
-            viewModel.StatusMessage,
-            StringComparison.Ordinal);
+        Assert.Equal(
+            "运行配置已更改。必须重新执行标签安全检查。",
+            viewModel.StatusMessage);
     }
 
     private sealed class FakeConsoleWorkflowClient :

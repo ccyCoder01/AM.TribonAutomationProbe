@@ -27,7 +27,7 @@
                      Foreground="White"
                      FontSize="25"
                      FontWeight="SemiBold" />
-          <TextBlock Text="自然语言任务入口、计划预览与受控执行"
+          <TextBlock Text="自然语言对话、实时执行状态与受控图纸操作"
                      Foreground="#D9EAF2"
                      Margin="0,4,0,0"
                      FontSize="14" />
@@ -38,7 +38,7 @@
                 CornerRadius="5"
                 Padding="12,7"
                 VerticalAlignment="Center">
-          <TextBlock Text="计划优先 · 写入需确认"
+          <TextBlock Text="自动执行 · 写入需确认"
                      Foreground="White"
                      FontWeight="SemiBold" />
         </Border>
@@ -58,7 +58,7 @@
 
         <Grid Grid.Row="0">
           <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="1.55*" />
+            <ColumnDefinition Width="1.9*" />
             <ColumnDefinition Width="1*" />
           </Grid.ColumnDefinitions>
 
@@ -68,7 +68,8 @@
             <Grid>
               <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
-                <RowDefinition Height="300" />
+                <RowDefinition Height="360" />
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -79,75 +80,85 @@
                 <TextBlock Text="对话任务入口"
                            FontSize="18"
                            FontWeight="SemiBold" />
-                <TextBlock Text="自然语言只负责解释和生成计划；不会绕过 Console、FileBridge 或写入门禁。"
+                <TextBlock Text="自然语言负责理解任务；系统会通过受控 Tribon 执行通道自动完成已验证操作，任何图纸写入仍需你的明确确认。"
                            Foreground="{StaticResource TextSecondaryBrush}"
                            TextWrapping="Wrap"
                            Margin="0,5,0,0" />
 
-                <Border Background="#F3F7F9"
-                        BorderBrush="{StaticResource BorderBrush}"
-                        BorderThickness="1"
-                        CornerRadius="5"
-                        Padding="10"
-                        Margin="0,10,0,0">
-                  <Grid>
-                    <Grid.ColumnDefinitions>
-                      <ColumnDefinition Width="Auto" />
-                      <ColumnDefinition Width="*" />
-                      <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                      <RowDefinition Height="Auto" />
-                      <RowDefinition Height="Auto" />
-                      <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
+                <Expander Header="{Binding ModelSettingsHeader}"
+                          IsExpanded="False"
+                          Margin="0,10,0,0">
+                  <Border Background="#F3F7F9"
+                          BorderBrush="{StaticResource BorderBrush}"
+                          BorderThickness="1"
+                          CornerRadius="5"
+                          Padding="10"
+                          Margin="0,6,0,0">
+                    <Grid>
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                      </Grid.ColumnDefinitions>
+                      <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                      </Grid.RowDefinitions>
 
-                    <CheckBox Grid.ColumnSpan="3"
-                              Content="本次会话使用真实模型"
-                              IsChecked="{Binding UseRealModel}"
-                              FontWeight="SemiBold" />
-
-                    <TextBlock Grid.Row="1"
-                               Text="Base URL"
-                               Foreground="{StaticResource TextSecondaryBrush}"
-                               VerticalAlignment="Center"
-                               Margin="0,8,8,0" />
-                    <TextBox Grid.Row="1"
-                             Grid.Column="1"
-                             Text="{Binding AssistantBaseUrl, UpdateSourceTrigger=PropertyChanged}"
-                             IsEnabled="{Binding UseRealModel}"
-                             Margin="0,8,8,0" />
-                    <TextBox Grid.Row="1"
-                             Grid.Column="2"
-                             Text="{Binding AssistantModel, UpdateSourceTrigger=PropertyChanged}"
-                             IsEnabled="{Binding UseRealModel}"
-                             Margin="0,8,0,0"
-                             ToolTip="模型 ID" />
-
-                    <TextBlock Grid.Row="2"
-                               Text="Token"
-                               Foreground="{StaticResource TextSecondaryBrush}"
-                               VerticalAlignment="Center"
-                               Margin="0,8,8,0" />
-                    <PasswordBox x:Name="AssistantApiTokenBox"
-                                 Grid.Row="2"
-                                 Grid.Column="1"
-                                 IsEnabled="{Binding UseRealModel}"
-                                 Margin="0,8,8,0"
-                                 ToolTip="只保留到本次解释调用结束；请输入 Token 本身，不含 Bearer 前缀。" />
-                    <StackPanel Grid.Row="2"
-                                Grid.Column="2"
-                                Margin="0,8,0,0">
-                      <TextBlock Text="{Binding ModelConfigurationSummary}"
-                                 FontSize="11"
-                                 TextWrapping="Wrap" />
-                      <TextBlock Text="认证：Bearer Token；不写入文件或命令行"
+                      <TextBlock Text="Base URL"
                                  Foreground="{StaticResource TextSecondaryBrush}"
-                                 FontSize="11"
-                                 TextWrapping="Wrap" />
-                    </StackPanel>
-                  </Grid>
-                </Border>
+                                 VerticalAlignment="Center"
+                                 Margin="0,0,8,0" />
+                      <TextBox Grid.Column="1"
+                               Text="{Binding AssistantBaseUrl, UpdateSourceTrigger=PropertyChanged}"
+                               Margin="0,0,8,0" />
+                      <TextBox Grid.Column="2"
+                               Text="{Binding AssistantModel, UpdateSourceTrigger=PropertyChanged}"
+                               ToolTip="模型 ID" />
+
+                      <TextBlock Grid.Row="1"
+                                 Text="Token"
+                                 Foreground="{StaticResource TextSecondaryBrush}"
+                                 VerticalAlignment="Center"
+                                 Margin="0,8,8,0" />
+                      <PasswordBox x:Name="AssistantApiTokenBox"
+                                   Grid.Row="1"
+                                   Grid.Column="1"
+                                   Margin="0,8,8,0"
+                                   PasswordChanged="AssistantApiTokenBox_PasswordChanged"
+                                   ToolTip="Token 使用 Windows 当前用户加密后持久保存；已保存时可留空继续使用。" />
+                      <StackPanel Grid.Row="1"
+                                  Grid.Column="2"
+                                  Margin="0,8,0,0">
+                        <TextBlock Text="{Binding ModelCredentialStatus}"
+                                   FontSize="11"
+                                   TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding ModelConfigurationSummary}"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   FontSize="11"
+                                   TextWrapping="Wrap" />
+                      </StackPanel>
+
+                      <StackPanel Grid.Row="2"
+                                  Grid.Column="1"
+                                  Grid.ColumnSpan="2"
+                                  Orientation="Horizontal"
+                                  Margin="0,8,0,0">
+                        <TextBlock Text="模型配置会自动保存；没有可用 Token 时无法发送任务。"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   FontSize="11"
+                                   VerticalAlignment="Center"
+                                   TextWrapping="Wrap" />
+                        <Button Content="清除已保存 Token"
+                                Margin="12,0,0,0"
+                                Padding="8,3"
+                                IsEnabled="{Binding HasModelCredential}"
+                                Click="ClearAssistantToken_Click" />
+                      </StackPanel>
+                    </Grid>
+                  </Border>
+                </Expander>
               </StackPanel>
 
               <Border Grid.Row="1"
@@ -217,8 +228,37 @@
                 </ScrollViewer>
               </Border>
 
+              <Border Grid.Row="2"
+                      Background="#F3F7F9"
+                      BorderBrush="{StaticResource BorderBrush}"
+                      BorderThickness="1"
+                      CornerRadius="5"
+                      Padding="10"
+                      Margin="0,10,0,0">
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                  </Grid.ColumnDefinitions>
+                  <ProgressBar Width="42"
+                               Height="4"
+                               Margin="0,0,10,0"
+                               VerticalAlignment="Center"
+                               IsIndeterminate="{Binding IsBusy, Mode=OneWay}"
+                               Visibility="{Binding CanCancel, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                  <StackPanel Grid.Column="1">
+                    <TextBlock Text="{Binding ExecutionStateText}"
+                               FontWeight="SemiBold" />
+                    <TextBlock Text="{Binding ExecutionStatus}"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               TextWrapping="Wrap"
+                               Margin="0,2,0,0" />
+                  </StackPanel>
+                </Grid>
+              </Border>
+
               <TextBox x:Name="UserInputBox"
-                       Grid.Row="2"
+                       Grid.Row="3"
                        Text="{Binding UserInput, UpdateSourceTrigger=PropertyChanged}"
                        AcceptsReturn="True"
                        TextWrapping="Wrap"
@@ -227,9 +267,9 @@
                        MaxHeight="130"
                        Margin="0,12,0,8"
                        KeyDown="UserInput_KeyDown"
-                       ToolTip="Ctrl+Enter 生成执行计划" />
+                       ToolTip="Ctrl+Enter 发送任务" />
 
-              <Grid Grid.Row="3">
+              <Grid Grid.Row="4">
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="*" />
                   <ColumnDefinition Width="Auto" />
@@ -237,11 +277,11 @@
                   <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <TextBlock Text="Ctrl+Enter 生成计划"
+                <TextBlock Text="Ctrl+Enter 发送任务"
                            Foreground="{StaticResource TextSecondaryBrush}"
                            VerticalAlignment="Center" />
                 <Button Grid.Column="1"
-                        Content="生成执行计划"
+                        Content="发送"
                         Style="{StaticResource PrimaryButtonStyle}"
                         IsEnabled="{Binding CanInterpret}"
                         Click="Interpret_Click"
@@ -250,6 +290,7 @@
                         Content="取消"
                         Style="{StaticResource SecondaryButtonStyle}"
                         IsEnabled="{Binding CanCancel}"
+                        Visibility="{Binding CanCancel, Converter={StaticResource BooleanToVisibilityConverter}}"
                         Click="Cancel_Click"
                         Margin="8,0,0,0" />
                 <Button Grid.Column="3"
@@ -259,7 +300,7 @@
                         Margin="8,0,0,0" />
               </Grid>
 
-              <Border Grid.Row="4"
+              <Border Grid.Row="5"
                       Background="#FDECEC"
                       BorderBrush="#E8B7B7"
                       BorderThickness="1"
@@ -277,7 +318,9 @@
           <StackPanel Grid.Column="1">
             <Border Style="{StaticResource CardStyle}"
                     Visibility="{Binding HasPlan, Converter={StaticResource BooleanToVisibilityConverter}}">
-              <StackPanel>
+              <Expander Header="执行计划详情"
+                        IsExpanded="False">
+                <StackPanel>
                 <Grid Margin="0,0,0,10">
                   <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -297,11 +340,28 @@
                           CornerRadius="4"
                           Padding="8,4"
                           VerticalAlignment="Top">
-                    <TextBlock Text="{Binding PlanState}"
+                    <TextBlock Text="{Binding ExecutionStateText}"
                                FontWeight="SemiBold" />
                   </Border>
                 </Grid>
 
+                <Border Background="#F3F7F9"
+                        BorderBrush="{StaticResource BorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="5"
+                        Padding="10"
+                        Margin="0,0,0,10">
+                  <StackPanel>
+                    <TextBlock Text="{Binding ExecutionStatus}"
+                               FontWeight="SemiBold"
+                               TextWrapping="Wrap" />
+                    <TextBlock Text="执行状态由计划生成、确定性执行和写入确认共同驱动。"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               FontSize="11"
+                               TextWrapping="Wrap"
+                               Margin="0,3,0,0" />
+                  </StackPanel>
+                </Border>
                 <Grid Margin="0,0,0,10">
                   <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="75" />
@@ -383,10 +443,6 @@
                              TextWrapping="Wrap" />
                 </Border>
 
-                <Button Content="{Binding PlanExecutionButtonText}"
-                        Style="{StaticResource PrimaryButtonStyle}"
-                        IsEnabled="{Binding CanExecuteCurrentPlan}"
-                        Click="ExecutePlan_Click" />
                 <TextBlock Text="{Binding PlanExecutionLifecycleSummary}"
                            Foreground="{StaticResource TextSecondaryBrush}"
                            TextWrapping="Wrap"
@@ -417,25 +473,26 @@
                   </StackPanel>
                 </Border>
 
-                <TextBlock Text="计划区现在使用统一执行入口：只读任务按 Sequence 进入固定白名单执行器；标签写入计划先执行 preflight，再保持精确绑定、勾选授权和原生确认。Worker、FileBridge 协议和 SAVEWORK 策略均不改变。"
+                <TextBlock Text="只读任务会按顺序自动执行；需要创建标签时，系统会先完成安全检查，再等待一次明确确认。系统不会自动保存图纸。"
                            Foreground="{StaticResource TextSecondaryBrush}"
                            TextWrapping="Wrap"
                            FontSize="11"
                            Margin="0,7,0,0" />
-              </StackPanel>
+                </StackPanel>
+              </Expander>
             </Border>
 
-            <Expander Header="高级运行设置"
+            <Expander Header="高级运行诊断"
                       IsExpanded="False">
               <Border Style="{StaticResource CardStyle}"
                       Margin="0,8,0,14"
                       IsEnabled="{Binding LabelWorkflow.CanRunPreflight}">
                 <StackPanel>
-                  <TextBlock Text="普通用户无需修改。路径或等待参数改变后，已有 preflight 将失效。"
+                  <TextBlock Text="普通用户无需修改。这里仅用于诊断 Tribon 执行通道；路径或等待参数改变后，已有标签安全检查结果将失效。"
                              Foreground="{StaticResource TextSecondaryBrush}"
                              TextWrapping="Wrap"
                              Margin="0,0,0,10" />
-                  <TextBlock Text="Console 可执行文件"
+                  <TextBlock Text="执行器路径（诊断）"
                              Foreground="{StaticResource TextSecondaryBrush}" />
                   <Grid Margin="0,4,0,10">
                     <Grid.ColumnDefinitions>
@@ -450,7 +507,7 @@
                             Click="BrowseConsole_Click" />
                   </Grid>
 
-                  <TextBlock Text="FileBridge 根目录"
+                  <TextBlock Text="通信目录（诊断）"
                              Foreground="{StaticResource TextSecondaryBrush}" />
                   <TextBox Text="{Binding LabelWorkflow.BridgeRoot, UpdateSourceTrigger=PropertyChanged}"
                            Margin="0,4,0,10" />
@@ -482,7 +539,7 @@
                 <ColumnDefinition Width="Auto" />
               </Grid.ColumnDefinitions>
               <StackPanel>
-                <TextBlock Text="确定性标签工作流"
+                <TextBlock Text="标签执行状态"
                            FontSize="17"
                            FontWeight="SemiBold" />
                 <TextBlock Text="{Binding LabelWorkflow.StatusMessage}"
@@ -493,14 +550,10 @@
               <StackPanel Grid.Column="1"
                           Orientation="Horizontal"
                           VerticalAlignment="Center">
-                <Button Content="执行标签只读检查"
-                        Style="{StaticResource SecondaryButtonStyle}"
-                        IsEnabled="{Binding LabelWorkflow.CanRunPreflight}"
-                        Click="RunPreflight_Click"
-                        Margin="0,0,8,0" />
                 <Button Content="取消"
                         Style="{StaticResource SecondaryButtonStyle}"
                         IsEnabled="{Binding CanCancel}"
+                        Visibility="{Binding CanCancel, Converter={StaticResource BooleanToVisibilityConverter}}"
                         Click="Cancel_Click" />
               </StackPanel>
             </Grid>
@@ -528,9 +581,8 @@
                     Margin="0,12,0,0">
               <TextBlock Foreground="{StaticResource WarningBrush}"
                          TextWrapping="Wrap">
-                <Run Text="每次只读检查或 Apply 提交后，" />
-                <Run Text="必须在 Tribon 当前图纸中运行 Start.py 恰好一次。" FontWeight="Bold" />
-                <Run Text=" 本程序不会自动执行 Start.py，也不会执行 SAVEWORK。" />
+                <Run Text="Tribon 执行通道会自动处理只读检查和已授权的图纸修改。" FontWeight="Bold" />
+                <Run Text=" 正常使用无需运行任何脚本；系统不会自动保存图纸。" />
               </TextBlock>
             </Border>
           </StackPanel>
@@ -540,10 +592,23 @@
                 Style="{StaticResource CardStyle}"
                 Visibility="{Binding LabelWorkflow.HasPreflight, Converter={StaticResource BooleanToVisibilityConverter}}">
           <StackPanel>
-            <TextBlock Text="只读检查结果"
-                       FontSize="17"
-                       FontWeight="SemiBold"
-                       Margin="0,0,0,14" />
+            <Grid Margin="0,0,0,14">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+              </Grid.ColumnDefinitions>
+              <TextBlock Text="标签安全检查结果"
+                         FontSize="17"
+                         FontWeight="SemiBold"
+                         VerticalAlignment="Center" />
+              <Button Grid.Column="1"
+                      Content="创建标签"
+                      Style="{StaticResource PrimaryButtonStyle}"
+                      IsEnabled="{Binding CanCreateLabelsFromPreflight}"
+                      Visibility="{Binding ShowCreateLabelsFromPreflight, Converter={StaticResource BooleanToVisibilityConverter}}"
+                      Click="Apply_Click"
+                      VerticalAlignment="Center" />
+            </Grid>
 
             <UniformGrid Columns="5"
                          Margin="0,0,0,14">
@@ -618,38 +683,44 @@
                 <ColumnDefinition Width="125" />
                 <ColumnDefinition Width="*" />
               </Grid.ColumnDefinitions>
-              <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-              </Grid.RowDefinitions>
-              <TextBlock Grid.Row="0"
-                         Text="状态"
+              <TextBlock Text="状态"
                          Foreground="{StaticResource TextSecondaryBrush}" />
-              <TextBlock Grid.Row="0"
-                         Grid.Column="1"
+              <TextBlock Grid.Column="1"
                          Text="{Binding LabelWorkflow.PreflightStatus}"
                          FontWeight="SemiBold" />
-              <TextBlock Grid.Row="1"
-                         Text="Preflight ID"
-                         Foreground="{StaticResource TextSecondaryBrush}"
-                         Margin="0,6,0,0" />
-              <TextBlock Grid.Row="1"
-                         Grid.Column="1"
-                         Text="{Binding LabelWorkflow.PreflightOperationId}"
-                         FontFamily="Consolas"
-                         Margin="0,6,0,0" />
-              <TextBlock Grid.Row="2"
-                         Text="Plan Hash"
-                         Foreground="{StaticResource TextSecondaryBrush}"
-                         Margin="0,6,0,0" />
-              <TextBlock Grid.Row="2"
-                         Grid.Column="1"
-                         Text="{Binding LabelWorkflow.PlanHash}"
-                         FontFamily="Consolas"
-                         TextWrapping="Wrap"
-                         Margin="0,6,0,0" />
             </Grid>
+
+            <Expander Header="审计详情"
+                      IsExpanded="False"
+                      Margin="0,0,0,12">
+              <Grid Margin="0,8,0,0">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="125" />
+                  <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0"
+                           Text="检查 ID"
+                           Foreground="{StaticResource TextSecondaryBrush}" />
+                <TextBlock Grid.Row="0"
+                           Grid.Column="1"
+                           Text="{Binding LabelWorkflow.PreflightOperationId}"
+                           FontFamily="Consolas" />
+                <TextBlock Grid.Row="1"
+                           Text="Plan Hash"
+                           Foreground="{StaticResource TextSecondaryBrush}"
+                           Margin="0,6,0,0" />
+                <TextBlock Grid.Row="1"
+                           Grid.Column="1"
+                           Text="{Binding LabelWorkflow.PlanHash}"
+                           FontFamily="Consolas"
+                           TextWrapping="Wrap"
+                           Margin="0,6,0,0" />
+              </Grid>
+            </Expander>
 
             <DataGrid ItemsSource="{Binding LabelWorkflow.PreflightItems}"
                       Height="245">
@@ -676,38 +747,9 @@
 
         <Border Grid.Row="3"
                 Style="{StaticResource CardStyle}"
-                Visibility="{Binding LabelWorkflow.HasPreflight, Converter={StaticResource BooleanToVisibilityConverter}}">
-          <Grid>
-            <Grid.ColumnDefinitions>
-              <ColumnDefinition Width="*" />
-              <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <StackPanel>
-              <TextBlock Text="受控 Apply"
-                         FontSize="17"
-                         FontWeight="SemiBold" />
-              <TextBlock Text="Apply 仅创建当前 preflight 中 READY_TO_CREATE 的精确 operation 集合；不会自动保存。"
-                         Foreground="{StaticResource TextSecondaryBrush}"
-                         TextWrapping="Wrap"
-                         Margin="0,5,20,10" />
-              <CheckBox IsChecked="{Binding LabelWorkflow.ApplyAcknowledged, Mode=TwoWay}"
-                        IsEnabled="{Binding LabelWorkflow.HasWritablePreflight}"
-                        Content="我已核对待创建数量、Plan Hash 和对象列表，并授权本次写入。" />
-            </StackPanel>
-            <Button Grid.Column="1"
-                    Content="创建缺失标签"
-                    Style="{StaticResource PrimaryButtonStyle}"
-                    IsEnabled="{Binding LabelWorkflow.CanApply}"
-                    Click="Apply_Click"
-                    VerticalAlignment="Center" />
-          </Grid>
-        </Border>
-
-        <Border Grid.Row="4"
-                Style="{StaticResource CardStyle}"
                 Visibility="{Binding LabelWorkflow.HasApplyResult, Converter={StaticResource BooleanToVisibilityConverter}}">
           <StackPanel>
-            <TextBlock Text="Apply 结果"
+            <TextBlock Text="标签创建结果"
                        FontSize="17"
                        FontWeight="SemiBold"
                        Margin="0,0,0,12" />

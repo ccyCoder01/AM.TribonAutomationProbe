@@ -293,7 +293,7 @@ public sealed class ObjectLabelWorkflowViewModel : INotifyPropertyChanged
 
     public string ManualSaveGuidance =>
         ManualSaveRequired
-            ? "Apply 已完成，但没有自动保存。请先在 Tribon 中复核标签文字、位置、样式和遮挡；确认无误后使用 File → Save 手动保存一次。"
+            ? "标签创建完成，但图纸尚未保存。请先在 Tribon 中复核标签文字、位置、样式和遮挡；确认无误后使用 File → Save 手动保存一次。"
             : "当前没有待执行的手动保存步骤。";
 
     public async Task RunPreflightAsync()
@@ -336,19 +336,19 @@ public sealed class ObjectLabelWorkflowViewModel : INotifyPropertyChanged
             {
                 Stage = ObjectLabelWorkflowStage.Completed;
                 StatusMessage =
-                    "只读检查被阻止。请处理重复文字、文字冲突或检查错误；不要执行 Apply。";
+                    "标签安全检查被阻止。请先处理重复文字、文字冲突或检查错误；当前不会修改图纸。";
             }
             else if (result.PreMissingCount == 0)
             {
                 Stage = ObjectLabelWorkflowStage.Completed;
                 StatusMessage =
-                    "所有目标标签均已存在，不需要执行 Apply。";
+                    "所有目标标签均已存在，不需要创建标签。";
             }
             else
             {
                 Stage = ObjectLabelWorkflowStage.ReadyToApply;
                 StatusMessage =
-                    $"只读检查完成：{result.PreMissingCount} 个标签可创建。请核对计划后再授权 Apply。";
+                    $"标签安全检查完成：{result.PreMissingCount} 个标签可创建。请核对对象列表后确认创建。";
             }
         }
         catch (OperationCanceledException)
@@ -384,7 +384,7 @@ public sealed class ObjectLabelWorkflowViewModel : INotifyPropertyChanged
             PreflightResult is null)
         {
             ErrorMessage =
-                "Apply 尚未获得有效的只读检查与明确确认。";
+                "标签创建尚未获得有效的安全检查结果与明确确认。";
             return;
         }
 
@@ -414,13 +414,13 @@ public sealed class ObjectLabelWorkflowViewModel : INotifyPropertyChanged
             Stage = ObjectLabelWorkflowStage.Completed;
 
             StatusMessage = result.CreatedCount > 0
-                ? $"Apply 完成：已创建 {result.CreatedCount} 个标签，失败 {result.CreateFailedCount} 个。请执行视觉复核，暂勿自动保存。"
-                : "Apply 返回已完成状态，没有新增标签。";
+                ? $"标签创建完成：已创建 {result.CreatedCount} 个，失败 {result.CreateFailedCount} 个。请执行视觉复核，图纸尚未保存。"
+                : "标签创建已完成，没有新增标签。";
         }
         catch (OperationCanceledException)
         {
             Stage = ObjectLabelWorkflowStage.Cancelled;
-            StatusMessage = "Apply 已取消。请检查 FileBridge 状态后再决定下一步。";
+            StatusMessage = "标签创建已取消。当前不会继续写图；如需继续，请重新确认后再执行。";
             IsProgressIndeterminate = false;
         }
         catch (Exception ex)
@@ -428,7 +428,7 @@ public sealed class ObjectLabelWorkflowViewModel : INotifyPropertyChanged
             Stage = ObjectLabelWorkflowStage.Failed;
             ErrorMessage = ex.Message;
             StatusMessage =
-                "Apply 失败。不要盲目重复运行 Start.py 或重新提交写入请求。";
+                "标签创建失败。Tribon 执行通道已安全停止本次写入，请检查通道状态后再重试。";
             IsProgressIndeterminate = false;
         }
         finally
@@ -489,7 +489,7 @@ public sealed class ObjectLabelWorkflowViewModel : INotifyPropertyChanged
         ErrorMessage = string.Empty;
         ProgressPercent = 0;
         IsProgressIndeterminate = false;
-        StatusMessage = "正在准备只读检查。";
+        StatusMessage = "正在准备标签安全检查。";
     }
 
     private void InvalidateConfirmedPreflight()
@@ -508,7 +508,7 @@ public sealed class ObjectLabelWorkflowViewModel : INotifyPropertyChanged
         ProgressPercent = 0;
         IsProgressIndeterminate = false;
         StatusMessage =
-            "运行配置已更改。必须重新执行只读检查。";
+            "运行配置已更改。必须重新执行标签安全检查。";
         ErrorMessage = string.Empty;
     }
 

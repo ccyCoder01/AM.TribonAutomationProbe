@@ -8,13 +8,13 @@ namespace AM.TribonAutomationProbe.Desktop.Tests;
 public sealed class Round50MultiTaskOrchestrationSourceContractTests
 {
     private const string ExpectedExecutorSha256 =
-        "67334484DA16F3065339695AD5C99D50A301E66F9F367E91466C8D9A1CC242A3";
+        "9CB209497223181818B0732899BB22A87D3CDAB0143549E2C696B73BC3C84411";
 
     private const string ExpectedPlannerSha256 =
         "AA13720EE7693D8ADAD982238F6B5E1140342342C985B20D68C162E87E9EF9CE";
 
     [Fact]
-    public void SingleTaskExecutorAndPlannerRemainByteIdentical()
+    public void ExecutorProductMessagingAndPlannerSourceRemainExact()
     {
         var repoRoot = FindRepoRoot();
 
@@ -107,12 +107,12 @@ public sealed class Round50MultiTaskOrchestrationSourceContractTests
             "已停止，后续任务未提交",
             source);
         Assert.Contains(
-            "全程未重新调用模型，未写入图纸数据库，未执行 SAVEWORK",
+            "全程未重新调用模型，未修改图纸，也未自动保存。",
             source);
     }
 
     [Fact]
-    public void MainWindowExplainsPerAcceptedRequestStartPyContract()
+    public void MainWindowExplainsAutomaticTribonExecutionChannelContract()
     {
         var source = ReadSource(
             "src",
@@ -120,25 +120,34 @@ public sealed class Round50MultiTaskOrchestrationSourceContractTests
             "MainWindow.xaml.cs");
 
         Assert.Contains(
-            "按 Sequence 顺序执行当前",
+            "即将按顺序执行当前",
             source);
         Assert.Contains(
-            "单任务 Console 白名单执行器逐个提交",
-            source);
-        Assert.Contains(
-            "每出现一个已接受请求",
-            source);
-        Assert.Contains(
-            "Start.py 恰好一次",
+            "系统会通过受控 Tribon 执行通道自动逐个处理",
             source);
         Assert.Contains(
             "任何任务失败或取消后立即停止",
             source);
         Assert.Contains(
-            "不会写入图纸数据库",
+            "不会提交后续任务",
             source);
         Assert.Contains(
-            "不会执行 SAVEWORK",
+            "执行阶段不会重新调用模型",
+            source);
+        Assert.Contains(
+            "不会修改图纸，也不会自动保存",
+            source);
+        Assert.DoesNotContain(
+            "按 Sequence 顺序执行当前",
+            source);
+        Assert.DoesNotContain(
+            "Start.py",
+            source);
+        Assert.DoesNotContain(
+            "单任务 Console 白名单执行器",
+            source);
+        Assert.DoesNotContain(
+            "SAVEWORK",
             source);
     }
 

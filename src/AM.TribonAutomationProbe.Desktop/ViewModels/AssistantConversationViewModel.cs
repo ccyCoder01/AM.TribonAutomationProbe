@@ -19,7 +19,7 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
     private string _userInput = string.Empty;
     private bool _isInterpreting;
     private string _errorMessage = string.Empty;
-    private bool _useRealModel;
+    private bool _hasModelCredential;
     private string _assistantBaseUrl =
         "https://api.yygu.cn/v3/llm.chat/chat/completions";
     private string _assistantModel = "deepseek/deepseek-v4-pro";
@@ -32,16 +32,22 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
     private string _readOnlyExecutionStatus =
         "尚未执行确定性只读计划。";
     private AssistantTaskExecutionResult? _readOnlyExecutionResult;
+    private AssistantProductExecutionState _executionState =
+        AssistantProductExecutionState.Idle;
+    private string _executionStatus =
+        "等待船舶设计任务。";
 
     public AssistantConversationViewModel(
         IAssistantWorkflowClient assistantClient,
         ObjectLabelWorkflowViewModel labelWorkflow,
-        IAssistantReadOnlyPlanExecutionClient? readOnlyExecutionClient = null)
+        IAssistantReadOnlyPlanExecutionClient? readOnlyExecutionClient = null,
+        bool modelCredentialAvailable = true)
     {
         _assistantClient = assistantClient ??
             throw new ArgumentNullException(nameof(assistantClient));
         _readOnlyExecutionClient = readOnlyExecutionClient ??
             new ConsoleAssistantReadOnlyPlanExecutionClient();
+        _hasModelCredential = modelCredentialAvailable;
         LabelWorkflow = labelWorkflow ??
             throw new ArgumentNullException(nameof(labelWorkflow));
 
@@ -50,7 +56,7 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
         Messages.Add(
             new AssistantConversationMessage(
                 "assistant",
-                "请输入船舶设计任务。我会先生成受控执行计划，不会直接修改图纸，也不会自动执行 SAVEWORK。",
+                "请输入船舶设计任务。我会先理解你的指令并生成受控执行计划，不会直接修改图纸，也不会自动保存。",
                 DateTimeOffset.Now));
     }
 
@@ -76,17 +82,29 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
         }
     }
 
-    public bool UseRealModel
+    public bool HasModelCredential => _hasModelCredential;
+
+    public string ModelCredentialStatus =>
+        HasModelCredential
+            ? "Token 已保存（Windows 当前用户加密）"
+            : "Token 未配置";
+
+    public string ModelSettingsHeader =>
+        string.IsNullOrWhiteSpace(AssistantModel)
+            ? "模型设置 · 未配置"
+            : $"模型设置 · {AssistantModel} · " +
+              (HasModelCredential ? "已配置" : "缺少 Token");
+
+    public void SetModelCredentialAvailable(bool available)
     {
-        get => _useRealModel;
-        set
+        if (!SetProperty(ref _hasModelCredential, available))
         {
-            if (SetProperty(ref _useRealModel, value))
-            {
-                OnPropertyChanged(nameof(ModelConfigurationSummary));
-                OnPropertyChanged(nameof(CanInterpret));
-            }
+            return;
         }
+
+        OnPropertyChanged(nameof(ModelCredentialStatus));
+        OnPropertyChanged(nameof(ModelSettingsHeader));
+        OnPropertyChanged(nameof(CanInterpret));
     }
 
     public string AssistantBaseUrl
@@ -99,6 +117,7 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
                     value ?? string.Empty))
             {
                 OnPropertyChanged(nameof(ModelConfigurationSummary));
+                OnPropertyChanged(nameof(ModelSettingsHeader));
                 OnPropertyChanged(nameof(CanInterpret));
             }
         }
@@ -114,6 +133,7 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
                     value ?? string.Empty))
             {
                 OnPropertyChanged(nameof(ModelConfigurationSummary));
+                OnPropertyChanged(nameof(ModelSettingsHeader));
                 OnPropertyChanged(nameof(CanInterpret));
             }
         }
@@ -228,6 +248,7 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
 
     public bool CanExecuteReadOnlyPlan =>
         !IsBusy &&
+        ReadOnlyExecutionResult is null &&
         TryGetExecutableReadOnlyTasks(out _);
 
     public bool ShowReadOnlyExecutionPanel =>
@@ -245,6 +266,58 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
             _ => "执行确定性只读计划"
         };
 
+    public AssistantProductExecutionState ExecutionState
+    {
+        get => _executionState;
+        private set
+        {
+            if (SetProperty(ref _executionState, value))
+            {
+                OnPropertyChanged(nameof(ExecutionStateText));
+                OnPropertyChanged(nameof(IsAwaitingWriteConfirmation));
+                OnPropertyChanged(nameof(IsExecutionTerminal));
+            }
+        }
+    }
+
+    public string ExecutionStateText =>
+        ExecutionState switch
+        {
+            AssistantProductExecutionState.Idle => "等待任务",
+            AssistantProductExecutionState.Planning => "正在理解",
+            AssistantProductExecutionState.Validating => "正在检查",
+            AssistantProductExecutionState.Executing => "正在执行",
+            AssistantProductExecutionState.AwaitingWriteConfirmation =>
+                "等待确认",
+            AssistantProductExecutionState.ExecutingWrite => "正在创建标签",
+            AssistantProductExecutionState.Completed => "已完成",
+            AssistantProductExecutionState.Failed => "执行失败",
+            AssistantProductExecutionState.Cancelled => "已取消",
+            AssistantProductExecutionState.RuntimeUnavailable =>
+                "执行通道不可用",
+            _ => ExecutionState.ToString()
+        };
+
+    public string ExecutionStatus
+    {
+        get => _executionStatus;
+        private set =>
+            SetProperty(
+                ref _executionStatus,
+                value ?? string.Empty);
+    }
+
+    public bool IsAwaitingWriteConfirmation =>
+        ExecutionState ==
+        AssistantProductExecutionState.AwaitingWriteConfirmation;
+
+    public bool IsExecutionTerminal =>
+        ExecutionState is
+            AssistantProductExecutionState.Completed or
+            AssistantProductExecutionState.Failed or
+            AssistantProductExecutionState.Cancelled or
+            AssistantProductExecutionState.RuntimeUnavailable;
+
     public bool IsBusy =>
         IsInterpreting ||
         IsExecutingReadOnlyPlan ||
@@ -252,10 +325,10 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
 
     public bool CanInterpret =>
         !IsBusy &&
+        HasModelCredential &&
         !string.IsNullOrWhiteSpace(UserInput) &&
-        (!UseRealModel ||
-         (!string.IsNullOrWhiteSpace(AssistantBaseUrl) &&
-          !string.IsNullOrWhiteSpace(AssistantModel)));
+        !string.IsNullOrWhiteSpace(AssistantBaseUrl) &&
+        !string.IsNullOrWhiteSpace(AssistantModel);
 
     public bool CanCancel => IsBusy;
 
@@ -301,7 +374,7 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
 
             if (plan.ContainsWrite)
             {
-                return "计划包含图纸写入。统一计划入口只会先进入标签 preflight；只有完成精确 preflight 绑定、勾选授权并通过原生确认框后，才允许受控 Apply；不会自动 SAVEWORK。";
+                return "计划包含图纸写入。系统会先自动完成标签安全检查；检查通过后只在你明确确认一次后创建标签，且不会自动保存图纸。";
             }
 
             if (!TryGetExecutableReadOnlyTasks(out var tasks))
@@ -314,9 +387,8 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
                 tasks.Select(task => GetDisplayName(task.Intent)));
 
             return
-                $"计划可按 Sequence 顺序通过固定白名单命令执行 {tasks.Count} 个只读任务：{taskNames}。" +
-                "每个已接受的 FileBridge 请求均需在 Tribon 当前图纸中运行 Start.py 恰好一次；" +
-                "执行阶段不会重新调用模型，不会写入图纸数据库，也不会执行 SAVEWORK。";
+                $"计划将按顺序自动执行 {tasks.Count} 个只读任务：{taskNames}。" +
+                "系统会通过受控 Tribon 执行通道处理；执行阶段不会重新调用模型，不会修改图纸，也不会自动保存。";
         }
     }
 
@@ -355,6 +427,15 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
         }
     }
 
+    public bool CanCreateLabelsFromPreflight =>
+        !IsBusy &&
+        LabelWorkflow.HasWritablePreflight &&
+        !LabelWorkflow.HasApplyResult;
+
+    public bool ShowCreateLabelsFromPreflight =>
+        LabelWorkflow.HasWritablePreflight &&
+        !LabelWorkflow.HasApplyResult;
+
     public AssistantPlanExecutionRoute PlanExecutionRoute =>
         GetPlanExecutionRoute();
 
@@ -376,9 +457,9 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
             AssistantPlanExecutionRoute.DeterministicReadOnly =>
                 ReadOnlyExecutionButtonText,
             AssistantPlanExecutionRoute.LabelPreflight =>
-                "执行标签只读检查",
+                "执行标签安全检查",
             AssistantPlanExecutionRoute.LabelApply =>
-                "执行受控 Apply",
+                "创建缺失标签",
             _ => "当前计划仅预览"
         };
 
@@ -386,13 +467,11 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
         PlanExecutionRoute switch
         {
             AssistantPlanExecutionRoute.DeterministicReadOnly =>
-                "统一计划入口将调用确定性只读执行器；不会写入图纸数据库，也不会执行 SAVEWORK。",
+                "计划将按顺序自动执行；执行期间不会重新调用模型，不会修改图纸，也不会自动保存。",
             AssistantPlanExecutionRoute.LabelPreflight =>
-                "统一计划入口将先执行标签只读检查；不会直接执行写入。",
+                "系统会自动执行标签安全检查；检查本身不会修改图纸。",
             AssistantPlanExecutionRoute.LabelApply =>
-                LabelWorkflow.CanApply
-                    ? "当前写入计划已完成可写 preflight 并获得勾选授权；仍需原生确认框确认后，才可提交与该 preflight 精确绑定的 Apply。"
-                    : "当前写入计划已完成可写 preflight；请先核对 Plan Hash、对象列表并勾选授权，之后仍需原生确认框确认。",
+                "标签安全检查已完成；核对结果后点击“创建标签”即明确授权本次检查绑定的标签写入，且不会自动保存。",
             _ => "当前计划没有可执行的统一确定性路线，仅保留计划预览。"
         };
 
@@ -425,7 +504,7 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
                 if (authorization is not null)
                 {
                     throw new InvalidDataException(
-                        "Read-only plan execution does not accept write authorization.");
+                        "只读任务不接受图纸修改授权。");
                 }
 
                 await ExecuteReadOnlyPlanAsync();
@@ -435,7 +514,7 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
                 if (authorization is not null)
                 {
                     throw new InvalidDataException(
-                        "Label preflight does not accept write authorization.");
+                        "标签安全检查不接受图纸修改授权。");
                 }
 
                 await RunLabelPreflightFromPlanAsync();
@@ -446,35 +525,46 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
                     LabelWorkflow.PreflightResult is not { } preflight)
                 {
                     ErrorMessage =
-                        "当前写入计划尚未完成有效 preflight 与显式授权。";
+                        "当前标签创建任务尚未完成有效的标签安全检查和明确确认。";
                     return;
                 }
 
                 if (authorization is null)
                 {
                     throw new InvalidDataException(
-                        "Label Apply requires an explicit bound execution authorization.");
+                        "标签创建需要与当前标签安全检查绑定的明确写入确认。");
                 }
 
                 ValidateApplyAuthorization(
                     authorization,
                     preflight);
+                SetExecutionState(
+                    AssistantProductExecutionState.ExecutingWrite,
+                    $"正在创建 {preflight.PreMissingCount} 个标签；不会自动保存。");
 
                 await LabelWorkflow.ApplyAsync();
 
                 if (LabelWorkflow.HasError)
                 {
                     ErrorMessage = LabelWorkflow.ErrorMessage;
+                    SetExecutionState(
+                        AssistantProductExecutionState.Failed,
+                        "标签创建失败；请检查当前图纸状态。");
                     Messages.Add(
                         new AssistantConversationMessage(
                             "system",
-                            $"标签 Apply 失败：{LabelWorkflow.ErrorMessage}",
+                            $"标签创建失败：{LabelWorkflow.ErrorMessage}",
                             DateTimeOffset.Now));
                     RaisePlanProperties();
                     return;
                 }
 
                 RecordApplyResult();
+                SetExecutionState(
+                    AssistantProductExecutionState.Completed,
+                    LabelWorkflow.SavePerformed
+                        ? "标签创建完成，图纸已保存。"
+                        : $"标签创建完成：{LabelWorkflow.CreatedCount} 个；图纸已修改，尚未保存。");
                 return;
 
             default:
@@ -482,6 +572,14 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
                     "当前计划没有可执行的统一确定性路线。";
                 return;
         }
+    }
+
+    private void SetExecutionState(
+        AssistantProductExecutionState state,
+        string status)
+    {
+        ExecutionState = state;
+        ExecutionStatus = status;
     }
 
     public async Task InterpretAsync(
@@ -493,15 +591,28 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
         }
 
         var input = UserInput.Trim();
+        var shouldAutoExecuteValidatedPlan = false;
+        AssistantConversationMessage? pendingAssistantMessage = null;
+
         UserInput = string.Empty;
         ErrorMessage = string.Empty;
         ClearPlan();
+        SetExecutionState(
+            AssistantProductExecutionState.Planning,
+            "正在理解你的指令并生成执行计划…");
 
         Messages.Add(
             new AssistantConversationMessage(
                 "user",
                 input,
                 DateTimeOffset.Now));
+
+        pendingAssistantMessage =
+            new AssistantConversationMessage(
+                "assistant",
+                "正在理解你的指令…",
+                DateTimeOffset.Now);
+        Messages.Add(pendingAssistantMessage);
 
         var cancellation = new CancellationTokenSource();
         _interpretationCancellation = cancellation;
@@ -518,20 +629,70 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
 
             CurrentInterpretation = result;
             PopulatePlanTasks(result.Plan);
+            SetExecutionState(
+                AssistantProductExecutionState.Validating,
+                result.Plan.State ==
+                    AssistantTaskState.AwaitingClarification
+                    ? "需要补充信息后才能继续。"
+                    : "执行计划已生成，正在检查安全边界。");
 
             var response = result.Plan.State ==
                            AssistantTaskState.AwaitingClarification
                 ? result.Plan.Message
                 : BuildPlanResponse(result);
 
+            if (pendingAssistantMessage is not null)
+            {
+                Messages.Remove(pendingAssistantMessage);
+                pendingAssistantMessage = null;
+            }
+
             Messages.Add(
                 new AssistantConversationMessage(
                     "assistant",
                     response,
                     DateTimeOffset.Now));
+
+            if (result.Plan.State ==
+                AssistantTaskState.AwaitingClarification)
+            {
+                SetExecutionState(
+                    AssistantProductExecutionState.Idle,
+                    result.Plan.Message);
+            }
+            else if (ShouldAutomaticallyExecuteValidatedPlan())
+            {
+                shouldAutoExecuteValidatedPlan = true;
+                SetExecutionState(
+                    AssistantProductExecutionState.Validating,
+                    result.Plan.ContainsWrite
+                        ? "安全检查通过，准备自动执行写入前只读检查。"
+                        : "安全检查通过，准备自动执行只读任务。");
+            }
+            else if (result.Plan.ContainsWrite)
+            {
+                SetExecutionState(
+                    AssistantProductExecutionState.Validating,
+                    "写入计划已生成，但当前计划没有自动执行的安全路线。");
+            }
+            else
+            {
+                SetExecutionState(
+                    AssistantProductExecutionState.Validating,
+                    "计划已生成，但当前计划没有自动执行的确定性路线。");
+            }
         }
         catch (OperationCanceledException)
         {
+            if (pendingAssistantMessage is not null)
+            {
+                Messages.Remove(pendingAssistantMessage);
+                pendingAssistantMessage = null;
+            }
+
+            SetExecutionState(
+                AssistantProductExecutionState.Cancelled,
+                "任务已取消，没有执行图纸写入。");
             Messages.Add(
                 new AssistantConversationMessage(
                     "system",
@@ -540,7 +701,16 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
         }
         catch (Exception ex)
         {
+            if (pendingAssistantMessage is not null)
+            {
+                Messages.Remove(pendingAssistantMessage);
+                pendingAssistantMessage = null;
+            }
+
             ErrorMessage = ex.Message;
+            SetExecutionState(
+                AssistantProductExecutionState.Failed,
+                "执行计划生成失败，本次任务没有执行。");
             Messages.Add(
                 new AssistantConversationMessage(
                     "system",
@@ -558,6 +728,56 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
 
             cancellation.Dispose();
             IsInterpreting = false;
+        }
+
+        if (shouldAutoExecuteValidatedPlan &&
+            !HasError &&
+            ExecutionState ==
+                AssistantProductExecutionState.Validating)
+        {
+            await ExecuteValidatedPlanAutomaticallyAsync();
+        }
+    }
+
+    private bool ShouldAutomaticallyExecuteValidatedPlan()
+    {
+        var plan = CurrentInterpretation?.Plan;
+
+        if (plan is null ||
+            plan.State is not (
+                AssistantTaskState.Planned or
+                AssistantTaskState.AwaitingConfirmation))
+        {
+            return false;
+        }
+
+        if (TryGetExecutableReadOnlyTasks(out _))
+        {
+            return true;
+        }
+
+        var task = GetSinglePlanTask();
+
+        return task?.Intent is
+            AssistantIntent.PreflightLabels or
+            AssistantIntent.ApplyMissingLabels;
+    }
+
+    private async Task ExecuteValidatedPlanAutomaticallyAsync()
+    {
+        if (TryGetExecutableReadOnlyTasks(out _))
+        {
+            await ExecuteReadOnlyPlanAsync();
+            return;
+        }
+
+        var task = GetSinglePlanTask();
+
+        if (task?.Intent is
+            AssistantIntent.PreflightLabels or
+            AssistantIntent.ApplyMissingLabels)
+        {
+            await RunLabelPreflightFromPlanAsync();
         }
     }
 
@@ -585,15 +805,17 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
         Messages.Add(
             new AssistantConversationMessage(
                 "assistant",
-                $"已验证 {tasks.Count} 个确定性只读任务，将按 Sequence 升序逐个提交。" +
-                " 每个已接受的 FileBridge 请求都需要在 Tribon 当前图纸中运行 Start.py 恰好一次；" +
-                " 任一任务失败或取消后立即停止，不提交后续任务。" +
-                " 执行阶段不会重新调用模型，不会写入图纸数据库，也不会执行 SAVEWORK。",
+                $"已验证 {tasks.Count} 个只读任务，将按顺序自动执行。" +
+                " 系统会通过受控 Tribon 执行通道逐个处理；任一任务失败或取消后立即停止，不提交后续任务。" +
+                " 执行阶段不会重新调用模型，不会修改图纸，也不会自动保存。",
                 DateTimeOffset.Now));
 
         var cancellation = new CancellationTokenSource();
         _readOnlyExecutionCancellation = cancellation;
         IsExecutingReadOnlyPlan = true;
+        SetExecutionState(
+            AssistantProductExecutionState.Executing,
+            $"正在执行 {tasks.Count} 个只读任务。");
 
         try
         {
@@ -641,8 +863,7 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
                     result.SavePerformed)
                 {
                     throw new InvalidDataException(
-                        "The deterministic read-only task result violated " +
-                        "the multi-task orchestration safety contract.");
+                        "只读任务返回了不符合安全约束的结果，后续任务已停止。");
                 }
 
                 ReadOnlyExecutionResult = result;
@@ -665,19 +886,25 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
             IsReadOnlyExecutionProgressIndeterminate = false;
             ReadOnlyExecutionStatus =
                 $"确定性只读任务序列已完成：{tasks.Count}/{tasks.Count}。";
+            SetExecutionState(
+                AssistantProductExecutionState.Completed,
+                $"只读任务已完成：{tasks.Count}/{tasks.Count}。");
 
             Messages.Add(
                 new AssistantConversationMessage(
                     "assistant",
                     $"确定性只读任务序列执行完成：{tasks.Count}/{tasks.Count}。" +
-                    " 全程未重新调用模型，未写入图纸数据库，未执行 SAVEWORK。",
+                    " 全程未重新调用模型，未修改图纸，也未自动保存。",
                     DateTimeOffset.Now));
         }
         catch (OperationCanceledException)
         {
+            SetExecutionState(
+                AssistantProductExecutionState.Cancelled,
+                "只读执行已取消，后续任务未提交。");
             ReadOnlyExecutionStatus =
-                "确定性只读任务序列已取消；后续任务未提交。" +
-                " 请检查 FileBridge 状态后再决定下一步。";
+                "只读任务已取消；后续任务未提交。" +
+                " 如需继续，请重新发送任务或使用运行诊断检查 Tribon 执行通道。";
             IsReadOnlyExecutionProgressIndeterminate = false;
 
             Messages.Add(
@@ -689,9 +916,12 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
         catch (Exception ex)
         {
             ErrorMessage = ex.Message;
+            SetExecutionState(
+                AssistantProductExecutionState.Failed,
+                "只读执行失败，后续任务未提交。");
             ReadOnlyExecutionStatus =
-                "确定性只读任务序列执行失败；已停止，后续任务未提交。" +
-                " 不要盲目重复运行 Start.py 或重新提交请求。";
+                "只读任务执行失败；已停止，后续任务未提交。" +
+                " Tribon 执行通道保持安全停止状态，请先重新检测通道后再重试。";
             IsReadOnlyExecutionProgressIndeterminate = false;
 
             Messages.Add(
@@ -724,10 +954,13 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
         }
 
         ErrorMessage = string.Empty;
+        SetExecutionState(
+            AssistantProductExecutionState.Executing,
+            "正在执行标签安全检查…");
         Messages.Add(
             new AssistantConversationMessage(
                 "assistant",
-                "已将计划交给现有确定性标签工作流。Console 提交请求后，请在 Tribon 当前图纸中运行 Start.py 恰好一次。",
+                "正在执行标签安全检查…",
                 DateTimeOffset.Now));
 
         await LabelWorkflow.RunPreflightAsync();
@@ -735,10 +968,13 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
         if (LabelWorkflow.HasError)
         {
             ErrorMessage = LabelWorkflow.ErrorMessage;
+            SetExecutionState(
+                AssistantProductExecutionState.Failed,
+                "标签安全检查失败，本次没有执行写入。");
             Messages.Add(
                 new AssistantConversationMessage(
                     "system",
-                    $"标签只读检查失败：{LabelWorkflow.ErrorMessage}",
+                    $"标签安全检查失败：{LabelWorkflow.ErrorMessage}",
                     DateTimeOffset.Now));
             return;
         }
@@ -747,12 +983,15 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
 
         if (result is null)
         {
-            ErrorMessage = "标签只读检查没有返回结果。";
+            ErrorMessage = "标签安全检查没有返回结果。";
+            SetExecutionState(
+                AssistantProductExecutionState.Failed,
+                "标签安全检查没有返回有效结果。");
             return;
         }
 
         var response =
-            $"标签只读检查完成：已存在 {result.PreAlreadyPresentCount} 个，" +
+            $"标签安全检查完成：已存在 {result.PreAlreadyPresentCount} 个，" +
             $"待创建 {result.PreMissingCount} 个，重复文字 {result.PreDuplicateTextCount} 个，" +
             $"文字冲突 {result.PreTextConflictCount} 个，检查错误 {result.PreInspectionErrorCount} 个。";
 
@@ -760,7 +999,25 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
             LabelWorkflow.HasWritablePreflight)
         {
             response +=
-                " 该自然语言计划包含写入；请核对 Plan Hash 和对象列表，再勾选授权并确认 Apply。";
+                " 该任务包含图纸写入；请核对待创建数量和对象列表，确认后再创建标签。";
+            SetExecutionState(
+                AssistantProductExecutionState.AwaitingWriteConfirmation,
+                $"标签安全检查完成：{result.PreMissingCount} 个标签可创建，等待你的确认。");
+        }
+        else if (string.Equals(
+                     result.Status,
+                     "BLOCKED",
+                     StringComparison.Ordinal))
+        {
+            SetExecutionState(
+                AssistantProductExecutionState.Failed,
+                "标签安全检查未通过，未执行图纸写入。");
+        }
+        else
+        {
+            SetExecutionState(
+                AssistantProductExecutionState.Completed,
+                "标签安全检查已完成，没有待确认的图纸写入。");
         }
 
         Messages.Add(
@@ -784,9 +1041,8 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
         Messages.Add(
             new AssistantConversationMessage(
                 "assistant",
-                $"Apply 回执：创建 {result.CreatedCount} 个，失败 {result.CreateFailedCount} 个；" +
-                $"图纸写入 {result.DrawingWriteCount} 个，自动保存={result.SavePerformed}。" +
-                " 请在 Tribon 中执行视觉复核，确认后手动保存。",
+                $"标签创建完成：创建 {result.CreatedCount} 个，失败 {result.CreateFailedCount} 个。" +
+                " 图纸已修改，尚未自动保存。请在 Tribon 中执行视觉复核，确认后手动保存。",
                 DateTimeOffset.Now));
 
         RaisePlanProperties();
@@ -809,6 +1065,9 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
         Messages.Clear();
         ClearPlan();
         ErrorMessage = string.Empty;
+        SetExecutionState(
+            AssistantProductExecutionState.Idle,
+            "等待船舶设计任务。");
         Messages.Add(
             new AssistantConversationMessage(
                 "assistant",
@@ -824,13 +1083,11 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
             LabelWorkflow.PollIntervalMs);
 
     private AssistantProviderSessionSettings CreateProviderSettings() =>
-        UseRealModel
-            ? new AssistantProviderSessionSettings(
-                AssistantProviderMode.OpenAiCompatible,
-                AssistantBaseUrl,
-                AssistantModel,
-                AuthorizationMode)
-            : AssistantProviderSessionSettings.RuleBased;
+        new(
+            AssistantProviderMode.OpenAiCompatible,
+            AssistantBaseUrl,
+            AssistantModel,
+            AuthorizationMode);
 
     private AssistantPlanExecutionRoute GetPlanExecutionRoute()
     {
@@ -889,7 +1146,7 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
             !authorization.WriteConfirmed)
         {
             throw new InvalidDataException(
-                "Label Apply authorization must explicitly allow and confirm drawing write.");
+                "标签创建缺少明确的图纸修改确认。");
         }
 
         if (!string.Equals(
@@ -898,7 +1155,7 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
                 StringComparison.Ordinal))
         {
             throw new InvalidDataException(
-                "Label Apply authorization preflight operation ID does not match the current preflight.");
+                "标签创建确认已失效；当前标签安全检查已发生变化，请重新检查后确认。");
         }
 
         if (!string.Equals(
@@ -907,7 +1164,7 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
                 StringComparison.Ordinal))
         {
             throw new InvalidDataException(
-                "Label Apply authorization plan hash does not match the current preflight.");
+                "标签创建确认已失效；当前标签计划已发生变化，请重新检查后确认。");
         }
 
         var expectedOperationIds =
@@ -927,7 +1184,7 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
                 StringComparer.Ordinal))
         {
             throw new InvalidDataException(
-                "Label Apply authorization operation IDs do not match the current preflight.");
+                "标签创建确认已失效；待创建标签集合已发生变化，请重新检查后确认。");
         }
     }
 
@@ -1086,7 +1343,7 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
                 .OrderBy(x => x.Sequence)
                 .Select(x => GetDisplayName(x.Intent)));
         var safety = plan.ContainsWrite
-            ? "计划包含写入，当前不会执行；必须先完成只读检查并显式确认。"
+            ? "计划包含图纸写入；系统会先自动完成标签安全检查，写入前等待你的明确确认。"
             : plan.Tasks.Count > 0 &&
               plan.Tasks.All(task =>
                   task.Intent is (
@@ -1094,7 +1351,7 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
                       AssistantIntent.HighlightLifting or
                       AssistantIntent.HighlightFlanges or
                       AssistantIntent.ClearHighlight))
-                ? "计划可由用户显式点击后按 Sequence 顺序映射为固定只读命令；不会重新调用模型。"
+                ? "计划已验证，将按顺序自动执行；执行期间不会重新调用模型。"
                 : "计划当前仅用于预览。";
 
         return $"已生成 {plan.Tasks.Count} 个受控任务：{taskNames}。{safety}";
@@ -1135,12 +1392,19 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(CanCancel));
         OnPropertyChanged(nameof(CanRunLabelPreflightFromPlan));
         OnPropertyChanged(nameof(CanApplyFromPlan));
+        OnPropertyChanged(nameof(CanCreateLabelsFromPreflight));
+        OnPropertyChanged(nameof(ShowCreateLabelsFromPreflight));
         OnPropertyChanged(nameof(CanExecuteReadOnlyPlan));
         OnPropertyChanged(nameof(PlanExecutionRoute));
         OnPropertyChanged(nameof(CanExecuteCurrentPlan));
         OnPropertyChanged(nameof(PlanExecutionButtonText));
         OnPropertyChanged(nameof(PlanExecutionLifecycleSummary));
         OnPropertyChanged(nameof(ShowReadOnlyExecutionPanel));
+        OnPropertyChanged(nameof(ExecutionState));
+        OnPropertyChanged(nameof(ExecutionStateText));
+        OnPropertyChanged(nameof(ExecutionStatus));
+        OnPropertyChanged(nameof(IsAwaitingWriteConfirmation));
+        OnPropertyChanged(nameof(IsExecutionTerminal));
     }
 
     private void RaisePlanProperties()
@@ -1157,12 +1421,19 @@ public sealed class AssistantConversationViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(IsSingleLabelPlan));
         OnPropertyChanged(nameof(CanRunLabelPreflightFromPlan));
         OnPropertyChanged(nameof(CanApplyFromPlan));
+        OnPropertyChanged(nameof(CanCreateLabelsFromPreflight));
+        OnPropertyChanged(nameof(ShowCreateLabelsFromPreflight));
         OnPropertyChanged(nameof(CanExecuteReadOnlyPlan));
         OnPropertyChanged(nameof(PlanExecutionRoute));
         OnPropertyChanged(nameof(CanExecuteCurrentPlan));
         OnPropertyChanged(nameof(PlanExecutionButtonText));
         OnPropertyChanged(nameof(PlanExecutionLifecycleSummary));
         OnPropertyChanged(nameof(ShowReadOnlyExecutionPanel));
+        OnPropertyChanged(nameof(ExecutionState));
+        OnPropertyChanged(nameof(ExecutionStateText));
+        OnPropertyChanged(nameof(ExecutionStatus));
+        OnPropertyChanged(nameof(IsAwaitingWriteConfirmation));
+        OnPropertyChanged(nameof(IsExecutionTerminal));
     }
 
     private bool SetProperty<T>(

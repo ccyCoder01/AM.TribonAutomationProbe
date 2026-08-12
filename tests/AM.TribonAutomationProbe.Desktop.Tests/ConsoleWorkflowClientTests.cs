@@ -71,10 +71,9 @@ public sealed class ConsoleWorkflowClientTests
                 ConsoleWorkflowClient.ValidatePreflightResult(
                     invalid));
 
-        Assert.Contains(
-            "drawing write",
-            error.Message,
-            StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(
+            "标签安全检查异常报告了图纸写入。",
+            error.Message);
     }
 
     [Fact]
@@ -110,10 +109,9 @@ public sealed class ConsoleWorkflowClientTests
                     invalid,
                     preflight));
 
-        Assert.Contains(
-            "SAVEWORK",
-            error.Message,
-            StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(
+            "标签创建异常执行了图纸保存。",
+            error.Message);
     }
 
     [Fact]

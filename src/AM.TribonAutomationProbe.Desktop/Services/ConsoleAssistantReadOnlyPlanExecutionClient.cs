@@ -58,7 +58,7 @@ public sealed class ConsoleAssistantReadOnlyPlanExecutionClient :
         progress?.Report(
             new WorkflowProgress(
                 10,
-                "正在校验只读计划与 FileBridge 空闲状态。"));
+                "正在校验只读计划与 Tribon 执行通道状态。"));
 
         var arguments = BuildExecutionArguments(settings, plan);
         var standardOutput = await RunConsoleAsync(
@@ -71,7 +71,7 @@ public sealed class ConsoleAssistantReadOnlyPlanExecutionClient :
         progress?.Report(
             new WorkflowProgress(
                 85,
-                "已收到 Console 结果，正在执行只读回执校验。"));
+                "Tribon 执行通道已返回结果，正在执行只读回执校验。"));
 
         var result = ParseAndValidate(task, standardOutput);
 
@@ -385,7 +385,7 @@ public sealed class ConsoleAssistantReadOnlyPlanExecutionClient :
         if (string.IsNullOrWhiteSpace(standardOutput))
         {
             throw new InvalidDataException(
-                "The verified Console returned no JSON result.");
+                "Tribon 执行通道未返回结果。");
         }
 
         try
@@ -394,12 +394,12 @@ public sealed class ConsoleAssistantReadOnlyPlanExecutionClient :
                        standardOutput.Trim(),
                        JsonDefaults.Options) ??
                    throw new InvalidDataException(
-                       "The verified Console JSON result is empty.");
+                       "Tribon 执行通道返回空结果。");
         }
         catch (JsonException ex)
         {
             throw new InvalidDataException(
-                "The verified Console output is not valid JSON.",
+                "Tribon 执行通道返回的结果格式无效。",
                 ex);
         }
     }
@@ -442,18 +442,18 @@ public sealed class ConsoleAssistantReadOnlyPlanExecutionClient :
         progress?.Report(
             new WorkflowProgress(
                 25,
-                "正在启动已验证的 Console。"));
+                "正在连接 Tribon 执行通道。"));
 
         if (!process.Start())
         {
             throw new InvalidOperationException(
-                "The verified Console process could not be started.");
+                "Tribon 执行通道启动失败。");
         }
 
         progress?.Report(
             new WorkflowProgress(
                 45,
-                "Console 已提交固定只读命令。请在 Tribon 当前图纸中运行 Start.py 恰好一次。",
+                "只读任务已提交，正在等待 Tribon 执行通道返回结果。",
                 IsIndeterminate: true));
 
         using var cancellationRegistration =
@@ -500,7 +500,7 @@ public sealed class ConsoleAssistantReadOnlyPlanExecutionClient :
         if (!string.IsNullOrWhiteSpace(standardError))
         {
             throw new InvalidDataException(
-                "The deterministic read-only Console wrote to stderr.");
+                "Tribon 执行通道返回错误输出。");
         }
 
         return standardOutput;
